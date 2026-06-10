@@ -299,6 +299,73 @@ but empirical checking reveals two important exceptions:
   `n_haul = sum(NumberAtLength × SubsamplingFactor)` applied at the individual row level —
   this is correct whether or not size-stratification is present.
 
+```{r}
+#| label: hl-constancy-checks
+#| echo: true
+#| eval: false
+
+# Code used to derive the constancy statistics reported above.
+# Uses old (parquet) column names: Valid_Aphia, IndividualSex, SubsamplingFactor.
+library(obus)
+library(dplyr)
+
+hl <- dr_con("HL")
+
+# Key grouping: natural species-category group within a haul
+grp <- c(".id", "Valid_Aphia", "IndividualSex", "DevelopmentStage", "SpeciesCategory")
+
+# --- SpeciesValidity: groups where it takes more than one distinct value ---
+specval_violations <- hl |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_vals = n_distinct(SpeciesValidity), .groups = "drop") |>
+  filter(n_vals > 1)
+
+# Total violating groups
+specval_violations |> count()                        # 2,786
+
+# By survey
+specval_violations |>
+  left_join(hl |> distinct(.id, Survey), by = ".id") |>
+  count(Survey, sort = TRUE)                         # BTS 1,289; Can-Mar 1,272
+
+# Most common co-occurrences of SpeciesValidity values
+hl |>
+  semi_join(specval_violations, by = grp) |>
+  group_by(across(all_of(grp))) |>
+  summarise(combo = paste(sort(unique(SpeciesValidity)), collapse = ","),
+            .groups = "drop") |>
+  count(combo, sort = TRUE)                          # {1,5}: 1,281; {4,7}: 580
+
+# --- SubsamplingFactor: groups where it takes more than one distinct value ---
+sf_violations <- hl |>
+  filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_vals = n_distinct(SubsamplingFactor), .groups = "drop") |>
+  filter(n_vals > 1)
+
+# Total violating groups
+sf_violations |> count()                             # 389
+
+# By country and survey
+sf_violations |>
+  left_join(hl |> distinct(.id, Survey, Country), by = ".id") |>
+  count(Country, Survey, sort = TRUE)                # GB-SCT 293; DK 82 (from 2024)
+
+# By DataType
+sf_violations |>
+  left_join(dr_con("HH") |> distinct(.id, DataType), by = ".id") |>
+  count(DataType)                                    # P: 293; R: 128
+
+# --- TotalNumber: groups where it varies across strata ---
+hl |>
+  filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_vals = n_distinct(TotalNumber), .groups = "drop") |>
+  filter(n_vals > 1) |>
+  left_join(hl |> distinct(.id, Survey), by = ".id") |>
+  count(Survey, sort = TRUE)                         # ~115 groups total
+```
+
 ##### Catch totals {#hl-catch-totals}
 
 | Field | Old name | Type | Unit | Description |
@@ -435,6 +502,33 @@ The specification applies to all ICES surveys available in DATRAS with valid hau
 (`HaulValidity == "V"`), excluding test surveys. The table below is generated from
 `dr_con("HH")` and `dr_con("HL")` and reflects the current state of the parquet files.
 
+```{r}
+#| label: surveys-covered
+#| echo: true
+#| eval: false
+
+# Code used to generate the surveys table below.
+library(obus)
+library(dplyr)
+
+hh <- dr_con("HH") |> collect()
+hl <- dr_con("HL")
+
+survey_stats <- hh |>
+  filter(HaulValidity == "V", Survey != "NS-IBTS_UNIFtest") |>
+  group_by(Survey) |>
+  summarise(year_min = min(Year), year_max = max(Year), n_hauls = n(), .groups = "drop") |>
+  arrange(desc(n_hauls))
+
+species_per_survey <- hl |>
+  filter(!is.na(Valid_Aphia), Valid_Aphia > 0) |>
+  group_by(Survey) |>
+  summarise(n_species = n_distinct(Valid_Aphia), .groups = "drop") |>
+  collect()
+
+survey_stats |> left_join(species_per_survey, by = "Survey")
+```
+
 | Survey | First year | Last year | Valid hauls | Species (AphiaIDs) |
 |--------|-----------|----------|------------|-------------------|
 | NS-IBTS | 1965 | 2026 | 36,566 | 837 |
@@ -528,6 +622,34 @@ size-stratified hauls as DataType R. These are not data errors — the row-level
 `NumberAtLength × SubsamplingFactor` remains correct. The risk arises only from direct use
 of `TotalNumber`, which reflects the stratum total, not the species-haul total, in these
 records.
+
+```{r}
+#| label: datatype-r-stratified
+#| echo: true
+#| eval: false
+
+# Code used to derive the DataType R size-stratified statistics reported above.
+library(obus)
+library(dplyr)
+
+hl  <- dr_con("HL")
+hh  <- dr_con("HH")
+
+grp <- c(".id", "Valid_Aphia", "IndividualSex", "DevelopmentStage", "SpeciesCategory")
+
+# Groups where SubsamplingFactor varies within the natural group, under DataType R
+sf_violations_R <- hl |>
+  filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_sf = n_distinct(SubsamplingFactor), .groups = "drop") |>
+  filter(n_sf > 1) |>
+  left_join(hh |> distinct(.id, DataType, Country), by = ".id") |>
+  filter(DataType == "R")
+
+sf_violations_R |> count()                          # 128 groups
+
+sf_violations_R |> count(Country, sort = TRUE)      # GB-SCT: 97; DK: 31 (illustrative)
+```
 
 `DataType` must be joined from HH before any HL arithmetic:
 
