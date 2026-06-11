@@ -7,7 +7,7 @@ date-modified: today
 format:
   html:
     toc: true
-    toc-depth: 3
+    toc-depth: 4
     number-sections: true
   docx:
     reference-doc: ../reference.docx
@@ -16,7 +16,10 @@ format:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(obus)
+library(dplyr)
+library(knitr)
 ```
 
 > **Project:** IMBUS — Implementing More and Better Use of ICES Survey Data  
@@ -41,8 +44,7 @@ that any user can apply to the standardised exchange tables, not as a deployed d
 
 The principal design decisions are:
 
-1. **Unified column naming.** A single, consistent set of column names (the standard parquet
-   names) is applied across all record types and surveys, regardless of API source or era.
+1. **Unified column naming.** A single, consistent set of column names (the "new" DATRAS variable names) is applied across all record types and surveys, regardless of API source or era.
 2. **HL structure.** The HL table combines haul join keys, species identification, sampling
    protocol bookkeeping, catch totals, and length frequencies in a single flat structure. These
    are documented as distinct field groups. A proposed split into separate parquet files is
@@ -60,6 +62,14 @@ The specification is implemented in the R package **{obus}**
 (<https://github.com/einarhjorleifsson/obus>) and accompanied by illustrative code throughout.
 Parquet files are currently hosted at <https://heima.hafro.is/~einarhj/datras/> (interim;
 transfer to the ICES open access portal is planned under D2.4).
+
+**Deliverable scope within this document.** D2.2 encompasses this document in full. §2
+([ICES DATRAS Data Formats and Meta-data Descriptions]) documents the *current* DATRAS
+exchange format — the primary reference for users working with raw data from any source.
+§3 ([IMBUS Proposed Data Formats and D2.3 Product Specification]) specifies the IMBUS
+standardised format and serves as the technical specification for the D2.3 data product
+(parquet files). D2.3 and D2.4 are data deliverables (due M12); this document provides
+their accompanying documentation.
 
 ---
 
@@ -81,9 +91,12 @@ WP2 has four objectives:
    length/weight conversions.
 
 Objective 1 has been delivered in D2.1 (IMBUS user requirements, April 2026, n = 55
-respondents), which identified four dominant user challenges: complex table structure
-(HH/HL/CA hierarchy and join logic); column name changes introduced around 2020 (legacy
-XML names vs. current parquet names); quality-control inconsistencies; and slow downloads.
+respondents), which identified four dominant user challenges (Einar: Check if this is really correct)
+
+* Complex table structure (HH/HL/CA hierarchy and join logic)
+* Column name changes introduced around 2020 (legacy names vs. "new" names)
+* Quality-control inconsistencies
+* Slow downloads.
 
 The current deliverable D2.2 addresses objectives 2 and 3 — the current and proposed data
 formats and the associated meta-data descriptions.
@@ -130,6 +143,11 @@ linked by a common set of haul identification fields. The following sections des
 current format of each table field by field, the metadata available for the surveys covered,
 and known issues with the current formats.
 
+The field specifications below are drawn from two machine-readable metadata sources
+maintained in {obus}: `dr_lookup_fields` (field names, types, and descriptions — see
+[Field and vocabulary reference]) and `dr_lookup_vocabulary` (controlled vocabularies for
+categorical fields — see [Field and vocabulary reference]).
+
 ### Data Formats {#sec-formats}
 
 #### HH — Haul Header {#sec-hh}
@@ -154,10 +172,10 @@ One row per haul. HH is the parent table; all child tables (HL, CA) join to it o
 
 | Field | Old name | Type | Unit | Description |
 |-------|----------|------|------|-------------|
-| `HaulValidity` | `HaulVal` | chr | — | `"V"` = valid; `"I"` = invalid. Filter to `"V"` for standard analyses |
-| `DataType` | `DataType` | chr | — | Sampling protocol (see [Current Issues]) |
+| `HaulValidity` | `HaulVal` | chr | — | `"V"` = valid; `"I"` = invalid. Filter to `"V"` for standard analyses — [all codes](#vocab-haulval) |
+| `DataType` | `DataType` | chr | — | Sampling protocol (see [Current Issues]) — [codes](#vocab-datatype) |
 | `HaulDuration` | `HaulDur` | dbl | Minutes | Duration of tow |
-| `ReasonHaulDisruption` | `ReasonHaulDisruption` | chr | — | Disruption code for invalid hauls |
+| `ReasonHaulDisruption`^[Specified in ICES vocabulary but not in table]u ha | `ReasonHaulDisruption` | chr | — | Disruption code for invalid hauls |
 
 ##### Temporal
 
@@ -168,7 +186,7 @@ One row per haul. HH is the parent table; all child tables (HL, CA) join to it o
 | `StartTime` | `TimeShot` | chr | HHMM GMT | Start time (`dr_add_starttime()` → POSIXct) |
 
 `dr_add_date()` and `dr_add_starttime()` derive a tidy `date` (Date) and `time` (POSIXct)
-column from these fields; the raw fields are then redundant.
+column from these fields (and Year); the raw fields are then redundant.
 
 ##### Position and area
 
@@ -178,24 +196,99 @@ column from these fields; the raw fields are then redundant.
 | `ShootLongitude` | `ShootLong` | dbl | Decimal degrees | Tow start longitude |
 | `HaulLatitude` | `HaulLat` | dbl | Decimal degrees | Tow end latitude |
 | `HaulLongitude` | `HaulLong` | dbl | Decimal degrees | Tow end longitude |
-| `StatisticalRectangle` | `StatRec` | chr | — | ICES statistical rectangle; derivable from position |
-| `SurveyIndexArea` | `SurveyIndexArea` | chr | — | Survey-specific stratum used in index calculations |
+| `StatisticalRectangle` | `StatRec` | chr | — | ICES statistical rectangle; derivable from (start) position |
+| `SurveyIndexArea`^[Specified in ICES vocabulary but not in table] | `SurveyIndexArea` | chr | — | Survey-specific stratum used in index calculations |
 | `DepthStratum` | `DepthStratum` | chr | — | Survey-specific depth band |
+| `BottomDepth` | `Depth` | int | m | Seabed depth at the haul location, measured from water surface |
 | `DayNight` | `DayNight` | chr | — | `"D"` / `"N"` (15 min before/after sunrise/sunset) |
 
 `StatisticalRectangle` and `DayNight` are derivable from position and time; they are retained
-for convenience.
+for convenience. `BottomDepth` is a property of the station location; it also determines
+`WarpLength` in the gear setup.
 
-##### Gear and environmental fields
+##### Gear fields {#hh-gear}
 
-Key gear fields: `Distance` (metres), `WingSpread` (metres), `DoorSpread` (metres),
-`GroundSpeed` (knots), `BottomDepth` (metres).
+Fields describe the tow and gear configuration. `SweepLength`, `DoorType`, and
+`GearExceptions` are also present in HL and CA as a submission artefact; HH is the
+authoritative source.
 
-Key environmental fields: `BottomTemperature` (°C), `SurfaceTemperature` (°C),
-`BottomSalinity` (PSU), `SurfaceSalinity` (PSU).
+**Tow parameters** (how the haul was executed)
 
-The full set of gear configuration and environmental fields is documented in `dr_lookup_fields`
-and in the DATRAS Technical Reference.
+| Field | Old name | Type | Unit | Description |
+|-------|----------|------|------|-------------|
+| `Distance` | `Distance` | dbl | m | Distance between haul start and end |
+| `SpeedGround` | `GroundSpeed` | dbl | knots | Ground speed of towing |
+| `SpeedWater` | `SpeedWater` | dbl | knots | Trawl speed through water |
+| `TowDirection` | `TowDir` | int | degrees | Towing direction; 360 = N |
+| `MinTrawlDepth` | `MinTrawlDepth` | int | m | Shallowest point of trawl path (pelagic hauls) |
+| `MaxTrawlDepth` | `MaxTrawlDepth` | int | m | Deepest point of trawl path (pelagic hauls) |
+
+**Gear geometry** (sensor measurements taken during the haul)
+
+| Field | Old name | Type | Unit | Description |
+|-------|----------|------|------|-------------|
+| `WingSpread` | `WingSpread` | dbl | m | Mean wing spread |
+| `DoorSpread` | `DoorSpread` | dbl | m | Mean door spread |
+| `NetOpening` | `Netopening` | dbl | m | Mean vertical net opening |
+
+**Gear configuration** (rigging set before deployment)
+
+| Field | Old name | Type | Unit | Description |
+|-------|----------|------|------|-------------|
+| `SweepLength` | `SweepLngt` | int | m | Sweep length; survey- and quarter-specific recommended values |
+| `DoorType` | `DoorType` | chr | — | Type of door used — [codes](#vocab-doortype) |
+| `DoorSurface` | `DoorSurface` | dbl | m² | Door surface area |
+| `DoorWeight` | `DoorWgt` | int | kg | Door weight |
+| `WarpLength` | `Warplngt` | int | m | Warp length; determined by `BottomDepth` |
+| `WarpDiameter` | `Warpdia` | int | mm | Warp diameter |
+| `WarpDensity` | `WarpDen` | int | kg/m | Warp weight per linear metre |
+| `Rigging` | `Rigging` | chr | — | Rigging method; survey-specific — [codes](#vocab-rigging) |
+| `Tickler` | `Tickler` | int | — | Number of tickler chains |
+| `Buoyancy` | `Buoyancy` | int | kg | Total buoyancy of net floats |
+| `KiteArea` | `KiteDim` | dbl | m² | Kite area (pelagic hauls) |
+| `GroundRopeWeight` | `WgtGroundRope` | int | kg | Total groundrope weight |
+| `CodendMesh` | `CodendMesh` | int | mm | Codend mesh size |
+| `PelagicSamplingType` | `PelSampType` | chr | — | Pelagic trawl sampling design — [codes](#vocab-pelsamtype) |
+| `GearExceptions` | `GearEx` | chr | — | Deviations from standard gear; survey-specific — [codes](#vocab-gearex) |
+
+##### Environmental fields {#hh-env}
+
+Fields describe oceanographic and meteorological conditions at the time of the haul.
+Direction fields use the convention 0 = no movement, 360 = flow/movement from south to
+north, −1 = varying direction.
+
+**Water column**
+
+| Field | Old name | Type | Unit | Description |
+|-------|----------|------|------|-------------|
+| `SurfaceTemperature` | `SurTemp` | dbl | °C | Surface water temperature |
+| `BottomTemperature` | `BotTemp` | dbl | °C | Bottom water temperature |
+| `SurfaceSalinity` | `SurSal` | dbl | PSU | Surface salinity |
+| `BottomSalinity` | `BotSal` | dbl | PSU | Bottom salinity |
+| `ThermoCline` | `ThermoCline` | chr | — | Thermocline observed? (`"Y"` / `"N"`); defined as ≥ 2 °C change over 10 m — [codes](#vocab-thermocline) |
+| `ThermoClineDepth` | `ThClineDepth` | int | m | Depth of thermocline; populated only when `ThermoCline == "Y"` |
+| `SecchiDepth` | `SecchiDepth` | dbl | m | Secchi disc depth (water clarity) |
+| `Turbidity` | `Turbidity` | int | NTU | Turbidity |
+
+**Currents and tides**
+
+| Field | Old name | Type | Unit | Description |
+|-------|----------|------|------|-------------|
+| `SurfaceCurrentDirection` | `SurCurDir` | int | degrees | Surface current direction |
+| `SurfaceCurrentSpeed` | `SurCurSpeed` | dbl | m/s | Surface current speed |
+| `BottomCurrentDirection` | `BotCurDir` | int | degrees | Bottom current direction |
+| `BottomCurrentSpeed` | `BotCurSpeed` | dbl | m/s | Bottom current speed |
+| `TidePhase` | `TidePhase` | int | min | Minutes before next high tide |
+| `TideSpeed` | `TideSpeed` | dbl | m/s | Tidal speed |
+
+**Wind and swell**
+
+| Field | Old name | Type | Unit | Description |
+|-------|----------|------|------|-------------|
+| `WindDirection` | `WindDir` | int | degrees | Wind direction; calm = 0, varying = −1 |
+| `WindSpeed` | `WindSpeed` | int | m/s | Wind speed |
+| `SwellDirection` | `SwellDir` | int | degrees | Swell direction; varying = −1 |
+| `SwellHeight` | `SwellHeight` | dbl | m | Swell/wave height |
 
 ---
 
@@ -229,9 +322,9 @@ on `.id`.
 
 | Field | Old name | Type | Description |
 |-------|----------|------|-------------|
-| `GearExceptions` | `GearExceptions` | chr | Non-standard gear modifications |
+| `GearExceptions` | `GearExceptions` | chr | Non-standard gear modifications — [codes](#vocab-gearex) |
 | `SweepLength` | `SweepLength` | dbl | Sweep length (metres) |
-| `DoorType` | `DoorType` | chr | Door type code |
+| `DoorType` | `DoorType` | chr | Door type code — [codes](#vocab-doortype) |
 
 ##### Species identification {#hl-species-id}
 
@@ -576,6 +669,123 @@ machine-readable form.
 The IMBUS project addresses the gap in survey-level metadata under user requirement UR-Q1.
 Concise per-survey fact sheets are not part of D2.2; they are treated as a separate deliverable.
 
+#### Field and vocabulary reference {#sec-lookup}
+
+{obus} exposes the DATRAS field-level and vocabulary metadata as two data objects:
+
+**`dr_lookup_fields`** is the complete field dictionary for all DATRAS exchange and derived
+product tables (HH, HL, CA, FL, LT, CPUEL, CPUEA, IDX). For each field it records the
+standard name (`new`), the legacy name (`old`), the data type (`chr`/`int`/`dbl`), and a
+plain-English description. The primary source is the ICES DATRAS web service endpoint
+`getDatrasFieldList`
+(`https://datras.ices.dk/WebServices/DATRASWebService.asmx/getDatrasFieldList`), which
+covers the formal upload schema for HH, HL, CA, and FA. This is supplemented by
+hand-curated entries for tables and fields not covered by the upload schema: LT and FL
+(returned by `icesDatras` helper functions), the derived products CPUEL, CPUEA, and IDX,
+and the `Valid_Aphia` / `aphia` mapping — a field added by the ICES datacenter during
+processing that is absent from the formal upload field list. The script that builds
+`dr_lookup_fields` is `data-raw/DATASET_lookup_fields.R` in the {obus} repository.
+
+**`dr_lookup_vocabulary`** provides the controlled vocabularies for categorical DATRAS
+fields — i.e. the valid codes and their descriptions for fields such as `HaulValidity`,
+`DataType`, `LengthCode`, `Gear`, and `Country`. The source is the ICES Vocabulary service,
+accessed via the `icesVocab` R package (`getCodeTypeList()` + `getCodeList()`). The full
+ICES vocabulary is filtered to the subset of code types whose variable names correspond to
+fields in `dr_lookup_fields`, giving one row per valid code value. The building script is
+`data-raw/DATASET_vocabulary.R` in the {obus} repository.
+
+```r
+library(obus)
+
+# Field dictionary: names, types, descriptions for all DATRAS tables
+dr_lookup_fields
+
+# Controlled vocabularies: valid codes for categorical fields
+dr_lookup_vocabulary
+```
+
+These two objects together constitute the machine-readable metadata layer underlying the
+field tables in §2. Both are regenerated by sourcing the respective `data-raw/` scripts
+against live ICES web services; the versions shipped with {obus} reflect the state of
+those services at the time of the last package build.
+
+##### Controlled vocabulary tables {#sec-vocab}
+
+The tables below list the valid codes for categorical fields. They are generated directly
+from `dr_lookup_vocabulary` and are linked from the relevant rows in the field tables
+above. Fields with large open-ended vocabularies (e.g. `Gear`, `Country`,
+`StatisticalRectangle`) are excluded.
+
+###### `HaulValidity` (HaulVal) {#vocab-haulval}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "HaulVal") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `DataType` {#vocab-datatype}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "DataType") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `ThermoCline` {#vocab-thermocline}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "ThermoCline") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `PelagicSamplingType` (PelSampType) {#vocab-pelsamtype}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "PelSampType") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `DoorType` {#vocab-doortype}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "DoorType") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `GearExceptions` (GearEx) {#vocab-gearex}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "GearEx") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `Rigging` {#vocab-rigging}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "Rigging") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
 ---
 
 ### Current Issues with DATRAS Data Formats and Meta-data Descriptions {#sec-issues}
@@ -690,7 +900,25 @@ CA copies are redundant after joining on `.id`.
 
 ---
 
-## IMBUS Proposed Data Formats and Meta-data Descriptions {#sec-imbus}
+::: {.callout-note appearance="minimal"}
+**End of D2.2 §2 — DATRAS current format documentation.**  
+The sections above (§1–2) constitute the DATRAS data format and meta-data reference. The
+following section (§3) specifies the IMBUS standardised product and serves as the technical
+specification for the D2.3 and D2.4 data deliverables.
+:::
+
+## IMBUS Proposed Data Formats — D2.3 Product Specification {#sec-imbus}
+
+> **Deliverable D2.3 scope.** This section is the technical specification for the IMBUS
+> integrated data product (D2.3, Type: DATA, due M12). It defines the proposed column
+> names, file formats, data tier structure, and code pathways. The D2.3 product itself —
+> the parquet files — will be hosted on the ICES open access portal under D2.4 (M12).
+> The current interim location is <https://heima.hafro.is/~einarhj/datras/>.
+>
+> Long-term sustainability is handled by WP5: **D5.3** (ICES, M18) formally integrates
+> the IMBUS data products and the {obus} codebase into the ICES DATRAS R library and
+> ICES web services, ensuring D2.3 has an institutional home beyond the project period.
+> The raw DATRAS data supply that feeds D2.3 is formalised in **D5.1** (ICES, M6).
 
 This section describes the IMBUS proposals for standardising the DATRAS data formats, the
 file formats to be used for distribution, how meta-data descriptions will be handled, and
@@ -866,6 +1094,37 @@ hh <- dr_get("HH")
 hh <- dr_get("HH", surveys = "NS-IBTS", years = 2020:2024, source = "xml")
 ```
 
+#### {obus}: interim status and transition path {#sec-obus-status}
+
+{obus} is **explicitly experimental** (lifecycle status: experimental) and is best understood
+as the proof-of-concept implementation for the WP2 data standardisation work. It is not
+intended to be a permanent, standalone R package. Its role within the IMBUS project lifecycle
+is:
+
+1. **Proof-of-concept.** Provide a working, validated implementation of the naming
+   conventions, DataType arithmetic, parquet access, and CPUE pathways described in this
+   document during the WP2 delivery period (M1–M12).
+2. **D2.3 delivery vehicle.** Serve as the primary means of accessing the D2.3 data product
+   (parquet files) while those files are hosted on the interim server
+   (<https://heima.hafro.is/~einarhj/datras/>). The server is experimental; simultaneous
+   traffic capacity is untested.
+3. **Design feedback loop.** Accumulate community experience and feedback that directly
+   informs what is worth upstreaming into the official ICES infrastructure.
+
+{obus} **builds on, rather than replaces**, the official `icesDatras` package — it imports
+`icesDatras` and delegates XML-source downloads to `icesDatras::getDATRAS()`. The added
+value is the parquet/DuckDB access layer, unified column naming (`dr_translate()`),
+DataType-aware derived fields (`dr_add_n_and_cpue()`, `dr_add_length_mm()`), and the
+quality-check family (`dr_check_*()`).
+
+**Intended trajectory.** Under WP5/D5.3 (ICES, M18), the functionality proven in {obus} is
+a candidate for integration into the official ICES DATRAS R library (`icesDatras`), alongside
+migration of the parquet files to ICES-managed infrastructure. At that point {obus} will
+either be archived or retained as a lightweight convenience wrapper around the official
+package. The naming-convention mapping (`dr_lookup_fields`), the DataType arithmetic, and the
+composite haul key (`.id`) are the most transferable elements; the DuckDB/parquet access
+layer will follow once the files move to ICES hosting (D2.4 / D5.3).
+
 ---
 
 ### Updated Meta-data Descriptions {#sec-updated-metadata}
@@ -1003,9 +1262,11 @@ The following items are open as of the date of this document:
    (`heima.hafro.is`). Transfer to the ICES open access portal is pending WP5/ICES
    coordination (D2.4).
 
-4. **Fast-download integration.** Per decisions D2 and D3 from the 1 June 2026 IMBUS
-   meeting, parquet/DuckDB functionality should be incorporated into the official ICES DATRAS
-   R package rather than maintained as a separate tool.
+4. **Integration into ICES infrastructure (D5.3).** Per decisions D2 and D3 from the
+   1 June 2026 IMBUS meeting, parquet/DuckDB functionality should be incorporated into
+   the official ICES DATRAS R package rather than maintained as a separate tool. This is
+   formally the scope of WP5 deliverable D5.3 (ICES, M18), which integrates the D2.3
+   data product and {obus} codebase into ICES web services and the DATRAS R library.
 
 5. **Per-survey meta-data fact sheets.** Coverage, gear history, time-series breaks, and QC
    caveats at the survey level (user requirement UR-Q1) are a separate deliverable not
