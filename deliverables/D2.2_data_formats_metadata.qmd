@@ -2,13 +2,14 @@
 title: "D2.2 — Data Formats and Metadata"
 subtitle: "IMBUS Deliverable D2.2 · Work Package 2"
 author: "Einar Hjörleifsson (subcontracted to DTU Aqua)"
-date: "June 2026"
+date: "July 2026"
 date-modified: today
 format:
   html:
     toc: true
     toc-depth: 4
     number-sections: true
+    embed-resources: true
   docx:
     reference-doc: ../reference.docx
     toc: true
@@ -25,7 +26,7 @@ library(knitr)
 > **Project:** IMBUS — Implementing More and Better Use of ICES Survey Data  
 > **Deliverable:** D2.2 — Data formats and meta-data  
 > **Work Package:** WP2 — User requirements, data formats and meta-data  
-> **Status:** DRAFT  
+> **Status:** DRAFT — circulated for review  
 > **Due:** Month 11 (July 2026)
 
 ---
@@ -33,43 +34,31 @@ library(knitr)
 ## Executive Summary
 
 This document is the formal output of Task T2.3 (Data Formats and Meta-data) of the IMBUS
-project. It defines the data format specification and metadata description for a standardised
-representation of the ICES DATRAS bottom trawl survey exchange tables — the **HH** (haul
-header), **HL** (haul-level catch at length), and **CA** (catch at age) record types.
+project. It documents the current ICES DATRAS exchange format and its metadata — providing
+a field-by-field reference for the **HH** (haul header), **HL** (haul-level catch at
+length), and **CA** (catch at age) record types.
 
-The scope of D2.2 is the exchange data itself. Per the WP2-WP5 meeting of 1 June 2026, derived
-products such as CPUE-by-age indices are outside WP2 scope. The CPUE-by-length calculation
-pathway is described (see [CPUE Calculation Pathways]) as a transparent, reproducible procedure
-that any user can apply to the standardised exchange tables, not as a deployed data service.
+The scope of D2.2 is the exchange data itself: the current field names, types, units,
+valid values, known issues, and the survey coverage available through DATRAS. The proposed
+IMBUS standardised data product (parquet files, derived CPUE pathways, intermediate data
+tiers) is specified in the companion deliverable **D2.3**
+([D2.3 — IMBUS Integrated Data Product Specification](D2.3_imbus_product_specification.qmd),
+due August 2026).
 
-The principal design decisions are:
+The principal documentation findings are:
 
-1. **Unified column naming.** A single, consistent set of column names (the "new" DATRAS variable names) is applied across all record types and surveys, regardless of API source or era.
+1. **Two co-existing naming conventions.** DATRAS field names changed around 2020
+   (e.g. `Ship` → `Platform`, `HaulNo` → `HaulNumber`). Both conventions are documented
+   throughout, with legacy names shown in parentheses.
 2. **HL structure.** The HL table combines haul join keys, species identification, sampling
-   protocol bookkeeping, catch totals, and length frequencies in a single flat structure. These
-   are documented as distinct field groups. A proposed split into separate parquet files is
-   pending final input from ICES and the IMBUS team (see [Proposed HL split design]).
-3. **Parquet-based distribution.** HH, HL, and CA are stored as columnar parquet files enabling
-   fast, column-selective querying without full downloads.
-4. **Sentinel value removal.** The DATRAS convention of using −9 for missing values is replaced
-   with proper `NA`.
-5. **Species resolution via WoRMS AphiaID.** Historical species codes (ITIS TSN, NODC) are
-   mapped to current WoRMS AphiaIDs for cross-era joins.
-6. **Unique haul identifiers.** An 8-field composite key (`.id`) uniquely identifies each haul
-   across all surveys, years, and countries.
-
-The specification is implemented in the R package **{obus}**
-(<https://github.com/einarhjorleifsson/obus>) and accompanied by illustrative code throughout.
-Parquet files are currently hosted at <https://heima.hafro.is/~einarhj/datras/> (interim;
-transfer to the ICES open access portal is planned under D2.4).
-
-**Deliverable scope within this document.** D2.2 encompasses this document in full. §2
-([ICES DATRAS Data Formats and Meta-data Descriptions]) documents the *current* DATRAS
-exchange format — the primary reference for users working with raw data from any source.
-§3 ([IMBUS Proposed Data Formats and D2.3 Product Specification]) specifies the IMBUS
-standardised format and serves as the technical specification for the D2.3 data product
-(parquet files). D2.3 and D2.4 are data deliverables (due M12); this document provides
-their accompanying documentation.
+   protocol bookkeeping, catch totals, and length frequencies in a single flat structure.
+   These are documented as distinct field groups with known interpretation pitfalls.
+3. **Sentinel value −9.** Used throughout DATRAS for missing or inapplicable fields; not
+   a real value.
+4. **Species resolution via WoRMS AphiaID.** Historical species codes (ITIS TSN, NODC) are
+   mapped to current WoRMS AphiaIDs in the field `ValidAphiaID` (`Valid_Aphia`).
+5. **DataType field.** The `DataType` field in HH governs how several HL fields must be
+   interpreted; it is the most common source of silent errors in user code.
 
 ---
 
@@ -91,47 +80,18 @@ WP2 has four objectives:
    length/weight conversions.
 
 Objective 1 has been delivered in D2.1 (IMBUS user requirements, April 2026, n = 55
-respondents), which identified four dominant user challenges (Einar: Check if this is really correct)
+respondents), which identified four dominant user challenges:
 
 * Complex table structure (HH/HL/CA hierarchy and join logic)
 * Column name changes introduced around 2020 (legacy names vs. "new" names)
 * Quality-control inconsistencies
-* Slow downloads.
+* Slow downloads
 
-The current deliverable D2.2 addresses objectives 2 and 3 — the current and proposed data
-formats and the associated meta-data descriptions.
-
-### Scope
-
-**In scope:**
-
-- The three DATRAS exchange record types: **HH**, **HL**, and **CA**.
-- Field-level metadata: names, types, units, descriptions, and known interpretation pitfalls.
-- The field structure of HL and the proposed split design.
-- The DataType field and its arithmetic implications for HL.
-- Unique haul identification, species resolution, and length unit standardisation.
-- The calculation pathway from raw exchange data to CPUE-by-length (as a documented procedure,
-  not a deployed product).
-- **Exploratory CPUE-by-age:** The calculation pathway from exchange data to age-disaggregated
-  CPUE, using an age-length key (ALK) constructed from the CA table and applied to HL length
-  frequencies. This is a transparent, user-driven procedure for research and exploration, not
-  a formal assessment input.
-- **Proposed intermediate (middle-data) parquet products:** Pre-processed derived tables that
-  resolve DataType arithmetic, standardise length units, and separate the conceptual layers
-  of HL — removing low-level implementation detail from the user's analytical path.
-- Area standardisation: mapping haul positions to survey strata and ICES statistical areas.
-
-**Out of scope:**
-
-- **Official CPUEA and age-based survey indices:** The ICES Datacenter computes formal
-  age-disaggregated CPUE products (CPUEA) and abundance indices (IDX) using survey- and
-  species-specific age-slicing procedures agreed by ICES expert groups. Replicating or
-  replacing these products is not part of WP2. They remain accessible via
-  `dr_get("CPUEA", ...)` and `dr_get("IDX", ...)`.
-- **Deployed data service:** WP2 produces a specification and supporting code. Deployment to
-  the ICES open access portal is the subject of D2.4.
-- **Per-survey metadata fact sheets:** Coverage, gear history, time-series breaks, and QC
-  caveats at the survey level are addressed separately under user requirement UR-Q1.
+The current deliverable D2.2 addresses objectives 2 and 3 — the current data formats and
+the associated meta-data descriptions. D2.2 covers the three exchange tables (HH, HL, CA),
+their field-level metadata, and known issues with the current format. The proposed IMBUS
+standardised data product (parquet files, CPUE pathways, unique haul identifier) is covered
+in D2.3. A full scope statement is in [Appendix 2](#sec-appendix2).
 
 ---
 
@@ -152,7 +112,8 @@ categorical fields — see [Field and vocabulary reference]).
 
 #### HH — Haul Header {#sec-hh}
 
-One row per haul. HH is the parent table; all child tables (HL, CA) join to it on `.id`.
+One row per haul. HH is the parent table; HL and CA join to it on the eight common haul
+identification fields listed below.
 
 ##### Haul identification and join key
 
@@ -162,20 +123,20 @@ One row per haul. HH is the parent table; all child tables (HL, CA) join to it o
 | `Year` | `Year` | int | Year of survey |
 | `Quarter` | `Quarter` | int | Quarter (1–4) |
 | `Country` | `Country` | chr | ISO country code of contributing vessel |
-| `Platform` | `Platform` | chr | Vessel identifier (SeaDataNet code) |
+| `Platform` | `Ship` | chr | Vessel identifier (SeaDataNet code) |
 | `Gear` | `Gear` | chr | Gear code (e.g. `"GOV"`) |
 | `StationName` | `StNo` | chr | Station identifier within survey |
 | `HaulNumber` | `HaulNo` | int | Haul sequence number |
-| `.id` | — | chr | Composite haul key (see [Unique Haul Identifier]) |
+| `.id` | — | chr | Composite haul key added by {obus}: `Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber` — see [D2.3](D2.3_imbus_product_specification.qmd#unique-haul-identifier) for full specification |
 
 ##### Haul outcome
 
 | Field | Old name | Type | Unit | Description |
 |-------|----------|------|------|-------------|
 | `HaulValidity` | `HaulVal` | chr | — | `"V"` = valid; `"I"` = invalid. Filter to `"V"` for standard analyses — [all codes](#vocab-haulval) |
-| `DataType` | `DataType` | chr | — | Sampling protocol (see [Current Issues]) — [codes](#vocab-datatype) |
-| `HaulDuration` | `HaulDur` | dbl | Minutes | Duration of tow |
-| `ReasonHaulDisruption`^[Specified in ICES vocabulary but not in table]u ha | `ReasonHaulDisruption` | chr | — | Disruption code for invalid hauls |
+| `DataType` | `DataType` | chr | — | Sampling protocol (see [Current Issues](#sec-issues)) — [codes](#vocab-datatype) |
+| `HaulDuration` | `HaulDur` | int | Minutes | Duration of tow |
+| `ReasonHaulDisruption`^[Specified in ICES vocabulary but not in the upload schema; no legacy equivalent] | — | chr | — | Disruption code for invalid hauls |
 
 ##### Temporal
 
@@ -183,10 +144,7 @@ One row per haul. HH is the parent table; all child tables (HL, CA) join to it o
 |-------|----------|------|------|-------------|
 | `Month` | `Month` | int | — | Month of haul |
 | `Day` | `Day` | int | — | Day of haul |
-| `StartTime` | `TimeShot` | chr | HHMM GMT | Start time (`dr_add_starttime()` → POSIXct) |
-
-`dr_add_date()` and `dr_add_starttime()` derive a tidy `date` (Date) and `time` (POSIXct)
-column from these fields (and Year); the raw fields are then redundant.
+| `StartTime` | `TimeShot` | chr | HHMM GMT | Start time of haul in HHMM format (GMT); combine with `Year`, `Month`, `Day` for a full datetime |
 
 ##### Position and area
 
@@ -310,11 +268,12 @@ these fields are redundant in HL and can be dropped.
 | `Year` | `Year` | int | Year of survey |
 | `Quarter` | `Quarter` | int | Quarter (1–4) |
 | `Country` | `Country` | chr | ISO country code of contributing vessel |
-| `Platform` | `Platform` | chr | Vessel identifier (SeaDataNet code) |
+| `Platform` | `Ship` | chr | Vessel identifier (SeaDataNet code) |
 | `Gear` | `Gear` | chr | Gear code (e.g. `"GOV"`) |
-| `StationName` | `StationName` | chr | Station identifier within survey |
-| `HaulNumber` | `HaulNumber` | int | Haul sequence number |
-| `.id` | `.id` | chr | Composite haul key (see [Unique Haul Identifier]) |
+| `StationName` | `StNo` | chr | Station identifier within survey |
+| `HaulNumber` | `HaulNo` | int | Haul sequence number |
+| `.id` | — | chr | Composite haul key added by {obus} — see [D2.3](D2.3_imbus_product_specification.qmd#unique-haul-identifier) |
+| `RecordHeader` | `RecordType` | chr | Record type identifier; always `"HL"` |
 
 Three gear fields are duplicated from HH as a submission artefact (each exchange file is
 self-describing). HH is the sole source of truth; the HL copies are redundant after joining
@@ -322,8 +281,8 @@ on `.id`.
 
 | Field | Old name | Type | Description |
 |-------|----------|------|-------------|
-| `GearExceptions` | `GearExceptions` | chr | Non-standard gear modifications — [codes](#vocab-gearex) |
-| `SweepLength` | `SweepLength` | dbl | Sweep length (metres) |
+| `GearExceptions` | `GearEx` | chr | Non-standard gear modifications — [codes](#vocab-gearex) |
+| `SweepLength` | `SweepLngt` | int | Sweep length (metres) |
 | `DoorType` | `DoorType` | chr | Door type code — [codes](#vocab-doortype) |
 
 ##### Species identification {#hl-species-id}
@@ -331,8 +290,8 @@ on `.id`.
 | Field | Old name | Type | Description |
 |-------|----------|------|-------------|
 | `ValidAphiaID` | `Valid_Aphia` | int | Resolved WoRMS AphiaID; primary species join key across HL, CA, and external taxonomy tables |
-| `SpeciesCode` | `SpeciesCode` | chr | Original species code as submitted (ITIS TSN, NODC, or WoRMS) |
-| `SpeciesCodeType` | `SpeciesCodeType` | chr | Code system used: `"TSN"`, `"NODC"`, `"WoRMS"` |
+| `SpeciesCode` | `SpecCode` | chr | Original species code as submitted (ITIS TSN, NODC, or WoRMS) |
+| `SpeciesCodeType` | `SpecCodeType` | chr | Code system used: `"TSN"`, `"NODC"`, `"WoRMS"` — [codes](#vocab-speccodeype) |
 | `DateofCalculation` | `DateofCalculation` | chr | Date on which the ICES datacenter resolved `SpeciesCode` to `ValidAphiaID` |
 
 `SpeciesCode` and `SpeciesCodeType` reflect the original submission; `ValidAphiaID` is the
@@ -344,11 +303,11 @@ These fields describe how the catch was processed for a given species × sex × 
 
 | Field | Old name | Type | Description |
 |-------|----------|------|-------------|
-| `SpeciesValidity` | `SpeciesValidity` | chr | Record type — governs which rows to include in products (see below) |
-| `SpeciesCategory` | `SpeciesCategory` | chr | Subsampling category ID; up to 5 per species/sex/haul; always `"1"` for DataType C |
-| `SubsamplingFactor` | `SubsamplingFactor` | dbl | Raise factor: e.g. 6 means 1 in 6 fish was measured |
-| `SubsampledNumber` | `SubsampledNumber` | dbl | Count of fish actually measured in the subsample |
-| `SubsampleWeight` | `SubsampleWeight` | dbl | Weight of the measured subsample (grams) |
+| `SpeciesValidity` | `SpecVal` | chr | Record type — governs which rows to include in products (see below) — [codes](#vocab-specval) |
+| `SpeciesCategory` | `CatIdentifier` | chr | Subsampling category ID; up to 5 per species/sex/haul; always `"1"` for DataType C |
+| `SubsamplingFactor` | `SubFactor` | dbl | Raise factor: e.g. 6 means 1 in 6 fish was measured |
+| `SubsampledNumber` | `NoMeas` | dbl | Count of fish actually measured in the subsample |
+| `SubsampleWeight` | `SubWgt` | dbl | Weight of the measured subsample (grams) |
 
 > **Note (A2):** `SubsampledNumber` and `SubsampleWeight` are fields not confirmed in all
 > surveys. Vaishav Soni and Adrianna Villamor have been asked to confirm their presence and
@@ -367,104 +326,39 @@ included in derived products:
 | `"7"` | Numbers and weights; no lengths | Situation-dependent |
 | `"10"` | Lengths and numbers; no weights | Situation-dependent |
 
-Standard DATRAS products filter to `SpeciesValidity == "1"`. The {obus} functions expose this
-via the `specval` argument (default `1L`).
+Standard DATRAS products filter to `SpeciesValidity == "1"`.
 
 **Constancy of sampling protocol fields.** These fields are in principle constant within a
 natural group (`.id` × `ValidAphiaID` × `SpeciesSex` × `DevelopmentStage` × `SpeciesCategory`),
 but empirical checking reveals two important exceptions:
 
-- **`SpeciesValidity`** varies within 2,786 groups (predominantly BTS, 1,289 groups, and
-  Can-Mar, 1,272 groups). The most common co-occurrences are `{1, 5}` (1,281 groups) and
-  `{4, 7}` (580 groups), reflecting the coexistence of full length-frequency rows and
-  supplementary rows (totals-only, presence/absence) within the same group. This is by design
-  in those surveys.
+- **`SpeciesValidity`** varies within 2,786 of the ~2.6 million total groups (0.1%),
+  predominantly BTS (1,289 groups) and Can-Mar (1,272 groups). The most common
+  co-occurrences are `{1, 5}` (1,281 groups) and `{4, 7}` (580 groups), reflecting the
+  coexistence of full length-frequency rows and supplementary rows (totals-only,
+  presence/absence) within the same group. This is by design in those surveys.
 
-- **`SubsamplingFactor`** varies within 389 groups due to **size-stratified subsampling** —
-  small and large fish are subsampled at different rates within the same species group. This
-  pattern occurs predominantly in GB-SCT vessels (293 groups, across NS-IBTS, SCOWCGFS,
-  SCOROC) and DK vessels (82 groups, from 2024 onward in NS-IBTS and BITS). It occurs under
-  both DataType P (293 groups, where it is the intended encoding) and DataType R (128 groups —
-  see [Current Issues]).
+- **`SubsamplingFactor`** varies within 389 of the ~2.1 million valid groups (0.02%) due to
+  **size-stratified subsampling** — small and large fish are subsampled at different rates
+  within the same species group. This pattern occurs predominantly in GB-SCT vessels (293
+  groups, across NS-IBTS, SCOWCGFS, SCOROC) and DK vessels (82 groups, from 2024 onward in
+  NS-IBTS and BITS). It occurs under both DataType P (293 groups, where it is the intended
+  encoding) and DataType R (128 groups — see [Current Issues](#sec-issues)).
 
-  `TotalNumber` and `SpeciesCategoryWeight` also vary by stratum (~115 groups) as a direct
+  `TotalNumber` and `SpeciesCategoryWeight` also vary by stratum (104 of the ~2.1 million
+  valid groups, 0.005%) as a direct
   consequence. The safe formula for the haul-level total is always
   `n_haul = sum(NumberAtLength × SubsamplingFactor)` applied at the individual row level —
   this is correct whether or not size-stratification is present.
 
-```{r}
-#| label: hl-constancy-checks
-#| echo: true
-#| eval: false
-
-# Code used to derive the constancy statistics reported above.
-# Uses old (parquet) column names: Valid_Aphia, IndividualSex, SubsamplingFactor.
-library(obus)
-library(dplyr)
-
-hl <- dr_con("HL")
-
-# Key grouping: natural species-category group within a haul
-grp <- c(".id", "Valid_Aphia", "IndividualSex", "DevelopmentStage", "SpeciesCategory")
-
-# --- SpeciesValidity: groups where it takes more than one distinct value ---
-specval_violations <- hl |>
-  group_by(across(all_of(grp))) |>
-  summarise(n_vals = n_distinct(SpeciesValidity), .groups = "drop") |>
-  filter(n_vals > 1)
-
-# Total violating groups
-specval_violations |> count()                        # 2,786
-
-# By survey
-specval_violations |>
-  left_join(hl |> distinct(.id, Survey), by = ".id") |>
-  count(Survey, sort = TRUE)                         # BTS 1,289; Can-Mar 1,272
-
-# Most common co-occurrences of SpeciesValidity values
-hl |>
-  semi_join(specval_violations, by = grp) |>
-  group_by(across(all_of(grp))) |>
-  summarise(combo = paste(sort(unique(SpeciesValidity)), collapse = ","),
-            .groups = "drop") |>
-  count(combo, sort = TRUE)                          # {1,5}: 1,281; {4,7}: 580
-
-# --- SubsamplingFactor: groups where it takes more than one distinct value ---
-sf_violations <- hl |>
-  filter(SpeciesValidity == "1") |>
-  group_by(across(all_of(grp))) |>
-  summarise(n_vals = n_distinct(SubsamplingFactor), .groups = "drop") |>
-  filter(n_vals > 1)
-
-# Total violating groups
-sf_violations |> count()                             # 389
-
-# By country and survey
-sf_violations |>
-  left_join(hl |> distinct(.id, Survey, Country), by = ".id") |>
-  count(Country, Survey, sort = TRUE)                # GB-SCT 293; DK 82 (from 2024)
-
-# By DataType
-sf_violations |>
-  left_join(dr_con("HH") |> distinct(.id, DataType), by = ".id") |>
-  count(DataType)                                    # P: 293; R: 128
-
-# --- TotalNumber: groups where it varies across strata ---
-hl |>
-  filter(SpeciesValidity == "1") |>
-  group_by(across(all_of(grp))) |>
-  summarise(n_vals = n_distinct(TotalNumber), .groups = "drop") |>
-  filter(n_vals > 1) |>
-  left_join(hl |> distinct(.id, Survey), by = ".id") |>
-  count(Survey, sort = TRUE)                         # ~115 groups total
-```
+*The R code used to derive these statistics is in [Appendix 2](#sec-appendix2-constancy).*
 
 ##### Catch totals {#hl-catch-totals}
 
 | Field | Old name | Type | Unit | Description |
 |-------|----------|------|------|-------------|
-| `TotalNumber` | `TotalNumber` | dbl | — | Total catch per group; semantics depend on DataType (see [Current Issues]) |
-| `SpeciesCategoryWeight` | `SpeciesCategoryWeight` | dbl | g | Total catch weight per group; also DataType-dependent |
+| `TotalNumber` | `TotalNo` | dbl | — | Total catch per group; semantics depend on DataType (see [Current Issues](#sec-issues)) |
+| `SpeciesCategoryWeight` | `CatCatchWgt` | dbl | g | Total catch weight per group; also DataType-dependent |
 
 `TotalNumber` and `SpeciesCategoryWeight` are repeated identically across every length row for
 a given `.id` × `ValidAphiaID` × `SpeciesSex` × `DevelopmentStage` × `SpeciesCategory` group
@@ -499,12 +393,12 @@ One row per length class within a species × sex × development stage × categor
 
 | Field | Old name | Type | Description |
 |-------|----------|------|-------------|
-| `LengthClass` | `LengthClass` | int | Length class value; unit determined by `LengthCode` |
-| `LengthCode` | `LengthCode` | chr | Unit flag: `"mm"` = millimetres, `"cm"` = 0.5 cm classes, `"1"` = 1 cm classes |
-| `LengthType` | `LengthType` | chr | Measurement convention: total length, fork length, mantle length, etc. |
-| `NumberAtLength` | `NumberAtLength` | dbl | Count in the measured sub-sample at this length class; semantics depend on DataType |
-| `SpeciesSex` | `IndividualSex` | chr | Population-level sex: `"M"` / `"F"` / `"U"` / `NA`; determined by visual inspection of the bulk catch |
-| `DevelopmentStage` | `DevelopmentStage` | chr | Non-invasive maturity or developmental stage observation |
+| `LengthClass` | `LngtClass` | int | Length class value; unit determined by `LengthCode` |
+| `LengthCode` | `LngtCode` | chr | Length measurement unit — [codes](#vocab-lngtcode) |
+| `LengthType` | `LenMeasType` | chr | Measurement convention: total length, fork length, mantle length, etc. — [codes](#vocab-lenmeastype) |
+| `NumberAtLength` | `HLNoAtLngt` | dbl | Count in the measured sub-sample at this length class; semantics depend on DataType |
+| `SpeciesSex` | `Sex` | chr | Population-level sex; visual inspection of bulk catch. {obus} maps to `sex` (lowercase) — [codes](#vocab-sex), [Appendix 2](#sec-appendix2-deviations) |
+| `DevelopmentStage` | `DevStage` | chr | Non-invasive maturity or developmental stage observation |
 
 > **Note (A2):** `LengthType` is particularly relevant for species where the standard length
 > convention differs by country or era. `DevelopmentStage` prevalence and the conditions under
@@ -520,12 +414,6 @@ the bulk catch, not by individual dissection. The proposed standard name `Specie
 throughout this document to distinguish it from `IndividualSex` in CA, which is
 dissection-based.
 
-##### Administrative {#hl-admin}
-
-| Field | Old name | Type | Description |
-|-------|----------|------|-------------|
-| `RecordHeader` | `RecordHeader` | chr | Record type identifier; always `"HL"` |
-
 ---
 
 #### CA — Catch-at-age {#sec-ca}
@@ -536,28 +424,27 @@ individual (most rows) or per length class for pooled area-level samples.
 CA shares the same eight haul join fields as HH and HL. After joining on `.id`, the haul-level
 fields are redundant.
 
-##### CA-specific fields (post-join)
-
 | Field | Old name | Type | Unit | Description |
 |-------|----------|------|------|-------------|
 | `ValidAphiaID` | `Valid_Aphia` | int | — | Resolved WoRMS AphiaID |
 | `AreaCode` | `AreaCode` | chr | — | Aggregation area code; check `AreaType` before joining to HH |
-| `AreaType` | `AreaType` | chr | — | `"H"` = haul-level (safe to join); other values = area-pooled |
+| `AreaType` | `AreaType` | chr | — | `"H"` = haul-level (safe to join); other values = area-pooled — [codes](#vocab-areatype) |
 | `FishID` | `FishID` | chr | — | Individual fish identifier within haul |
-| `IndividualSex` | `IndividualSex` | chr | — | Sex by dissection: `"M"` / `"F"` / `"U"` — distinct from `SpeciesSex` in HL |
-| `LengthClass` | `LengthClass` | int | see `LengthCode` | Measured length of individual fish |
-| `LengthCode` | `LengthCode` | chr | — | Length unit flag |
-| `LengthType` | `LengthType` | chr | — | Total length, fork length, mantle length, etc. |
-| `IndividualAge` | `IndividualAge` | int | Years | Otolith-based age estimate |
-| `AgePlusGroup` | `AgePlusGroup` | chr | — | `"+"` if fish is assigned to the plus group |
-| `AgeSource` | `AgeSource` | chr | — | Tissue type (otolith, scale, etc.) |
-| `AgePreparationMethod` | `AgePreparationMethod` | chr | — | Preparation method |
-| `OtolithGrading` | `OtolithGrading` | chr | — | Reader quality score |
-| `IndividualWeight` | `IndividualWeight` | dbl | g | Individual body weight |
+| `IndividualSex` | `Sex` | chr | — | Sex by dissection; distinct from `SpeciesSex` in HL. {obus} maps to `sex` (lowercase) — [codes](#vocab-sex), [Appendix 2](#sec-appendix2-deviations) |
+| `LengthClass` | `LngtClass` | int | see `LengthCode` | Measured length of individual fish |
+| `LengthCode` | `LngtCode` | chr | — | Length measurement unit — [codes](#vocab-lngtcode) |
+| `LengthType` | — | chr | — | Measurement convention: total length, fork length, etc. — [codes](#vocab-lenmeastype) |
+| `IndividualAge` | `AgeRings`^[Three-way mismatch: web service says `new = IndividualAge`, `old = AgeRings`; but `icesDatras::getDATRAS()` returns this column as `Age`. See [Appendix 2](#sec-appendix2-deviations).] | int | Years | Otolith-based age estimate |
+| `AgePlusGroup` | `PlusGr` | chr | — | Plus-group flag — [codes](#vocab-plusgr) |
+| `AgeSource` | `AgeSource` | chr | — | Tissue type used for ageing — [codes](#vocab-agesource) |
+| `AgePreparationMethod` | `AgePrepMet` | chr | — | Preparation method — [codes](#vocab-ageprepmet) |
+| `OtolithGrading` | `OtGrading` | chr | — | Reader quality score — [codes](#vocab-otgrading) |
+| `IndividualWeight` | `IndWgt` | dbl | g | Individual body weight |
 | `LiverWeight` | `LiverWeight` | dbl | g | Liver weight when sampled |
-| `IndividualMaturity` | `IndividualMaturity` | chr | — | Maturity stage code |
-| `MaturityScale` | `MaturityScale` | chr | — | Maturity scale used (M6 or SMSF from 2021+) |
-| `NumberAtLength` | `NumberAtLength` | dbl | — | Count at this length/age class (pooled rows only) |
+| `IndividualMaturity` | `Maturity` | chr | — | Maturity stage code — [codes](#vocab-maturity) |
+| `MaturityScale` | `MaturityScale` | chr | — | Maturity scale used (M6 or SMSF from 2021+) — [codes](#vocab-maturityscale) |
+| `NumberAtLength` | `CANoAtLngt` | dbl | — | Count at this length/age class (pooled rows only) |
+| `SpeciesCodeType` | `SpecCodeType` | chr | — | Species code system used — [codes](#vocab-speccodeype) |
 
 > **Important:** When `AreaType != "H"`, age samples are pooled across multiple hauls within
 > an area. Joining these rows to a specific HH record is ambiguous. Always check `AreaType`
@@ -570,57 +457,36 @@ fields are redundant.
 ICES produces several derived products from the exchange tables, accessible without
 downloading raw data:
 
-| Product | Access | Description |
-|---------|--------|-------------|
-| CPUE per length (CPUEL) | `dr_get("CPUEL", ...)` | Official ICES CPUE-by-length product |
-| CPUE per age (CPUEA) | `dr_get("CPUEA", ...)` | Age-disaggregated CPUE |
-| Survey indices (IDX) | `dr_get("IDX", ..., aphia = ...)` | Age-based survey indices |
-| Catch weight (CW) | `dr_get("CW", ..., aphia = ...)` | Catch weight by species |
-| Flex file (FL) | `dr_get("FL", ...)` | Survey-specific additional fields |
-| Litter assessment (LT) | `dr_get("LT", ...)` | Marine litter per haul |
+| Product | Description |
+|---------|-------------|
+| CPUE per length (CPUEL) | Official ICES CPUE-by-length product |
+| CPUE per age (CPUEA) | Age-disaggregated CPUE |
+| Survey indices (IDX) | Age-based survey indices |
+| Catch weight (CW) | Catch weight by species |
+| Flex file (FL) | Survey-specific additional fields |
+| Litter assessment (LT) | Marine litter per haul |
 
 The official CPUEA and IDX products embed survey- and species-specific decisions (ALK
 construction, plus-group handling, stratum weighting) agreed by ICES expert groups. These
 decisions are not encoded in the exchange tables and cannot be replicated from exchange data
-alone. WP2 does not aim to replicate these products; see [Standardized Code] for the IMBUS
-exploratory CPUE-by-age approach.
+alone. WP2 does not aim to replicate these products; see [D2.3](D2.3_imbus_product_specification.qmd#cpue-pathways)
+for the IMBUS exploratory CPUE-by-age approach.
 
 ---
 
 ### Meta-data Descriptions {#sec-metadata}
 
+ICES provides field-level metadata through the DATRAS Technical Reference, covering names,
+types, units, and valid values for all exchange columns. Survey-level metadata (gear
+specifications, time-series breaks, QC history) are held by contributing national institutes
+and are not centrally available in machine-readable form; per-survey fact sheets are a
+separate deliverable outside D2.2.
+
 #### Surveys covered
 
 The specification applies to all ICES surveys available in DATRAS with valid hauls
-(`HaulValidity == "V"`), excluding test surveys. The table below is generated from
-`dr_con("HH")` and `dr_con("HL")` and reflects the current state of the parquet files.
-
-```{r}
-#| label: surveys-covered
-#| echo: true
-#| eval: false
-
-# Code used to generate the surveys table below.
-library(obus)
-library(dplyr)
-
-hh <- dr_con("HH") |> collect()
-hl <- dr_con("HL")
-
-survey_stats <- hh |>
-  filter(HaulValidity == "V", Survey != "NS-IBTS_UNIFtest") |>
-  group_by(Survey) |>
-  summarise(year_min = min(Year), year_max = max(Year), n_hauls = n(), .groups = "drop") |>
-  arrange(desc(n_hauls))
-
-species_per_survey <- hl |>
-  filter(!is.na(Valid_Aphia), Valid_Aphia > 0) |>
-  group_by(Survey) |>
-  summarise(n_species = n_distinct(Valid_Aphia), .groups = "drop") |>
-  collect()
-
-survey_stats |> left_join(species_per_survey, by = "Survey")
-```
+(`HaulValidity == "V"`), excluding test surveys. Generation code is in
+[Appendix 2](#sec-appendix2-surveys).
 
 | Survey | First year | Last year | Valid hauls | Species (AphiaIDs) |
 |--------|-----------|----------|------------|-------------------|
@@ -657,17 +523,6 @@ survey_stats |> left_join(species_per_survey, by = "Survey")
 NS-IBTS is the largest survey (36,566 valid hauls from 1965); CODS-Q4 is the smallest (42
 hauls from 2024). BTS records the most distinct species (1,012 AphiaIDs). `SWC-IBTS` ended
 in 2010 and is superseded by `SCOWCGFS`.
-
-#### What DATRAS metadata provides and does not provide
-
-ICES provides field-level metadata through the DATRAS Technical Reference document, which
-covers field names, types, units, and valid value ranges for all exchange table columns.
-Survey-level metadata (gear specifications, time-series continuity, known breaks, QC history)
-are maintained by the contributing national institutes and are not centrally available in
-machine-readable form.
-
-The IMBUS project addresses the gap in survey-level metadata under user requirement UR-Q1.
-Concise per-survey fact sheets are not part of D2.2; they are treated as a separate deliverable.
 
 #### Field and vocabulary reference {#sec-lookup}
 
@@ -708,6 +563,9 @@ These two objects together constitute the machine-readable metadata layer underl
 field tables in §2. Both are regenerated by sourcing the respective `data-raw/` scripts
 against live ICES web services; the versions shipped with {obus} reflect the state of
 those services at the time of the last package build.
+
+The build scripts apply corrections and additions to the raw web service output; see
+[Appendix 2 — Build script deviations](#sec-appendix2) for the full account.
 
 ##### Controlled vocabulary tables {#sec-vocab}
 
@@ -786,6 +644,130 @@ dr_lookup_vocabulary |>
   kable(col.names = c("Code", "Description"))
 ```
 
+###### `SpeciesValidity` (SpecVal) {#vocab-specval}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "SpecVal") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `SpeciesCodeType` (SpecCodeType) {#vocab-speccodeype}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "SpecCodeType") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `LengthCode` (LngtCode) {#vocab-lngtcode}
+
+Used in both HL and CA.
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "LngtCode") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `LengthType` (LenMeasType) {#vocab-lenmeastype}
+
+Used in both HL and CA.
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "LenMeasType") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `Sex` — `SpeciesSex` (HL) / `IndividualSex` (CA) {#vocab-sex}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "Sex") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `AgePlusGroup` (PlusGr) {#vocab-plusgr}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "PlusGr") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `AgeSource` {#vocab-agesource}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "AgeSource") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `AgePreparationMethod` (AgePrepMet) {#vocab-ageprepmet}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "AgePrepMet") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `OtolithGrading` (OtGrading) {#vocab-otgrading}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "OtGrading") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `IndividualMaturity` (Maturity) {#vocab-maturity}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "Maturity") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `MaturityScale` {#vocab-maturityscale}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "MaturityScale") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
+###### `AreaType` {#vocab-areatype}
+
+```{r}
+dr_lookup_vocabulary |>
+  filter(old == "AreaType") |>
+  distinct(key, description) |>
+  arrange(key) |>
+  kable(col.names = c("Code", "Description"))
+```
+
 ---
 
 ### Current Issues with DATRAS Data Formats and Meta-data Descriptions {#sec-issues}
@@ -833,33 +815,7 @@ size-stratified hauls as DataType R. These are not data errors — the row-level
 of `TotalNumber`, which reflects the stratum total, not the species-haul total, in these
 records.
 
-```{r}
-#| label: datatype-r-stratified
-#| echo: true
-#| eval: false
-
-# Code used to derive the DataType R size-stratified statistics reported above.
-library(obus)
-library(dplyr)
-
-hl  <- dr_con("HL")
-hh  <- dr_con("HH")
-
-grp <- c(".id", "Valid_Aphia", "IndividualSex", "DevelopmentStage", "SpeciesCategory")
-
-# Groups where SubsamplingFactor varies within the natural group, under DataType R
-sf_violations_R <- hl |>
-  filter(SpeciesValidity == "1") |>
-  group_by(across(all_of(grp))) |>
-  summarise(n_sf = n_distinct(SubsamplingFactor), .groups = "drop") |>
-  filter(n_sf > 1) |>
-  left_join(hh |> distinct(.id, DataType, Country), by = ".id") |>
-  filter(DataType == "R")
-
-sf_violations_R |> count()                          # 128 groups
-
-sf_violations_R |> count(Country, sort = TRUE)      # GB-SCT: 97; DK: 31 (illustrative)
-```
+*The R code used to derive these statistics is in [Appendix 2](#sec-appendix2-datatype).*
 
 `DataType` must be joined from HH before any HL arithmetic:
 
@@ -896,347 +852,7 @@ CA copies are redundant after joining on `.id`.
 - **CA `AreaCode`/`AreaType`:** CA rows can represent area-pooled age samples, not individual
   haul observations. Check `AreaType` before joining CA to HH.
 - **Area standardisation:** Mapping from haul positions to C-squares and ICES divisions is
-  partially implemented (`dr_assign_area()`) but lookup helpers are not yet complete in {obus}.
-
----
-
-::: {.callout-note appearance="minimal"}
-**End of D2.2 §2 — DATRAS current format documentation.**  
-The sections above (§1–2) constitute the DATRAS data format and meta-data reference. The
-following section (§3) specifies the IMBUS standardised product and serves as the technical
-specification for the D2.3 and D2.4 data deliverables.
-:::
-
-## IMBUS Proposed Data Formats — D2.3 Product Specification {#sec-imbus}
-
-> **Deliverable D2.3 scope.** This section is the technical specification for the IMBUS
-> integrated data product (D2.3, Type: DATA, due M12). It defines the proposed column
-> names, file formats, data tier structure, and code pathways. The D2.3 product itself —
-> the parquet files — will be hosted on the ICES open access portal under D2.4 (M12).
-> The current interim location is <https://heima.hafro.is/~einarhj/datras/>.
->
-> Long-term sustainability is handled by WP5: **D5.3** (ICES, M18) formally integrates
-> the IMBUS data products and the {obus} codebase into the ICES DATRAS R library and
-> ICES web services, ensuring D2.3 has an institutional home beyond the project period.
-> The raw DATRAS data supply that feeds D2.3 is formalised in **D5.1** (ICES, M6).
-
-This section describes the IMBUS proposals for standardising the DATRAS data formats, the
-file formats to be used for distribution, how meta-data descriptions will be handled, and
-the standardised code provided for processing DATRAS data.
-
-### Standardized Data Formats {#sec-std-formats}
-
-#### Harmonized variables
-
-The IMBUS product uses **standard column names throughout** (see [Column naming convention]).
-Where data originate from the legacy XML API, an automatic translation step maps legacy to
-standard names using the field dictionary `dr_lookup_fields`. Fields with no standard
-equivalent retain their original names. The full mapping (~292 fields) is available in the
-`dr_lookup_fields` data object in {obus} and in the companion
-[DATRAS Field Reference](datras_field_reference.qmd).
-
-Additional standardisation steps applied to all exchange tables:
-
-- **Sentinel value removal.** The DATRAS convention of using −9 for missing values is replaced
-  with proper `NA`.
-- **Species resolution.** Historical species codes (ITIS TSN, NODC) are mapped to current
-  WoRMS AphiaIDs (`ValidAphiaID`) for cross-era joins.
-- **Unique haul identifier.** An 8-field composite key (`.id`) uniquely identifies each haul
-  across all surveys, years, and countries.
-
-#### Unique Haul Identifier {#unique-haul-identifier}
-
-`dr_add_id()` constructs a composite key that uniquely identifies each haul:
-
-```
-.id = Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber
-```
-
-Example: `"NS-IBTS:2023:1:NL:58G2:GOV:18:27"`
-
-This is the recommended join key for all operations. A shorter 6-field key
-(`.id2 = Survey:Year:Quarter:Platform:Gear:HaulNumber`) is also available for comparison
-with the ICES CPUEL derived product, which omits `Country` and `StationName`.
-
-`dr_add_id()` auto-detects legacy vs. standard column names.
-
-#### Proposed HL split design {#hl-split}
-
-The preferred end-state is to split `HL.parquet` into two separate files, separating catch
-totals from length frequencies. This requires confirmation from Vaishav Soni (ICES) and the
-IMBUS team on the field gaps noted in [Sampling protocol] (action point A2, 1 June 2026).
-
-Open questions:
-
-- Should `DevelopmentStage` be part of the grouping key, or aggregated away?
-- How to handle DataType P hauls where the same species appears in multiple `SpeciesCategory` strata?
-- Should `SpeciesSex` be retained in the split tables or aggregated?
-- What is the `SpeciesCategoryWeight` definition when `DevelopmentStage` varies within a group?
-
-Until the split is agreed, `HL.parquet` is distributed as a single flat file. The
-`dr_cpue_by_haul(diag = TRUE)` function approximates the intended catch-level table;
-`dr_cpue_by_length(diag = TRUE)` approximates the length-frequency table.
-
-**`HL_catch.parquet`** (proposed) — one row per `.id` × `ValidAphiaID` × `SpeciesSex` ×
-`DevelopmentStage` × `SpeciesCategory`:
-
-| Field | Type | Unit | Description |
-|-------|------|------|-------------|
-| `.id` | chr | — | Haul join key |
-| `ValidAphiaID` | int | — | Resolved WoRMS AphiaID |
-| `SpeciesValidity` | chr | — | Record type filter (see [Sampling protocol](#hl-sampling-protocol)) |
-| `SpeciesSex` | chr | — | Population-level sex (visual) |
-| `DevelopmentStage` | chr | — | Non-invasive stage code |
-| `SpeciesCategory` | int | — | Subsampling category ID |
-| `SubsamplingFactor` | dbl | — | Raise factor (retained for QC) |
-| `SubsampledNumber` | int | count | Specimens actually measured |
-| `SubsampleWeight` | int | g | Weight of measured subsample |
-| `n_haul` | dbl | count | DataType-corrected total catch per haul (replaces `TotalNumber`) |
-| `w_haul` | dbl | g | DataType-corrected catch weight per haul (replaces `SpeciesCategoryWeight`) |
-
-**`HL_length.parquet`** (proposed) — one row per `.id` × `ValidAphiaID` × `SpeciesSex` ×
-`DevelopmentStage` × `SpeciesCategory` × `length_cm`:
-
-| Field | Type | Unit | Description |
-|-------|------|------|-------------|
-| `.id` | chr | — | Haul join key |
-| `ValidAphiaID` | int | — | Resolved WoRMS AphiaID |
-| `SpeciesSex` | chr | — | Population-level sex |
-| `DevelopmentStage` | chr | — | Non-invasive stage |
-| `SpeciesCategory` | int | — | Subsampling category |
-| `length_cm` | dbl | cm | Standardised length (from `LengthCode` + `LengthClass`) |
-| `LengthType` | chr | — | Measurement type (total, fork, mantle, etc.) |
-| `NumberAtLength` | dbl | count | Sub-sample count at this length class |
-| `SubsamplingFactor` | dbl | — | Retained for scaling to haul-level counts |
-
-**`CA_raised.parquet`** (exploratory — requires further design) — one row per `.id` × `aphia`
-× `age`:
-
-| Field | Type | Unit | Description |
-|-------|------|------|-------------|
-| `.id` | chr | — | Haul join key |
-| `aphia` | int | — | Resolved WoRMS AphiaID |
-| `age` | int | years | Age class |
-| `plus_group` | lgl | — | Whether this row represents the open-ended plus group |
-| `n_haul` | dbl | count | Estimated numbers at age per haul (from ALK × HL catch) |
-| `n_hour` | dbl | count/hr | Numbers at age per hour of hauling |
-| `alk_source` | chr | — | Identifies the pooling level used to construct the ALK |
-
-Design of `CA_raised` requires input from WP4 and resolution of ALK pooling level, plus-group
-threshold, CA coverage gaps, and area-pooled CA rows before implementation can proceed.
-
-#### Summary: proposed data tiers
-
-```
-Tier 0 — Raw exchange parquets
-  HH.parquet, HL.parquet, CA.parquet, LT.parquet
-  All original submission fields; legacy names translated to standard on fetch.
-  For: expert users, QC, full-fidelity reproduction.
-
-Tier 1 — Intermediate (middle-data) parquets      ← proposed
-  HL_catch.parquet    DataType-corrected counts and weights by haul/species/category
-  HL_length.parquet   Standardised length (cm) and sub-sample counts
-  CA_raised.parquet   Age-disaggregated abundance (ALK-based; design TBD)
-  For: most analytical users; no knowledge of DataType or LengthCode required.
-
-Tier 2 — Derived products
-  CPUE-by-length  dr_cpue_by_length() applied to Tier 1 or Tier 0
-  CPUE-by-age     User ALK pipeline applied to Tier 1 (exploratory)
-  CPUEA / IDX     Official ICES products; accessible via dr_get()
-  For: downstream modelling, stock assessment, spatial analysis.
-```
-
----
-
-### File Formats Used {#sec-file-formats}
-
-#### Parquet
-
-The IMBUS product distributes HH, HL, and CA as columnar **parquet** files. Parquet enables
-fast, column-selective querying without downloading the full table — a critical advantage
-given that HL alone contains tens of millions of rows across all surveys and years.
-
-| Table | URL |
-|-------|-----|
-| HH | `https://heima.hafro.is/~einarhj/datras/HH.parquet` |
-| HL | `https://heima.hafro.is/~einarhj/datras/HL.parquet` |
-| CA | `https://heima.hafro.is/~einarhj/datras/CA.parquet` |
-
-These files are readable by any tool that supports parquet or DuckDB: R, Python
-(`duckdb`, `pyarrow`, `pandas`), Julia, DBeaver, and others.
-
-#### Data access via {obus}
-
-**Lazy parquet connection (recommended):**
-
-```r
-library(obus)
-library(dplyr)
-
-# Connect without downloading — filter then collect
-hh <- dr_con("HH") |> filter(Survey == "NS-IBTS", Year >= 2020)
-hl <- dr_con("HL") |> filter(Survey == "NS-IBTS", Year >= 2020)
-ca <- dr_con("CA") |> filter(Survey == "NS-IBTS", Year >= 2020)
-
-hh_local <- collect(hh)
-```
-
-`dr_con()` returns a lazy DuckDB connection. Filters are pushed down to the parquet file;
-only the selected rows and columns are transferred into R memory.
-
-**Full download via `dr_get()`:**
-
-```r
-# All surveys, all years — downloads entire table
-hh <- dr_get("HH")
-
-# Filtered via legacy XML API (slower; use parquet for large queries)
-hh <- dr_get("HH", surveys = "NS-IBTS", years = 2020:2024, source = "xml")
-```
-
-#### {obus}: interim status and transition path {#sec-obus-status}
-
-{obus} is **explicitly experimental** (lifecycle status: experimental) and is best understood
-as the proof-of-concept implementation for the WP2 data standardisation work. It is not
-intended to be a permanent, standalone R package. Its role within the IMBUS project lifecycle
-is:
-
-1. **Proof-of-concept.** Provide a working, validated implementation of the naming
-   conventions, DataType arithmetic, parquet access, and CPUE pathways described in this
-   document during the WP2 delivery period (M1–M12).
-2. **D2.3 delivery vehicle.** Serve as the primary means of accessing the D2.3 data product
-   (parquet files) while those files are hosted on the interim server
-   (<https://heima.hafro.is/~einarhj/datras/>). The server is experimental; simultaneous
-   traffic capacity is untested.
-3. **Design feedback loop.** Accumulate community experience and feedback that directly
-   informs what is worth upstreaming into the official ICES infrastructure.
-
-{obus} **builds on, rather than replaces**, the official `icesDatras` package — it imports
-`icesDatras` and delegates XML-source downloads to `icesDatras::getDATRAS()`. The added
-value is the parquet/DuckDB access layer, unified column naming (`dr_translate()`),
-DataType-aware derived fields (`dr_add_n_and_cpue()`, `dr_add_length_mm()`), and the
-quality-check family (`dr_check_*()`).
-
-**Intended trajectory.** Under WP5/D5.3 (ICES, M18), the functionality proven in {obus} is
-a candidate for integration into the official ICES DATRAS R library (`icesDatras`), alongside
-migration of the parquet files to ICES-managed infrastructure. At that point {obus} will
-either be archived or retained as a lightweight convenience wrapper around the official
-package. The naming-convention mapping (`dr_lookup_fields`), the DataType arithmetic, and the
-composite haul key (`.id`) are the most transferable elements; the DuckDB/parquet access
-layer will follow once the files move to ICES hosting (D2.4 / D5.3).
-
----
-
-### Updated Meta-data Descriptions {#sec-updated-metadata}
-
-The IMBUS standard names and field definitions described in §2 and §3.1 constitute an updated
-meta-data description for the DATRAS exchange tables. The companion document
-[DATRAS Field Reference](datras_field_reference.qmd) provides complete field reference tables
-for all HH, HL, CA, and LT fields, including types, units, valid values, and a drop-or-derive
-quick reference.
-
-Per-survey meta-data fact sheets (coverage, gear history, time-series breaks, QC history) are
-not produced by D2.2. These are addressed separately under user requirement UR-Q1 and are
-expected to be a deliverable in a later phase of WP2.
-
----
-
-### Standardized Code for Processing DATRAS Data {#sec-code}
-
-WP2 does not generate new CPUE data series. Instead, it provides transparent, reproducible
-code that any user can apply to the standardised exchange tables to generate CPUE on the fly.
-
-#### Data flow pipeline
-
-```
-DATRAS database
-      │
-      ▼
-Raw exchange download    ← getDATRAS() (legacy XML API)
-      │
-      ▼
-Type normalisation       ← dr_settypes(): column types enforced; −9 → NA
-Column renaming          ← dr_translate(): legacy → standard names
-      │
-      ▼
-Parquet files (server)   ← HH.parquet / HL.parquet / CA.parquet
-      │
-      ▼
-User pipeline            ← dr_con() / dr_get() → filter → collect()
-                         → dr_add_id(), dr_add_length_mm(), dr_add_n_and_cpue(), …
-```
-
-#### {obus} helper functions
-
-The R package {obus} provides helper functions that add derived columns to HL after
-collection:
-
-| Function | Output column(s) | Description |
-|----------|-----------------|-------------|
-| `dr_add_id()` | `.id` | 8-field composite haul key |
-| `dr_add_length_cm()` | `length_cm` | Length in cm (standardised from `LengthCode` + `LengthClass`) |
-| `dr_add_length_mm()` | `length_mm` | Length in mm |
-| `dr_add_n_and_cpue()` | `n_haul`, `n_hour` | DataType-corrected counts per haul and per hour |
-| `dr_add_record_type()` | `record_type` | Integer code classifying the HL record pattern |
-
-`dr_add_n_and_cpue()` computes `n_haul` as `NumberAtLength × SubsamplingFactor` at the
-individual row level for DataTypes R, S, and P, and as `NumberAtLength × HaulDuration / 60`
-for DataType C. It never reads `TotalNumber` directly and is therefore safe for
-size-stratified hauls regardless of DataType coding.
-
-#### Zero observations
-
-A CPUE value of zero means the species was **absent** from that haul but was caught by at
-least one vessel in the same survey/year/quarter. Zero rows are distinct from `NA` (missing
-data) and are required for unbiased abundance indices.
-
-`dr_cpue_by_length(zerofill = TRUE)` and `dr_cpue_by_haul(zerofill = TRUE)` insert explicit
-zero rows for all haul × species combinations where the species is absent from the haul but
-present elsewhere in the survey/year/quarter. Zero-fill adds substantial rows and forces
-collection into memory; it is not applied by default.
-
-#### CPUE calculation pathways {#cpue-pathways}
-
-**CPUE-by-length** requires five steps:
-
-1. **Filter valid hauls:** retain `HaulValidity == "V"`.
-2. **Filter standard species records:** retain `SpeciesValidity == "1"`.
-3. **Join DataType and HaulDuration from HH to HL** on `.id`.
-4. **Compute `n_haul` and `n_hour`** using the DataType-appropriate formula.
-5. **Aggregate** across `SpeciesSex` and `SpeciesCategory` (sum `n_hour` per `.id` ×
-   `ValidAphiaID` × `length_mm`).
-
-```r
-library(obus)
-library(dplyr)
-
-hh <- dr_con("HH") |> filter(Survey == "NS-IBTS", Year == 2023, Quarter == 1)
-hl <- dr_con("HL") |> filter(Survey == "NS-IBTS", Year == 2023, Quarter == 1)
-
-cpue    <- dr_cpue_by_length(hh, hl)
-cpue_zf <- dr_cpue_by_length(hh, hl, zerofill = TRUE)
-```
-
-Output columns: `.id`, `Survey`, `Year`, `Quarter`, `ValidAphiaID`, `length_mm`, `n_hour`.
-Zero-fill rows have `length_mm = NA` and `n_hour = 0`.
-
-The output has been validated against the official ICES CPUEL product
-(`dr_get("CPUEL", ...)`).
-
-**Exploratory CPUE-by-age** is achievable from the exchange tables but involves analytical
-choices not standardised here:
-
-| | Official CPUEA | Exploratory CPUE-by-age |
-|-|---------------|------------------------|
-| ALK source | ICES expert-group agreed | User-defined from CA |
-| Pooling level | Survey/species specific | User's choice |
-| Plus-group handling | Agreed convention | User's choice |
-| Appropriate for | Formal stock assessment | Research, exploration |
-| Accessible via | `dr_get("CPUEA", ...)` | User pipeline on HL + CA |
-
-The general pathway: (1) compute CPUE-by-length; (2) construct ALK from CA; (3) apply ALK to
-length CPUE; (4) aggregate across hauls. The proposed Tier 1 parquets ([Proposed HL split
-design]) would make step 1 trivial, reducing the entry barrier for this approach.
+  not provided in the current DATRAS exchange format; this is addressed in D2.3.
 
 ---
 
@@ -1248,32 +864,18 @@ design]) would make step 1 trivial, reducing the entry barrier for this approach
 
 ## Further Work {#sec-further-work}
 
-The following items are open as of the date of this document:
+The following items are open for D2.2 as of the date of this document:
 
-1. **HL split design.** The split of `HL.parquet` into `HL_catch` and `HL_length` parquets
-   cannot be finalised until field gaps (`SubsampledNumber`, `SubsampleWeight`,
-   `DevelopmentStage`, `LengthType` semantics) are confirmed by Vaishav Soni and Adrianna
-   Villamor (action point A2, 1 June 2026).
-
-2. **CA section.** Field-by-field treatment of CA comparable to the HH and HL sections is
+1. **CA section.** Field-by-field treatment of CA comparable to the HH and HL sections is
    needed; the current CA section is a stub.
 
-3. **Parquet hosting.** The current parquet files are on a personal server
-   (`heima.hafro.is`). Transfer to the ICES open access portal is pending WP5/ICES
-   coordination (D2.4).
-
-4. **Integration into ICES infrastructure (D5.3).** Per decisions D2 and D3 from the
-   1 June 2026 IMBUS meeting, parquet/DuckDB functionality should be incorporated into
-   the official ICES DATRAS R package rather than maintained as a separate tool. This is
-   formally the scope of WP5 deliverable D5.3 (ICES, M18), which integrates the D2.3
-   data product and {obus} codebase into ICES web services and the DATRAS R library.
-
-5. **Per-survey meta-data fact sheets.** Coverage, gear history, time-series breaks, and QC
+2. **Per-survey meta-data fact sheets.** Coverage, gear history, time-series breaks, and QC
    caveats at the survey level (user requirement UR-Q1) are a separate deliverable not
    covered by D2.2.
 
-6. **Area standardisation.** Mapping from haul positions to C-squares and ICES divisions is
-   partially implemented (`dr_assign_area()`) but the lookup helpers are not yet complete.
+Items relating to the proposed parquet product, {obus}, parquet hosting, D5.3 integration,
+and area standardisation are tracked in
+**[D2.3](D2.3_imbus_product_specification.qmd#sec-further-work)**.
 
 ---
 
@@ -1292,12 +894,222 @@ The following items are open as of the date of this document:
 The following companion resources are part of the IMBUS WP2 output but are not reproduced
 in the body of this deliverable:
 
+- **[D2.3 — IMBUS Integrated Data Product Specification](D2.3_imbus_product_specification.qmd)**
+  — Proposed standardised parquet product; data tiers; {obus} access; CPUE pathways.
 - **[DATRAS Field Reference](datras_field_reference.qmd)** — Complete field reference tables
-  for all HH, HL, CA, and LT columns; length-unit and species-coding rules; area
-  standardisation; data quality checks; drop-or-derive quick reference; {obus} code quick
-  reference.
+  for all HH, HL, CA, and LT columns; length-unit and species-coding rules; data quality
+  checks.
+- **`docs_external/DATRAS_documentation/DATRAS_FAQ.qmd`** — Restructured DATRAS FAQ with
+  updated field names.
 - **`docs_external/DATRAS_Technical_Reference.md`** — Full DATRAS field and unit reference
   (ICES).
 - **`background/IMBUS_proposal_summary.qmd`** — IMBUS project context and WP2 objectives.
 - **`meetings/20260601_WP2-WP5.qmd`** — Minutes of the WP2-WP5 alignment meeting,
   1 June 2026.
+
+---
+
+## Appendix 2 — Redundant Sections {#sec-appendix2}
+
+Sections moved here from the main document to reduce length. They remain part of D2.2 but
+are not required reading for reviewers of the field format documentation.
+
+### Scope {#sec-scope}
+
+**In scope:**
+
+- The three DATRAS exchange record types: **HH**, **HL**, and **CA**.
+- Field-level metadata: names, types, units, descriptions, and known interpretation pitfalls.
+- The field structure of HL and the conceptual groups within it.
+- The `DataType` field and its arithmetic implications for HL fields.
+- Species resolution: the WoRMS AphiaID system and historical code types.
+- Survey coverage: year ranges, valid haul counts, and distinct species per survey.
+- Known issues with the current DATRAS format (naming, DataType, cross-table ambiguities).
+- Machine-readable field metadata via `dr_lookup_fields` and `dr_lookup_vocabulary` ({obus}).
+
+**Out of scope for D2.2** (covered in D2.3):
+
+- The proposed IMBUS standardised parquet product and data tiers.
+- Parquet-based distribution and the {obus} access layer.
+- The unique haul identifier (`.id`) construction.
+- CPUE calculation pathways and intermediate data products.
+- Area standardisation.
+- **Official CPUEA and survey indices:** ICES Datacenter products; accessible via
+  `dr_get("CPUEA", ...)` and `dr_get("IDX", ...)`.
+- **Deployed data service:** Deployment to the ICES open access portal is the subject of D2.4.
+- **Per-survey metadata fact sheets:** Addressed separately under user requirement UR-Q1.
+
+### Build script deviations from upstream sources {#sec-appendix2-deviations}
+
+The `data-raw/` scripts in {obus} apply corrections and additions to the raw ICES web
+service output when building `dr_lookup_fields` and `dr_lookup_vocabulary`.
+
+**`dr_lookup_fields` — deviations from the ICES web service**
+
+*Format normalisation.* The web service returns format codes in ICES-internal notation;
+the script maps these to standard R type names: `"char"` → `"chr"`, `"decimal"` /
+`"float"` → `"dbl"`. Additionally, `Year` is corrected from `"char"` to `"int"` (the
+web service value is incorrect), and CA `NumberAtLength` is forced to `"dbl"` to avoid
+type ambiguity with the identically-named HL field.
+
+*`IndividualAge` / `AgeRings` / `Age` — three-way naming mismatch.* The web service
+field list returns `new = "IndividualAge"` and `old = "AgeRings"` for the CA age field.
+However, `icesDatras::getDATRAS(source = "xml")` returns this column as simply `Age` —
+matching neither the web service new name nor the web service old name. The build script
+corrects both to `new = "Age"`, `old = "Age"` to align with the actual `getDATRAS()`
+column. The tables in this document follow the web service values (`IndividualAge` /
+`AgeRings`) as these reflect the formal ICES field definition; users working with
+`getDATRAS()` output will see `Age` instead.
+
+*Sex field naming deviation (`sex`, lowercase).* The web service returns
+`new = "SpeciesSex"`, `old = "Sex"` for HL and `new = "IndividualSex"`, `old = "Sex"`
+for CA. The build script deliberately maps both to `new = "sex"` (lowercase) as a
+temporary canonical name, treating the two as the same concept until the ICES Datacenter
+resolves the upstream inconsistency. D2.2 retains the ICES field names (`SpeciesSex` in
+HL, `IndividualSex` in CA).
+
+*`Valid_Aphia` / `aphia` and `DateofCalculation` added.* These fields are not part of
+the formal DATRAS upload schema and do not appear in `getDatrasFieldList`. They are added
+by the ICES datacenter during processing. The build script adds them manually:
+`new = "aphia"`, `old = "Valid_Aphia"` for HL and CA; `DateofCalculation` for HH, HL,
+and CA. D2.2 and D2.3 propose `ValidAphiaID` as the canonical name for `Valid_Aphia`.
+
+*Hand-curated tables.* The ICES web service covers only the upload schema (HH, HL, CA,
+FA). The following tables are entirely hand-curated:
+
+| Table | Reason |
+|-------|--------|
+| LT | Web service LT entries use new-style names that do not match `getLTassessment()` actual output (`Ship`, `StNo`, `HaulNo`) |
+| FL | Columns returned by `icesDatras::getFlexFile()`; no web service coverage |
+| CPUEL, CPUEA, IDX | Derived products; no web service coverage |
+
+**`dr_lookup_vocabulary` — deviations from the ICES Vocabulary Service**
+
+The ICES Vocabulary Service uses type code prefixes (`TS_`, `AC_`) that do not appear in
+DATRAS field names. The build script strips these prefixes (e.g. `TS_HaulVal` →
+`HaulVal`) to allow matching against `dr_lookup_fields$old`. `Month`, `Quarter`, and
+`Year` are excluded as their vocabulary entries are not useful for categorical lookups.
+
+### Verification code {#sec-appendix2-code}
+
+#### HL sampling protocol constancy checks {#sec-appendix2-constancy}
+
+The tables below are generated from the parquet files and reproduce the statistics cited
+in [Sampling protocol](#hl-sampling-protocol). Column names are legacy (parquet) names.
+
+The code below reproduces the statistics cited in [Sampling protocol](#hl-sampling-protocol).
+Results are pre-computed and cited in the main text; this code is provided for reproducibility.
+Column names are legacy (parquet) names. Run interactively — these queries scan the full HL
+parquet and are too slow to execute during document rendering.
+
+```r
+library(obus)
+library(dplyr)
+
+hl  <- dr_con("HL")
+hh  <- dr_con("HH")
+grp <- c(".id", "Valid_Aphia", "IndividualSex", "DevelopmentStage", "SpeciesCategory")
+
+# Total groups (all SpeciesValidity): 2,588,836
+hl |> group_by(across(all_of(grp))) |> summarise(.groups = "drop") |> count() |> collect()
+
+# Total valid groups (SpeciesValidity == "1"): 2,100,517
+hl |> filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |> summarise(.groups = "drop") |> count() |> collect()
+
+# SpeciesValidity: groups with > 1 distinct value (2,786 of 2,588,836 = 0.1%)
+specval_v <- hl |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_vals = n_distinct(SpeciesValidity), .groups = "drop") |>
+  filter(n_vals > 1)
+
+specval_v |>
+  left_join(hl |> distinct(.id, Survey), by = ".id") |>
+  count(Survey, sort = TRUE) |> collect()            # BTS 1,289; Can-Mar 1,272
+
+hl |>
+  semi_join(specval_v, by = grp) |>
+  group_by(across(all_of(grp))) |>
+  summarise(combo = paste(sort(unique(SpeciesValidity)), collapse = ", "),
+            .groups = "drop") |>
+  count(combo, sort = TRUE) |> collect()             # {1, 5}: 1,281; {4, 7}: 580
+
+# SubsamplingFactor: groups with > 1 distinct value (389 of 2,100,517 = 0.02%)
+sf_v <- hl |>
+  filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_vals = n_distinct(SubsamplingFactor), .groups = "drop") |>
+  filter(n_vals > 1)
+
+sf_v |>
+  left_join(hl |> distinct(.id, Survey, Country), by = ".id") |>
+  count(Country, Survey, sort = TRUE) |> collect()   # GB-SCT 293; DK 82
+
+sf_v |>
+  left_join(hh |> distinct(.id, DataType), by = ".id") |>
+  count(DataType) |> collect()                       # P: 293; R: 128 (? - 389 total)
+
+# TotalNumber: groups with > 1 distinct value (104 of ~2.1 million valid groups = 0.005%)
+tn_v <- hl |>
+  filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_vals = n_distinct(TotalNumber), .groups = "drop") |>
+  filter(n_vals > 1)
+
+tn_v |> count() |> collect()                        # 104
+
+tn_v |>
+  left_join(hl |> distinct(.id, Survey), by = ".id") |>
+  count(Survey, sort = TRUE) |> collect()
+```
+
+#### DataType R size-stratified hauls {#sec-appendix2-datatype}
+
+Code used to derive the size-stratified DataType R statistics reported in [The DataType
+field](#sec-datatype).
+
+```r
+library(obus)
+library(dplyr)
+
+hl  <- dr_con("HL")
+hh  <- dr_con("HH")
+grp <- c(".id", "Valid_Aphia", "IndividualSex", "DevelopmentStage", "SpeciesCategory")
+
+sf_violations_R <- hl |>
+  filter(SpeciesValidity == "1") |>
+  group_by(across(all_of(grp))) |>
+  summarise(n_sf = n_distinct(SubsamplingFactor), .groups = "drop") |>
+  filter(n_sf > 1) |>
+  left_join(hh |> distinct(.id, DataType, Country), by = ".id") |>
+  filter(DataType == "R")
+
+sf_violations_R |> count()                          # 128 groups
+sf_violations_R |> count(Country, sort = TRUE)      # GB-SCT: 97; DK: 31 (illustrative)
+```
+
+#### Surveys table generation {#sec-appendix2-surveys}
+
+Code used to generate the surveys table in [Surveys covered](#sec-metadata).
+
+```r
+library(obus)
+library(dplyr)
+
+hh <- dr_con("HH") |> collect()
+hl <- dr_con("HL")
+
+survey_stats <- hh |>
+  filter(HaulValidity == "V", Survey != "NS-IBTS_UNIFtest") |>
+  group_by(Survey) |>
+  summarise(year_min = min(Year), year_max = max(Year), n_hauls = n(), .groups = "drop") |>
+  arrange(desc(n_hauls))
+
+species_per_survey <- hl |>
+  filter(!is.na(Valid_Aphia), Valid_Aphia > 0) |>
+  group_by(Survey) |>
+  summarise(n_species = n_distinct(Valid_Aphia), .groups = "drop") |>
+  collect()
+
+survey_stats |> left_join(species_per_survey, by = "Survey")
+```

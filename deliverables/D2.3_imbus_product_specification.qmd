@@ -1,0 +1,508 @@
+---
+title: "D2.3 — IMBUS Integrated Data Product Specification"
+subtitle: "IMBUS Deliverable D2.3 · Work Package 2"
+author: "Einar Hjörleifsson (subcontracted to DTU Aqua)"
+date: "August 2026"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    number-sections: true
+  docx:
+    reference-doc: ../reference.docx
+    toc: true
+    number-sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(obus)
+library(dplyr)
+library(knitr)
+```
+
+> **Project:** IMBUS — Implementing More and Better Use of ICES Survey Data  
+> **Deliverable:** D2.3 — Integrated data product (parquet files)  
+> **Work Package:** WP2 — User requirements, data formats and meta-data  
+> **Status:** DRAFT  
+> **Due:** Month 12 (August 2026)
+
+---
+
+## Executive Summary
+
+This document is the technical specification for the IMBUS integrated data product (D2.3,
+Type: DATA). It defines the proposed column names, file formats, data tier structure, and
+code pathways for the standardised representation of the ICES DATRAS bottom trawl survey
+exchange tables.
+
+The D2.3 product itself — the parquet files — is hosted at
+<https://heima.hafro.is/~einarhj/datras/> (interim; transfer to the ICES open access portal
+is planned under D2.4). Long-term sustainability is handled by WP5: **D5.3** (ICES, M18)
+formally integrates the IMBUS data products and the {obus} codebase into the ICES DATRAS R
+library and ICES web services. The raw DATRAS data supply that feeds D2.3 is formalised in
+**D5.1** (ICES, M6).
+
+The principal design decisions are:
+
+1. **Unified column naming.** A single, consistent set of column names (the "new" DATRAS
+   variable names) is applied across all record types and surveys, regardless of API source
+   or era. The full field mapping is documented in [D2.2 §2](D2.2_data_formats_metadata.qmd).
+2. **Parquet-based distribution.** HH, HL, and CA are stored as columnar parquet files
+   enabling fast, column-selective querying without full downloads.
+3. **Sentinel value removal.** The DATRAS convention of using −9 for missing values is
+   replaced with proper `NA`.
+4. **Species resolution via WoRMS AphiaID.** Historical species codes (ITIS TSN, NODC) are
+   mapped to current WoRMS AphiaIDs for cross-era joins.
+5. **Unique haul identifiers.** An 8-field composite key (`.id`) uniquely identifies each
+   haul across all surveys, years, and countries.
+6. **DataType-corrected CPUE.** A transparent, reproducible calculation pathway raises raw
+   exchange data to CPUE-by-length and CPUE-by-age, handling all DataTypes correctly.
+
+The specification is implemented in the R package **{obus}**
+(<https://github.com/einarhjorleifsson/obus>). {obus} is explicitly experimental and serves
+as the proof-of-concept implementation for the WP2 period; its functionality is intended to
+be upstreamed into the official `icesDatras` R package under WP5/D5.3 (M18).
+
+---
+
+## Background and Purpose {#sec-background}
+
+This document is the technical specification for D2.3, the IMBUS integrated data product.
+It should be read alongside **D2.2** (Data Formats and Metadata), which provides the
+field-by-field documentation of the current DATRAS exchange format — the reference for the
+naming conventions, field descriptions, and known issues that underpin the design decisions
+here.
+
+The IMBUS project (Sep 2025 – Aug 2027) is a 24-month EU-funded initiative to improve use
+of ICES trawl survey data. WP2 is responsible for data standardisation. The four WP2
+objectives are:
+
+1. Assess user requirements. *(Addressed in D2.1, April 2026.)*
+2. Develop a data format for WP3–5 products.
+3. Generate meta-data descriptions.
+4. Process current DATRAS data into the new format.
+
+D2.3 delivers on objectives 2 and 4 — the standardised data product. D2.2 delivers
+objective 3 — the metadata documentation.
+
+### Scope
+
+**In scope:**
+
+- Proposed standardised column names and their mapping from current DATRAS names.
+- Parquet file format, hosting, and access via the {obus} R package.
+- Unique haul identifier (`.id`) construction.
+- Proposed intermediate ("middle-data") parquet products: `HL_catch`, `HL_length`,
+  `CA_raised`.
+- Data tier structure (Tier 0 raw / Tier 1 intermediate / Tier 2 derived).
+- Calculation pathways from raw exchange data to CPUE-by-length and exploratory
+  CPUE-by-age.
+- Area standardisation: mapping haul positions to survey strata and ICES statistical areas.
+- {obus} interim status and transition path to `icesDatras` (D5.3).
+
+**Out of scope:**
+
+- Field-by-field documentation of the current DATRAS exchange format — see
+  **[D2.2](D2.2_data_formats_metadata.qmd)**.
+- Official CPUEA and age-based survey indices (ICES Datacenter products; accessible via
+  `dr_get("CPUEA", ...)` and `dr_get("IDX", ...)`).
+- Deployment to the ICES open access portal — subject of **D2.4**.
+- Per-survey metadata fact sheets — addressed separately under user requirement UR-Q1.
+
+---
+
+## IMBUS Proposed Data Formats — D2.3 Product Specification {#sec-imbus}
+
+> **Deliverable D2.3 scope.** This document is the technical specification for the IMBUS
+> integrated data product (D2.3, Type: DATA, due M12). It defines the proposed column
+> names, file formats, data tier structure, and code pathways. The D2.3 product itself —
+> the parquet files — will be hosted on the ICES open access portal under D2.4 (M12).
+> The current interim location is <https://heima.hafro.is/~einarhj/datras/>.
+>
+> Long-term sustainability is handled by WP5: **D5.3** (ICES, M18) formally integrates
+> the IMBUS data products and the {obus} codebase into the ICES DATRAS R library and
+> ICES web services, ensuring D2.3 has an institutional home beyond the project period.
+> The raw DATRAS data supply that feeds D2.3 is formalised in **D5.1** (ICES, M6).
+
+This section describes the IMBUS proposals for standardising the DATRAS data formats, the
+file formats to be used for distribution, how meta-data descriptions will be handled, and
+the standardised code provided for processing DATRAS data.
+
+### Standardized Data Formats {#sec-std-formats}
+
+#### Harmonized variables
+
+The IMBUS product uses **standard column names throughout** (see D2.2 §2 Column naming
+convention).
+Where data originate from the legacy XML API, an automatic translation step maps legacy to
+standard names using the field dictionary `dr_lookup_fields`. Fields with no standard
+equivalent retain their original names. The full mapping (~292 fields) is available in the
+`dr_lookup_fields` data object in {obus} and in the companion
+[DATRAS Field Reference](datras_field_reference.qmd).
+
+Additional standardisation steps applied to all exchange tables:
+
+- **Sentinel value removal.** The DATRAS convention of using −9 for missing values is replaced
+  with proper `NA`.
+- **Species resolution.** Historical species codes (ITIS TSN, NODC) are mapped to current
+  WoRMS AphiaIDs (`ValidAphiaID`) for cross-era joins.
+- **Unique haul identifier.** An 8-field composite key (`.id`) uniquely identifies each haul
+  across all surveys, years, and countries.
+
+#### Unique Haul Identifier {#unique-haul-identifier}
+
+`dr_add_id()` constructs a composite key that uniquely identifies each haul:
+
+```
+.id = Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber
+```
+
+Example: `"NS-IBTS:2023:1:NL:58G2:GOV:18:27"`
+
+This is the recommended join key for all operations. A shorter 6-field key
+(`.id2 = Survey:Year:Quarter:Platform:Gear:HaulNumber`) is also available for comparison
+with the ICES CPUEL derived product, which omits `Country` and `StationName`.
+
+`dr_add_id()` auto-detects legacy vs. standard column names.
+
+#### Proposed HL split design {#hl-split}
+
+The preferred end-state is to split `HL.parquet` into two separate files, separating catch
+totals from length frequencies. This requires confirmation from Vaishav Soni (ICES) and the
+IMBUS team on the field gaps noted in D2.2 §2 (Sampling protocol — action point A2,
+1 June 2026).
+
+Open questions:
+
+- Should `DevelopmentStage` be part of the grouping key, or aggregated away?
+- How to handle DataType P hauls where the same species appears in multiple `SpeciesCategory` strata?
+- Should `SpeciesSex` be retained in the split tables or aggregated?
+- What is the `SpeciesCategoryWeight` definition when `DevelopmentStage` varies within a group?
+
+Until the split is agreed, `HL.parquet` is distributed as a single flat file. The
+`dr_cpue_by_haul(diag = TRUE)` function approximates the intended catch-level table;
+`dr_cpue_by_length(diag = TRUE)` approximates the length-frequency table.
+
+**`HL_catch.parquet`** (proposed) — one row per `.id` × `ValidAphiaID` × `SpeciesSex` ×
+`DevelopmentStage` × `SpeciesCategory`:
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `.id` | chr | — | Haul join key |
+| `ValidAphiaID` | int | — | Resolved WoRMS AphiaID |
+| `SpeciesValidity` | chr | — | Record type filter (see D2.2 §2 Sampling protocol) |
+| `SpeciesSex` | chr | — | Population-level sex (visual) |
+| `DevelopmentStage` | chr | — | Non-invasive stage code |
+| `SpeciesCategory` | int | — | Subsampling category ID |
+| `SubsamplingFactor` | dbl | — | Raise factor (retained for QC) |
+| `SubsampledNumber` | int | count | Specimens actually measured |
+| `SubsampleWeight` | int | g | Weight of measured subsample |
+| `n_haul` | dbl | count | DataType-corrected total catch per haul (replaces `TotalNumber`) |
+| `w_haul` | dbl | g | DataType-corrected catch weight per haul (replaces `SpeciesCategoryWeight`) |
+
+**`HL_length.parquet`** (proposed) — one row per `.id` × `ValidAphiaID` × `SpeciesSex` ×
+`DevelopmentStage` × `SpeciesCategory` × `length_cm`:
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `.id` | chr | — | Haul join key |
+| `ValidAphiaID` | int | — | Resolved WoRMS AphiaID |
+| `SpeciesSex` | chr | — | Population-level sex |
+| `DevelopmentStage` | chr | — | Non-invasive stage |
+| `SpeciesCategory` | int | — | Subsampling category |
+| `length_cm` | dbl | cm | Standardised length (from `LengthCode` + `LengthClass`) |
+| `LengthType` | chr | — | Measurement type (total, fork, mantle, etc.) |
+| `NumberAtLength` | dbl | count | Sub-sample count at this length class |
+| `SubsamplingFactor` | dbl | — | Retained for scaling to haul-level counts |
+
+**`CA_raised.parquet`** (exploratory — requires further design) — one row per `.id` × `aphia`
+× `age`:
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `.id` | chr | — | Haul join key |
+| `aphia` | int | — | Resolved WoRMS AphiaID |
+| `age` | int | years | Age class |
+| `plus_group` | lgl | — | Whether this row represents the open-ended plus group |
+| `n_haul` | dbl | count | Estimated numbers at age per haul (from ALK × HL catch) |
+| `n_hour` | dbl | count/hr | Numbers at age per hour of hauling |
+| `alk_source` | chr | — | Identifies the pooling level used to construct the ALK |
+
+Design of `CA_raised` requires input from WP4 and resolution of ALK pooling level, plus-group
+threshold, CA coverage gaps, and area-pooled CA rows before implementation can proceed.
+
+#### Summary: proposed data tiers
+
+```
+Tier 0 — Raw exchange parquets
+  HH.parquet, HL.parquet, CA.parquet, LT.parquet
+  All original submission fields; legacy names translated to standard on fetch.
+  For: expert users, QC, full-fidelity reproduction.
+
+Tier 1 — Intermediate (middle-data) parquets      ← proposed
+  HL_catch.parquet    DataType-corrected counts and weights by haul/species/category
+  HL_length.parquet   Standardised length (cm) and sub-sample counts
+  CA_raised.parquet   Age-disaggregated abundance (ALK-based; design TBD)
+  For: most analytical users; no knowledge of DataType or LengthCode required.
+
+Tier 2 — Derived products
+  CPUE-by-length  dr_cpue_by_length() applied to Tier 1 or Tier 0
+  CPUE-by-age     User ALK pipeline applied to Tier 1 (exploratory)
+  CPUEA / IDX     Official ICES products; accessible via dr_get()
+  For: downstream modelling, stock assessment, spatial analysis.
+```
+
+---
+
+### File Formats Used {#sec-file-formats}
+
+#### Parquet
+
+The IMBUS product distributes HH, HL, and CA as columnar **parquet** files. Parquet enables
+fast, column-selective querying without downloading the full table — a critical advantage
+given that HL alone contains tens of millions of rows across all surveys and years.
+
+| Table | URL |
+|-------|-----|
+| HH | `https://heima.hafro.is/~einarhj/datras/HH.parquet` |
+| HL | `https://heima.hafro.is/~einarhj/datras/HL.parquet` |
+| CA | `https://heima.hafro.is/~einarhj/datras/CA.parquet` |
+
+These files are readable by any tool that supports parquet or DuckDB: R, Python
+(`duckdb`, `pyarrow`, `pandas`), Julia, DBeaver, and others.
+
+#### Data access via {obus}
+
+**Lazy parquet connection (recommended):**
+
+```r
+library(obus)
+library(dplyr)
+
+# Connect without downloading — filter then collect
+hh <- dr_con("HH") |> filter(Survey == "NS-IBTS", Year >= 2020)
+hl <- dr_con("HL") |> filter(Survey == "NS-IBTS", Year >= 2020)
+ca <- dr_con("CA") |> filter(Survey == "NS-IBTS", Year >= 2020)
+
+hh_local <- collect(hh)
+```
+
+`dr_con()` returns a lazy DuckDB connection. Filters are pushed down to the parquet file;
+only the selected rows and columns are transferred into R memory.
+
+**Full download via `dr_get()`:**
+
+```r
+# All surveys, all years — downloads entire table
+hh <- dr_get("HH")
+
+# Filtered via legacy XML API (slower; use parquet for large queries)
+hh <- dr_get("HH", surveys = "NS-IBTS", years = 2020:2024, source = "xml")
+```
+
+#### {obus}: interim status and transition path {#sec-obus-status}
+
+{obus} is **explicitly experimental** (lifecycle status: experimental) and is best understood
+as the proof-of-concept implementation for the WP2 data standardisation work. It is not
+intended to be a permanent, standalone R package. Its role within the IMBUS project lifecycle
+is:
+
+1. **Proof-of-concept.** Provide a working, validated implementation of the naming
+   conventions, DataType arithmetic, parquet access, and CPUE pathways described in this
+   document during the WP2 delivery period (M1–M12).
+2. **D2.3 delivery vehicle.** Serve as the primary means of accessing the D2.3 data product
+   (parquet files) while those files are hosted on the interim server
+   (<https://heima.hafro.is/~einarhj/datras/>). The server is experimental; simultaneous
+   traffic capacity is untested.
+3. **Design feedback loop.** Accumulate community experience and feedback that directly
+   informs what is worth upstreaming into the official ICES infrastructure.
+
+{obus} **builds on, rather than replaces**, the official `icesDatras` package — it imports
+`icesDatras` and delegates XML-source downloads to `icesDatras::getDATRAS()`. The added
+value is the parquet/DuckDB access layer, unified column naming (`dr_translate()`),
+DataType-aware derived fields (`dr_add_n_and_cpue()`, `dr_add_length_mm()`), and the
+quality-check family (`dr_check_*()`).
+
+**Intended trajectory.** Under WP5/D5.3 (ICES, M18), the functionality proven in {obus} is
+a candidate for integration into the official ICES DATRAS R library (`icesDatras`), alongside
+migration of the parquet files to ICES-managed infrastructure. At that point {obus} will
+either be archived or retained as a lightweight convenience wrapper around the official
+package. The naming-convention mapping (`dr_lookup_fields`), the DataType arithmetic, and the
+composite haul key (`.id`) are the most transferable elements; the DuckDB/parquet access
+layer will follow once the files move to ICES hosting (D2.4 / D5.3).
+
+---
+
+### Updated Meta-data Descriptions {#sec-updated-metadata}
+
+The IMBUS standard names and field definitions described in D2.2 §2 and this document
+constitute an updated meta-data description for the DATRAS exchange tables. The companion
+document [DATRAS Field Reference](datras_field_reference.qmd) provides complete field
+reference tables for all HH, HL, CA, and LT fields, including types, units, valid values,
+and a drop-or-derive quick reference.
+
+Per-survey meta-data fact sheets (coverage, gear history, time-series breaks, QC history) are
+not produced by D2.3. These are addressed separately under user requirement UR-Q1 and are
+expected to be a deliverable in a later phase of WP2.
+
+---
+
+### Standardized Code for Processing DATRAS Data {#sec-code}
+
+WP2 does not generate new CPUE data series. Instead, it provides transparent, reproducible
+code that any user can apply to the standardised exchange tables to generate CPUE on the fly.
+
+#### Data flow pipeline
+
+```
+DATRAS database
+      │
+      ▼
+Raw exchange download    ← getDATRAS() (legacy XML API)
+      │
+      ▼
+Type normalisation       ← dr_settypes(): column types enforced; −9 → NA
+Column renaming          ← dr_translate(): legacy → standard names
+      │
+      ▼
+Parquet files (server)   ← HH.parquet / HL.parquet / CA.parquet
+      │
+      ▼
+User pipeline            ← dr_con() / dr_get() → filter → collect()
+                         → dr_add_id(), dr_add_length_mm(), dr_add_n_and_cpue(), …
+```
+
+#### {obus} helper functions
+
+The R package {obus} provides helper functions that add derived columns to HL after
+collection:
+
+| Function | Output column(s) | Description |
+|----------|-----------------|-------------|
+| `dr_add_id()` | `.id` | 8-field composite haul key |
+| `dr_add_length_cm()` | `length_cm` | Length in cm (standardised from `LengthCode` + `LengthClass`) |
+| `dr_add_length_mm()` | `length_mm` | Length in mm |
+| `dr_add_n_and_cpue()` | `n_haul`, `n_hour` | DataType-corrected counts per haul and per hour |
+| `dr_add_record_type()` | `record_type` | Integer code classifying the HL record pattern |
+
+`dr_add_n_and_cpue()` computes `n_haul` as `NumberAtLength × SubsamplingFactor` at the
+individual row level for DataTypes R, S, and P, and as `NumberAtLength × HaulDuration / 60`
+for DataType C. It never reads `TotalNumber` directly and is therefore safe for
+size-stratified hauls regardless of DataType coding.
+
+#### Zero observations
+
+A CPUE value of zero means the species was **absent** from that haul but was caught by at
+least one vessel in the same survey/year/quarter. Zero rows are distinct from `NA` (missing
+data) and are required for unbiased abundance indices.
+
+`dr_cpue_by_length(zerofill = TRUE)` and `dr_cpue_by_haul(zerofill = TRUE)` insert explicit
+zero rows for all haul × species combinations where the species is absent from the haul but
+present elsewhere in the survey/year/quarter. Zero-fill adds substantial rows and forces
+collection into memory; it is not applied by default.
+
+#### CPUE calculation pathways {#cpue-pathways}
+
+**CPUE-by-length** requires five steps:
+
+1. **Filter valid hauls:** retain `HaulValidity == "V"`.
+2. **Filter standard species records:** retain `SpeciesValidity == "1"`.
+3. **Join DataType and HaulDuration from HH to HL** on `.id`.
+4. **Compute `n_haul` and `n_hour`** using the DataType-appropriate formula.
+5. **Aggregate** across `SpeciesSex` and `SpeciesCategory` (sum `n_hour` per `.id` ×
+   `ValidAphiaID` × `length_mm`).
+
+```r
+library(obus)
+library(dplyr)
+
+hh <- dr_con("HH") |> filter(Survey == "NS-IBTS", Year == 2023, Quarter == 1)
+hl <- dr_con("HL") |> filter(Survey == "NS-IBTS", Year == 2023, Quarter == 1)
+
+cpue    <- dr_cpue_by_length(hh, hl)
+cpue_zf <- dr_cpue_by_length(hh, hl, zerofill = TRUE)
+```
+
+Output columns: `.id`, `Survey`, `Year`, `Quarter`, `ValidAphiaID`, `length_mm`, `n_hour`.
+Zero-fill rows have `length_mm = NA` and `n_hour = 0`.
+
+The output has been validated against the official ICES CPUEL product
+(`dr_get("CPUEL", ...)`).
+
+**Exploratory CPUE-by-age** is achievable from the exchange tables but involves analytical
+choices not standardised here:
+
+| | Official CPUEA | Exploratory CPUE-by-age |
+|-|---------------|------------------------|
+| ALK source | ICES expert-group agreed | User-defined from CA |
+| Pooling level | Survey/species specific | User's choice |
+| Plus-group handling | Agreed convention | User's choice |
+| Appropriate for | Formal stock assessment | Research, exploration |
+| Accessible via | `dr_get("CPUEA", ...)` | User pipeline on HL + CA |
+
+The general pathway: (1) compute CPUE-by-length; (2) construct ALK from CA; (3) apply ALK to
+length CPUE; (4) aggregate across hauls. The proposed Tier 1 parquets ([Proposed HL split
+design]) would make step 1 trivial, reducing the entry barrier for this approach.
+
+---
+
+## Discussion and Conclusions {#sec-discussion}
+
+*[To be completed.]*
+
+---
+
+## Further Work {#sec-further-work}
+
+The following items are open as of the date of this document:
+
+1. **HL split design.** The split of `HL.parquet` into `HL_catch` and `HL_length` parquets
+   cannot be finalised until field gaps (`SubsampledNumber`, `SubsampleWeight`,
+   `DevelopmentStage`, `LengthType` semantics) are confirmed by Vaishav Soni and Adrianna
+   Villamor (action point A2, 1 June 2026).
+
+2. **Parquet hosting.** The current parquet files are on a personal server
+   (`heima.hafro.is`). Transfer to the ICES open access portal is pending WP5/ICES
+   coordination (D2.4).
+
+3. **Integration into ICES infrastructure (D5.3).** Per decisions D2 and D3 from the
+   1 June 2026 IMBUS meeting, parquet/DuckDB functionality should be incorporated into
+   the official ICES DATRAS R package rather than maintained as a separate tool. This is
+   formally the scope of WP5 deliverable D5.3 (ICES, M18), which integrates the D2.3
+   data product and {obus} codebase into ICES web services and the DATRAS R library.
+
+4. **Area standardisation.** Mapping from haul positions to C-squares and ICES divisions is
+   partially implemented (`dr_assign_area()`) but the lookup helpers are not yet complete
+   in {obus}.
+
+---
+
+## References {#sec-references}
+
+*[To be completed.]*
+
+- ICES DATRAS Technical Reference (available from the ICES Datacenter)
+- IMBUS D2.1 — User requirements (April 2026)
+- IMBUS D2.2 — Data formats and meta-data (July 2026)
+- WoRMS Editorial Board (2024). World Register of Marine Species. <https://www.marinespecies.org>
+
+---
+
+## Annex 1 — Related Documents and Resources {#sec-annex}
+
+The following companion resources are part of the IMBUS WP2 output but are not reproduced
+in the body of this deliverable:
+
+- **[D2.2 — Data Formats and Metadata](D2.2_data_formats_metadata.qmd)** — Field-by-field
+  documentation of the current DATRAS exchange format; naming conventions; known issues.
+- **[DATRAS Field Reference](datras_field_reference.qmd)** — Complete field reference tables
+  for all HH, HL, CA, and LT columns; length-unit and species-coding rules; area
+  standardisation; data quality checks; drop-or-derive quick reference; {obus} code quick
+  reference.
+- **`docs_external/DATRAS_Technical_Reference.md`** — Full DATRAS field and unit reference
+  (ICES).
+- **`background/IMBUS_proposal_summary.qmd`** — IMBUS project context and WP2 objectives.
+- **`meetings/20260601_WP2-WP5.qmd`** — Minutes of the WP2-WP5 alignment meeting,
+  1 June 2026.
