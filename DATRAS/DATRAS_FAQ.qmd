@@ -1,0 +1,714 @@
+---
+title: "DATRAS Frequently Asked Questions"
+subtitle: "ICES Data Centre — DATRAS"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+---
+
+> **Note on this document.** This is a restructured and updated version of the ICES DATRAS
+> FAQs (version 3.0, 2014). Field names have been updated to the current standard; legacy
+> names are shown in parentheses. DataType `P` (size-stratified subsampling) has been added
+> throughout. The survey list reflects the current DATRAS holdings rather than the 2014
+> snapshot. The source document is `docs_external/DATRAS_documentation/DATRAS_FAQs.pdf`.
+>
+> Questions and observations marked **[IMBUS]** were added during the IMBUS project and are
+> not part of the original ICES document.
+
+---
+
+## Overview of DATRAS
+
+### What is DATRAS?
+
+DATRAS is an online database of trawl surveys hosted by ICES. It stores data from
+internationally coordinated fish trawl surveys in ICES area 27 in a standardised format and
+provides a data quality check upon upload. The DATRAS portal offers online services for
+uploading and downloading survey data.
+
+### What can DATRAS data be used for?
+
+DATRAS is used by ICES expert groups, national institutes, and researchers for verifying,
+storing, and obtaining fisheries-independent sampling data. The data can be used in stock
+assessments, biodiversity studies, and other fisheries-related projects. All data products are
+accessible under ICES Data Policy.
+
+### What is the timespan of DATRAS data?
+
+Each survey has its own timeline. The oldest records are from 1965 (NS-IBTS). A full
+overview of survey coverage, including first and last year and valid haul counts, is given in
+the [D2.2 surveys table](../../deliverables/D2.2_data_formats_metadata.qmd#sec-metadata).
+
+### Which surveys are available via DATRAS?
+
+DATRAS currently holds data from 29 surveys covering the Northeast Atlantic (as of 2026).
+The 2014 version of this document listed 15 surveys; the inventory has grown substantially.
+See the D2.2 surveys table for the full current list. Surveys include NS-IBTS, BITS, BTS,
+EVHOE, IE-IGFS, NIGFS, FR-CGFS, SP-NORTH, SP-PORC, SP-ARSA, PT-IBTS, and many others.
+
+### Which data products can I get from DATRAS?
+
+All uploaded survey data can be downloaded as raw **exchange data** (HH, HL, CA record
+types). Some surveys also offer standard derived data products computed by the ICES expert
+groups:
+
+| Product | Description |
+|---------|-------------|
+| CPUEL | CPUE-by-length per haul |
+| CPUEA | CPUE-by-age per haul |
+| IDX | Survey abundance indices |
+| CW | Catch weight by species |
+| FL | Survey-specific flex file (additional fields) |
+| LT | Marine litter assessment |
+
+From April 2012, all data products include a `DateofCalculation` field for tracking
+changes.
+
+### How do I acknowledge use of DATRAS data?
+
+Follow the ICES Data Policy. Example citations:
+
+> ICES Database of Trawl Surveys (DATRAS). ICES, Copenhagen. https://datras.ices.dk
+
+> ICES DATRAS, Extraction [DATE]. [Survey name] data [year range]. ICES, Copenhagen.
+> https://datras.ices.dk
+
+### What are the data use restrictions?
+
+DATRAS data are available under the ICES open access data policy (adopted 2006, updated
+2012). Aggregated data and raw data are freely available under these conditions.
+
+---
+
+## For Data Users
+
+### Downloading data
+
+#### How do I access trawl survey data?
+
+Survey data and derived products can be downloaded from the DATRAS download page. Note
+that the web portal limits downloads to 1 million records. For larger datasets, split the
+download into smaller parts (e.g. by year or quarter) or use the ICES web services / {obus}
+parquet access (`dr_con()`) for efficient bulk access without record limits.
+
+#### Why are not all data products available for all surveys?
+
+DATRAS data products are developed and verified in cooperation with the relevant ICES Expert
+Groups. This is a time-consuming process, and newer surveys may not yet have derived
+products. Currently CPUEL is available for 8 of the 29 surveys (BITS, EVHOE, IE-IGFS,
+NS-IBTS, ROCKALL, SCOROC, SCOWCGFS, SWC-IBTS).
+
+#### What are "Standard species"?
+
+Standard species are the target species of a given survey. While all surveys aim to record
+all species caught, each survey has one or more target species for which detailed biological
+data (sex, maturity, age, individual weight) are collected. Age-based data products (CPUEA,
+IDX) are therefore available only for standard species. Refer to the relevant survey manual
+for the standard species list.
+
+### Understanding the data format
+
+#### How do I understand the DATRAS exchange file format?
+
+Exchange data are the raw survey data as submitted by national institutes. Each file contains
+three record types:
+
+| Record | Content |
+|--------|---------|
+| **HH** | Haul Header — one row per haul; gear, position, timing, validity |
+| **HL** | Haul-level Length — catch by length class per species per haul |
+| **CA** | Catch-at-age — individual biological measurements |
+
+The three record types share a common set of haul identification fields and are linked by the
+composite haul key `.id` (constructed from `Survey`, `Year`, `Quarter`, `Country`,
+`Platform` (Ship), `Gear`, `StationName` (StNo), `HaulNumber` (HaulNo)). In the raw CSV
+submission format, these correspond to the first 11 fields common to all record types.
+
+#### What does "−9" stand for?
+
+`−9` is the DATRAS sentinel value for a missing or inapplicable field. It is not a real
+measurement. In the IMBUS standardised product (`{obus}`, parquet files) all `−9` values
+are replaced with proper `NA`.
+
+#### What are haul duration, vessel speed, and trawl parameters?
+
+Standard values for `HaulDuration` (HaulDur), vessel speed, and gear parameters are
+defined in the survey manuals. Actual values as recorded during the haul are reported in the
+HH record fields `HaulDuration` (HaulDur), `GroundSpeed`, `Distance`, `DoorSpread`,
+`WingSpread`, and `WarpLength`.
+
+#### Are catch figures adjusted for hauling time?
+
+This depends on `DataType` in the HH record. See [DataType and HL field interpretation]
+for details.
+
+#### Are all species reported in DATRAS?
+
+Surveys intend to record all species caught, but it is the responsibility of the national
+data submitter whether all species are reported. The fields `SpeciesValidity` (SpecVal) in
+HL (field 26 in the raw HH record) and `SpeciesCategory` (CatIdentifier) (field 27) provide
+further context. Some surveys report a limited species list; refer to the survey manual.
+
+In CA records, mainly standard survey species are reported.
+
+#### What is `SpeciesValidity` (SpecVal)?
+
+`SpeciesValidity` in HL records specifies how the species was handled:
+
+| Value | Meaning |
+|-------|---------|
+| `1` | Full record: lengths, numbers, weights — **use in standard products** |
+| `0` | Invalid |
+| `4` | Total number only; no lengths measured |
+| `5` | Presence/absence only |
+| `6` | Weight only |
+| `7` | Numbers and weights; no lengths |
+| `10` | Lengths and numbers; no weights |
+
+Only `SpeciesValidity == "1"` records are used in DATRAS-derived data products. Records
+with other values may still be of value for biodiversity or non-standard analyses.
+
+`SpeciesValidity` is also linked to haul validity: if the haul was invalid or used for
+calibration, `SpeciesValidity` will reflect this.
+
+#### What species reference system is used?
+
+Species codes currently used for submissions are **WoRMS AphiaIDs** (`SpeciesCodeType`
+(SpecCodeType) = `"W"`). In historical submissions ITIS TSN (`"T"`) and NODC (`"N"`) codes
+were used. For cross-era analysis, all submitted codes are mapped to validated WoRMS AphiaIDs
+in the field `ValidAphiaID` (Valid_Aphia / Valid_WoRMS) in HL and CA records. Always use
+`ValidAphiaID` as the join key for species — never the raw `SpeciesCode` (SpecCode).
+
+In derived data products (CPUEL, CPUEA, IDX), species are identified by valid Latin names or
+AphiaIDs.
+
+#### Where can I find species names for codes in the file?
+
+Species names can be matched to codes via the [DATRAS Species Query Tool](https://datras.ices.dk/Data_products/qryspec.aspx)
+or directly via the [WoRMS database](https://www.marinespecies.org/).
+
+If work in R you can also try this:
+```
+icesVocab::findAphia(c("cod", "haddock", "saithe"))
+icesVocab::findAphia("Gadus morhuha", latin = TRUE)
+```
+
+
+#### Where can I find information about species maximum length?
+
+Per-survey maximum length classes (mm) are listed on the DATRAS reporting format page (DATSU). Note that this list is static and was last updated in January 2011.
+
+#### What area codes are used in DATRAS?
+
+Area information appears in several places:
+
+- **Haul positions:** `ShootLatitude`/`ShootLongitude` and `HaulLatitude`/`HaulLongitude`
+  in HH, reported as **decimal degrees**.
+- **Statistical rectangle:** `StatisticalRectangle` (StatRec) in HH, based on shooting
+  position (unless the majority of the haul was in the adjacent rectangle).
+- **Depth strata:** `DepthStratum` (Stratum) in HH, for surveys with depth-stratified
+  sampling.
+- **Age-sampling areas:** `AreaCode` and `AreaType` in CA, indicating whether the age
+  sample is haul-level (`AreaType == "H"`) or area-pooled. Always check `AreaType` before
+  joining CA records to HH.
+
+ICES statistical rectangles are described at the [ICES maps page](https://www.ices.dk/marine-data/maps/Pages/ICES-statistical-rectangles.aspx).
+
+#### Do DATRAS data pass any quality validation?
+
+Yes. Before upload, all files pass the **DATSU** screening utility, which applies logical,
+value, and vocabulary checks. Critical errors must be corrected before the file can be
+uploaded; warnings are non-critical. Weight-length outlier graphs are also provided as an
+additional screening tool.
+
+Every year, responsible expert groups review their data and report irrelevancies to the
+DATRAS team. If you find erroneous data, contact DATRAS administration
+(DATRASAdministration@ices.dk).
+
+### CPUE and derived products
+
+#### What is CPUE in DATRAS?
+
+CPUE (catch per unit effort) in DATRAS is the catch in numbers of individuals of the same
+species, adjusted to **one hour of hauling**.
+
+#### If I compare CPUE per length values to the exchange file, they don't match. Why?
+
+Exchange files contain data as submitted, potentially in DataType R (raw), S (sub-sampled),
+or C (catch per unit effort). CPUE data products display numbers raised to one hour of
+hauling. To compare, you must apply the appropriate raising formula to the exchange data.
+See [DataType and HL field interpretation] for the correct formula per DataType.
+
+#### What do zeroes mean in a CPUE product?
+
+A CPUE value of zero means the species was **absent** from that haul but was caught by at
+least one vessel in the same survey/year/quarter. Zero records are automatically added to
+all hauls where the species was absent. Explicit zero rows are required for unbiased
+abundance indices.
+
+A species may also have a zero if the data submitter observed but did not record biological
+data. Refer to the exchange file for details.
+
+#### A species is missing from CPUE for some years/quarters. Why?
+
+Records for a species in a CPUE product appear only if at least one submitter observed and
+reported it in that year/quarter. If no submitter reported the species in a given
+year/quarter, no records (including zeroes) will be present in the product.
+
+#### Why are age records limited to age_6 or age_10 in age-based products?
+
+Age-based products are designed according to requirements from the responsible ICES Expert
+Group. Groups specify a **plus group** age, above which all fish are aggregated (e.g. NS-IBTS
+uses plus group age 6: all fish aged 6+ are recorded as age 6).
+
+#### What is country code DUM (DUMMY)?
+
+Country code `DUM` was used for reporting historical age data from Danish commercial vessels
+with platform codes `DCA` and `HOL` in 1983–1995.
+
+#### Where are BITS data before 1991?
+
+BITS started in the early 1980s but was not standardised until 1991. The responsible expert
+group (WGBIFS) decided that only data from 1991 onward should be available via DATRAS.
+Contact WGBIFS for access to earlier data.
+
+#### Where do I find survey abundance indices?
+
+DATRAS provides CPUE-by-length and CPUE-by-age products for standard species. These are
+accessible via `dr_get("IDX", ...)` in {obus}. Note that no weight-based products are
+currently available from DATRAS.
+
+#### Is there a tool to convert age to weight?
+
+Not directly. You can use the CA records (including individual weight measurements where
+available) to construct your own age–weight relationship.
+
+#### Can I see when data were last corrected?
+
+The DATRAS Submission Status page shows when the last cruise submission was made. The
+current DATRAS version does not show what was changed in a re-submission.
+
+### Further resources for data users
+
+| Topic | Resource |
+|-------|----------|
+| Survey manuals | DATRAS Documents section |
+| ICES Expert Groups | [ices.dk/community/groups](https://ices.dk/community/groups) |
+| ICES stock advice | [ices.dk/advice](https://www.ices.dk/advice) |
+| TACs, stocks, quotas | EU Fisheries; NEAFC |
+| Commercial catches | [ICES catch statistics](https://www.ices.dk/marine-data/dataset-collections/Pages/Fish-catch-and-stock-assessment.aspx) |
+| Marine environmental data | [ICES Data Portal](https://ecosystemdata.ices.dk/) |
+
+---
+
+## For Data Submitters
+
+### General
+
+#### What is the deadline for my submission?
+
+Submission deadlines are listed on the DATRAS home page. Contact DATRAS administration if
+you are unsure.
+
+#### How should my data file be formatted?
+
+DATRAS accepts **CSV** files (comma-separated, decimal point `.`, no blank fields — use
+`−9` for missing values, no headers). One file should contain all record types (HH, HL, CA)
+for the same year, quarter, country, vessel, and gear. All fields from the reporting format
+must be present.
+
+#### Which units and codes should be used?
+
+Field descriptions, units, and valid codes are in the DATRAS Reporting Format documentation
+and in the ICES Vocabulary Server (https://vocab.ices.dk/). Within {obus}, valid codes are
+also available via `dr_lookup_vocabulary`.
+
+#### How do I get access to the DATRAS upload page?
+
+Write to DATRAS administration and the Chair of the associated ICES Expert Group with your
+submitter details and access request.
+
+### Submission process
+
+#### How do I submit my file?
+
+Direct upload is available for most surveys from the DATRAS uploading page. Follow the
+instructions in "How to upload data into DATRAS" (available in the Documents section).
+
+#### What quality control does my file pass?
+
+Files pass the **DATSU** screening utility before upload:
+
+- **Critical errors** must be corrected; the file cannot be uploaded until they are
+  resolved.
+- **Warnings** are non-critical; the submitter decides whether to correct them.
+- **Information messages** do not affect uploading.
+
+Screening results are displayed on the DATRAS page and sent to the submitter's email. If a
+screening message is unclear, click the question mark in the screening results table for
+more detail. If still unclear, contact DATRAS administration with your file and a
+screenshot.
+
+#### What is error grouping in DATSU?
+
+When the same error occurs many times, DATSU groups them into a single entry with a
+count. The submitter can expand the group to see individual occurrences. This avoids
+scrolling through thousands of identical messages.
+
+#### I get "the survey selected does not include the country present in the file". What is wrong?
+
+Check:
+
+1. The country code matches the vocabulary at https://vocab.ices.dk/?ref=4.
+2. Numbers use a decimal **point** (`.`), not a decimal comma.
+3. Your account has upload rights for this survey. Contact DATRAS administration if not.
+
+#### I cannot find my uploaded data on the download page.
+
+Check the DATRAS Submission Status page. If your submission is listed there with the correct
+upload time, the upload was successful. Updates to the download page may take a few days due
+to manual quality-control processing. If the data are needed urgently, contact DATRAS
+administration.
+
+#### Can I make a partial re-submission by haul or record type?
+
+No. DATRAS requires a complete re-submission per year, quarter, country, vessel, and gear.
+
+#### What happens to existing data when I re-submit?
+
+Existing data are overwritten when the data warehouse is updated. Always keep a copy of
+previous submissions. Note: if you re-submit with different key values (year, quarter,
+country, vessel, gear), the old data will **not** be overwritten — contact DATRAS
+administration to remove duplicates.
+
+#### Can I document what was changed in a re-submission?
+
+Yes — use the remarks box at the final upload step. You are also welcome to email DATRAS
+administration describing the corrections made.
+
+### Technical issues for data submitters
+
+#### DataType and HL field interpretation {#sec-datatype-faq}
+
+`DataType` is set at the haul level (HH record) and governs how several HL fields must be
+interpreted and populated. It is the most common source of silent errors when working with
+exchange data.
+
+| DataType | Description |
+|----------|-------------|
+| `R` | Raw data; catch sorted, some species may be sub-sampled. `SubsamplingFactor` (SubFactor) ≥ 1 |
+| `S` | Bulk unsorted catch sub-sampled before sorting. `SubsamplingFactor` (SubFactor) > 1 |
+| `P` | Size-stratified (pseudocategory) subsampling — different `SubsamplingFactor` per size grade within the same species/haul. Uses `SpeciesCategory` (CatIdentifier) to distinguish strata |
+| `C` | Catch reported as CPUE; data pre-raised to 1 hour of hauling. `SubsamplingFactor` (SubFactor) = 1 |
+
+**How to populate HL fields by DataType:**
+
+**DataType R:**
+
+| Field (new name) | Old name | Value to report |
+|-----------------|----------|-----------------|
+| `TotalNumber` | TotalNo | Total number of fish of one species, sex, and `SpeciesCategory` in the haul |
+| `SpeciesCategory` | CatIdentifier | Category ID within species/sex (1 if no size categorisation; ≥ 2 for additional strata). Cannot be 0 |
+| `SubsampledNumber` | NoMeas | Number of fish actually measured in the (sub-)sample |
+| `SubsamplingFactor` | SubFactor | Sub-sampling factor ≥ 1. Verify: `TotalNumber` = `SubsampledNumber` × `SubsamplingFactor` |
+| `SubsampleWeight` | SubWgt | Total weight of the measured sub-sample |
+| `SpeciesCategoryWeight` | CatCatchWgt | Catch weight per species, sex, and `SpeciesCategory` in the haul |
+| `NumberAtLength` | HLNoAtLngt | Number of fish at this length class in the (sub-)sample. Verify: `TotalNumber` = Σ(`NumberAtLength`) × `SubsamplingFactor` or `SubsampledNumber` = Σ(`NumberAtLength`) |
+
+**DataType S:**
+
+Same as DataType R, except `SubsamplingFactor` (SubFactor) must be > 1 (the catch is
+always sub-sampled before sorting).
+
+**DataType P:**
+
+Same structure as DataType R, but size-stratified subsampling means that different
+`SpeciesCategory` (CatIdentifier) strata within the same species/haul will have different
+`SubsamplingFactor` values. The row-level formula
+`n_haul = Σ(NumberAtLength × SubsamplingFactor)` across all strata gives the correct
+haul-level total. **Do not sum `TotalNumber` across strata** — it is the stratum total, not
+the species-haul total.
+
+::: {.callout-note icon=false}
+**[IMBUS]** In practice, a minority of size-stratified hauls are submitted as DataType R
+rather than DataType P — predominantly Danish vessels in NS-IBTS and BITS from 2024 onward.
+The row-level formula remains correct regardless; the risk arises only from direct use of
+`TotalNumber`. See [D2.2 §DataType](../deliverables/D2.2_data_formats_metadata.qmd#sec-datatype)
+for empirical statistics.
+:::
+
+
+**DataType C:**
+
+| Field (new name) | Old name | Value to report |
+|-----------------|----------|-----------------|
+| `TotalNumber` | TotalNo | Total number of fish per species/sex, **raised to 1 hour** of hauling |
+| `SpeciesCategory` | CatIdentifier | Always `1` |
+| `SubsampledNumber` | NoMeas | Number of fish measured, or `−9` |
+| `SubsamplingFactor` | SubFactor | Always `1` |
+| `SubsampleWeight` | SubWgt | Weight of measured sub-sample, or `−9` |
+| `SpeciesCategoryWeight` | CatCatchWgt | Total catch weight per species per haul, **raised to 1 hour** |
+| `NumberAtLength` | HLNoAtLngt | Numbers at this length class, **raised to 1 hour**. Verify: `TotalNumber` = Σ(`NumberAtLength`) |
+
+**Computing haul-level CPUE from exchange data:**
+
+For DataTypes R, S, and P:
+```
+n_haul  = Σ(NumberAtLength × SubsamplingFactor)   [per .id × ValidAphiaID × SpeciesSex × SpeciesCategory]
+n_hour  = n_haul / HaulDuration × 60
+```
+
+For DataType C:
+```
+n_hour  = NumberAtLength   (already per hour)
+n_haul  = NumberAtLength × HaulDuration / 60
+```
+
+The `{obus}` function `dr_add_n_and_cpue()` applies this logic automatically, handling all
+DataTypes correctly including size-stratified DataType P/R hauls.
+
+#### What is `SpeciesCategory` (CatIdentifier), and how do I use it?
+
+`SpeciesCategory` (CatIdentifier) is the ID assigned to a size- or weight-based subsampling
+stratum for a given species and sex within a haul. It is used when a truly representative
+sub-sample cannot be selected from the whole catch — for example, when larger fish are
+sorted away and measured separately with a different sub-sampling factor.
+
+- Assign `SpeciesCategory = 1` to the first stratum and `SpeciesCategory = 2`, `3`, ... to
+  additional strata (up to 5 per species per haul).
+- If no size categorisation was applied, use `SpeciesCategory = 1` throughout.
+- Reporting different **sex** categories for the same species does not require different
+  `SpeciesCategory` values — keep `SpeciesCategory = 1` and vary `SpeciesSex` (Sex) instead.
+
+See the NS-IBTS survey manual (section "Length composition") for worked examples.
+
+#### How is Day/Night defined?
+
+Daytime is defined as the period from 15 minutes before sunrise to 15 minutes after sunset,
+following NOAA's solar calculations. The derived field `DayNight` in HH is populated by
+the ICES datacenter from the shooting position and time.
+
+#### Which area/position should I report?
+
+- **Coordinates:** `ShootLatitude`/`ShootLongitude` and `HaulLatitude`/`HaulLongitude` in
+  HH, as **decimal degrees**.
+- **Statistical rectangle:** `StatisticalRectangle` (StatRec) in HH, based on shooting
+  position.
+- **Depth strata:** `DepthStratum` (Stratum) in HH, if sampling is depth-stratified.
+- **CA area codes:** `AreaCode` and `AreaType` in CA, specifying haul-level vs. area-pooled
+  age sampling.
+
+#### How do I submit area-based CA data without corresponding HL data?
+
+CA records must always be related to a parent HL record. If age sampling was area-based,
+create a **dummy HL record** by duplicating fields 2–12 from the CA record and setting all
+other HL fields to `−9`.
+
+Example CA record:
+```
+CA,1,SCO,SCO3,GOV,60,-9,P,S01,1,2010,W,126417,2,3,0,140,U,-9,-9,3,1,-9
+```
+Corresponding dummy HL record:
+```
+HL,1,SCO,SCO3,GOV,60,-9,P,S01,1,2010,W,126417,0,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9
+```
+
+#### Species codes and `SpeciesCodeType` (SpecCodeType)
+
+Current submissions use WoRMS AphiaIDs (`SpeciesCodeType = "W"`). Historical data used
+ITIS TSN (`"T"`) and NODC (`"N"`) codes. All codes are mapped to current WoRMS AphiaIDs in
+the field `ValidAphiaID` (Valid_Aphia / Valid_WoRMS). For all analysis, use `ValidAphiaID`
+as the species join key.
+
+---
+
+## DATRAS Essentials
+
+### Contact
+
+DATRAS helpdesk: <DATRASAdministration@ices.dk>  
+Phone: +45 3338 6700
+
+### Useful links
+
+| Resource | URL |
+|----------|-----|
+| DATRAS home | https://www.ices.dk/data/data-portals/Pages/DATRAS.aspx |
+| DATRAS download | https://datras.ices.dk/Data_products/Download/Download_Data_public.aspx |
+| DATRAS reporting formats | https://datras.ices.dk/Data_products/ReportingFormat.aspx |
+| DATRAS submission status | https://datras.ices.dk/Data_products/Submission_Status.aspx |
+| DATRAS web services | https://datras.ices.dk/WebServices/Webservices.aspx |
+| DATRAS documents | https://www.ices.dk/data/data-portals/Pages/DATRAS-docs.aspx |
+| DATRAS species query | https://datras.ices.dk/Data_products/qryspec.aspx |
+| ICES Vocabulary Server | https://vocab.ices.dk/ |
+| ICES Data Policy | https://www.ices.dk/data/guidelines-and-policy/pages/ices-data-policy.aspx |
+| ICES Data Portal | https://www.ices.dk/data/data-portals/Pages/default.aspx |
+| ICES Geonetwork | ~~https://geo.ices.dk/geonetwork~~ |
+| WoRMS database | https://www.marinespecies.org/ |
+| NOAA Solar Calculator | https://www.esrl.noaa.gov/gmd/grad/solcalc/ |
+| NEAFC | https://www.neafc.org/ |
+| ICES catch statistics | ~~https://www.ices.dk/marine-data/dataset-collections/Pages/Fish-catch-and-stock-assessment.aspx~~ |
+
+---
+
+## Annex I: DataType examples in exchange data {#sec-annex-datatype}
+
+### HH record: DataType values
+
+| DataType | Description |
+|----------|-------------|
+| `S` | Sub-sampled: catch sub-sampled before sorting; all `SubsamplingFactor` (SubFactor) values > 1 |
+| `R` | Recorded by haul: catch sorted; some species may be sub-sampled; `SubsamplingFactor` ≥ 1 |
+| `P` | Size-stratified (pseudocategory): different `SubsamplingFactor` per size stratum within a species; uses `SpeciesCategory` (CatIdentifier) to label strata |
+| `C` | CPUE: data pre-raised to one hour of hauling; all `SubsamplingFactor` = 1 |
+
+### HL record: field definitions
+
+| Field (new name) | Old name | Description |
+|-----------------|----------|-------------|
+| `SubsamplingFactor` | SubFactor | Sub-sampling factor by haul, species, sex, and `SpeciesCategory` |
+| `NumberAtLength` | HLNoAtLngt | Number of fish measured in the (sub-)sample at this length class |
+| `SubsampledNumber` | NoMeas | Sum of `NumberAtLength` across length classes, by haul × species × sex × `SpeciesCategory` |
+| `TotalNumber` | TotalNo | `SubsamplingFactor` × `SubsampledNumber` (DataType R/S/P); raised count per hour (DataType C) |
+
+### Example 1: DataType S — 1,140 fish, 3 species
+
+```
+Catch: 1,140 fish   SubsamplingFactor = 2
+→ Measure 570 fish (sub-sample)
+
+  400 Plaice          150 Whiting         20 Cod
+  SubFactor = 2       SubFactor = 8       SubFactor = 1
+  NoMeas = 200        NoMeas = 75/2 = ...  NoMeas = 20
+  Measure 200         Measure sub-sample   Measure all 20
+```
+
+For Plaice:  
+`TotalNumber` = 400, `SubsamplingFactor` = 2, `SubsampledNumber` = 200  
+Verify: 400 = 200 × 2 ✓  
+`NumberAtLength` values sum to 200 (= `SubsampledNumber`) ✓
+
+### Example 2: DataType R — size-stratified (DataType P encoding)
+
+Species with two size grades in one haul:
+
+| `SpeciesCategory` (CatIdentifier) | Size range | `SubsamplingFactor` (SubFactor) | Fish measured | `TotalNumber` (TotalNo) |
+|---|---|---|---|---|
+| 1 | Small (100–160 mm) | 5.9 | 61 | ≈ 360 |
+| 2 | Large (210–420 mm) | 1.0 | 168 | 168 |
+
+Correct haul total: **360 + 168 = 528 fish**  
+Formula: `n_haul = Σ(NumberAtLength × SubsamplingFactor)` applied row by row — correct
+for all DataTypes including size-stratified R and P hauls.  
+**Do not sum `TotalNumber` across `SpeciesCategory` strata** — it is the stratum total.
+
+---
+
+## IMBUS Additions {#sec-imbus-additions}
+
+The questions below were not in the original ICES FAQ. They arose from exploratory analysis
+of the DATRAS exchange tables conducted as part of IMBUS WP2.
+
+### What do HL records with a missing `LengthClass` represent? {#sec-lc-na}
+
+::: {.callout-note icon=false}
+**[IMBUS]** This question was not in the original ICES FAQ. It arose from IMBUS WP2
+exploratory analysis of the DATRAS HL table.
+:::
+
+In the HL exchange table, records where `LengthClass` is `NA` (encoded as `−9` in raw CSV
+files) are **catch-totals rows**. They record aggregate catch information for a species within
+a haul but carry no individual length measurement. Every such row also has
+`NumberAtLength = NA`. They are distinct from length-frequency rows in both purpose and
+content.
+
+Catch-totals rows typically carry one or more of:
+
+| Field | Content |
+|-------|---------|
+| `TotalNumber` | Total count of fish in the haul (raised; or per hour for DataType C) |
+| `SubsampledNumber` | Number of fish actually handled or weighed |
+| `SpeciesCategoryWeight` | Catch weight for the species/category |
+| `SubsamplingFactor` | Raising factor (may be 1 if all fish were counted) |
+
+These rows arise in two situations:
+
+1. **Species measured by count or weight only** — where `SpeciesValidity` ≠ 1 (e.g. `4` =
+   total number only, `6` = weight only, `7` = numbers and weights but no lengths). In this
+   case the catch-totals row *is* the only HL record for that species.
+2. **Companion summary rows** — present alongside a full length-frequency series for the same
+   species/haul (typically `SpeciesValidity = 1`). The catch-totals row then summarises what
+   the length rows describe individually.
+
+**Key implication for analysis:** always filter `!is.na(LengthClass)` (and
+`!is.na(NumberAtLength)`) before computing CPUE or length distributions. Catch-totals rows
+cannot be raised via `sum(NumberAtLength × SubsamplingFactor)` — they carry no
+`NumberAtLength`. The `{obus}` function `dr_add_n_and_cpue()` handles this automatically.
+
+`TotalNumber` in catch-totals rows is useful as a cross-check against the raised sum from
+the length-frequency rows, but note that its scope (all-sex total vs. sex-specific) is not
+consistent across surveys; see the [DATRAS EDA findings](DATRAS_data_issues.qmd#sec-totalnumber-reconciliation)
+for a survey-by-survey reconciliation.
+
+```{r}
+#| label: lc-na-summary
+#| echo: false
+library(tidyverse)
+library(obus)
+
+# Confirm that all NA-LengthClass rows also have NA NumberAtLength,
+# and show which aggregate fields are populated.
+dr_con("HL") |>
+  filter(is.na(LengthClass)) |>
+  summarise(
+    n_records               = n(),
+    n_NA_NumberAtLength     = sum(is.na(NumberAtLength)),
+    n_has_TotalNumber       = sum(!is.na(TotalNumber)),
+    n_has_SubsampledNumber  = sum(!is.na(SubsampledNumber)),
+    n_has_SpeciesCatWeight  = sum(!is.na(SpeciesCategoryWeight))
+  ) |>
+  collect()
+```
+
+### What is the difference between DataType "P" and "R"? {#sec-p-vs-r}
+
+**Short answer:** DataType **R** (raw catch) is for hauls where the entire catch is sorted and some species are sub-sampled at a **single** rate. DataType **P** (pseudocategory) is for hauls where the catch is sorted into **multiple size grades**, each with its own sub-sampling rate.
+
+**When you would encounter each:**
+
+| DataType | Scenario | Sub-sampling approach |
+|---|---|---|
+| **R** | Regular haul | One species, one sub-sample rate per species |
+| **P** | Size-stratified | One species, **multiple size grades**, each grade sub-sampled separately |
+| **S** | Bulk sub-sample | Entire catch sub-sampled before sorting |
+| **C** | Pre-raised | Lab already converted to CPUE (per hour) |
+
+**Example: same species, two size grades in one haul**
+
+| DataType | `SpeciesCategory` | Size range | `SubsamplingFactor` | Measured | `TotalNumber` |
+|---|---|---|---|---|---|
+| **P** | 1 | Small (100–160 mm) | 5.9 | 61 | ≈ 360 |
+| | 2 | Large (210–420 mm) | 1.0 | 168 | 168 |
+
+For both P and R, calculate haul total identically: `n_haul = Σ(NumberAtLength × SubsamplingFactor)` per row = (61 × 5.9) + (168 × 1.0) = 528 fish.
+
+**Why the distinction exists:**
+
+- **DataType P explicitly signals** that size-stratification is present, so downstream users understand that multiple `SpeciesCategory` rows per species per haul are expected, and each `TotalNumber` corresponds to a size stratum.
+- **DataType R** signals that there is one sub-sampling rate per species; users can be confident that summing by species will yield the haul total.
+
+**Recommended practice for users:**
+- Always use the row-level formula: `n_haul = Σ(NumberAtLength × SubsamplingFactor)` per haul and species
+- The `{obus}` function `dr_add_n_and_cpue()` handles all DataTypes correctly
+
+---
+
+## Version history
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 3.0 | 2014 | Original ICES DATRAS FAQs document |
+| 4.0 (IMBUS) | June 2026 | Restructured; field names updated to current standard (legacy names in parentheses); DataType `P` added throughout; survey list updated to 29 surveys; coordinates corrected to decimal degrees; IMBUS-added questions marked **[IMBUS]** and collected in §IMBUS Additions |

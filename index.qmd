@@ -1,0 +1,39 @@
+---
+title: "IMBUS — Project Documentation"
+subtitle: "Implementing More and Better Use of ICES Survey Data"
+---
+
+**Project:** EMFAF-2025-PIA-FisheriesScientificAdvice · Proposal 101241455  
+**Duration:** 24 months (Sep 2025 – Aug 2027)  
+**Total budget:** ~€599k (80% EU co-funding)
+
+---
+
+## Work Package 2
+
+WP2 (User requirements, data formats and meta-data) is led by Einar Hjörleifsson (subcontracted
+to DTU Aqua) and runs from M1–M12 (Sep 2025 – Aug 2026). Its deliverables are:
+
+| Deliverable | Description | Due | Status |
+|-------------|-------------|-----|--------|
+| [D2.1](deliverables/D2.1_user_requirements.qmd) | User requirements document | M6 (Feb 2026) | ✅ Complete |
+| [D2.2](deliverables/D2.2_data_formats_metadata.qmd) | Data formats and meta-data | M11 (Jul 2026) | 🔶 Draft |
+| [D2.3](deliverables/D2.3_imbus_product_specification.qmd) | Integrated data product (R-binary and parquet) | M12 (Aug 2026) | 🔶 In progress |
+| D2.4 | Data product on ICES web portal | M12 (Aug 2026) | 🔴 Pending |
+
+The technical implementation of WP2 is in the R package
+[{obus}](https://github.com/einarhjorleifsson/obus).
+
+---
+
+## Rendering to Word (for Sharepoint)
+
+Individual deliverables can be rendered to Word format:
+
+```bash
+# From the imbus/ directory
+quarto render deliverables/D2.2_data_formats_metadata.qmd --to docx
+```
+
+This produces `deliverables/D2.2_data_formats_metadata.docx` suitable for upload to the IMBUS
+Sharepoint.

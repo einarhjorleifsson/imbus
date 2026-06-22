@@ -1,0 +1,62 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "IMBUS"
+  description: "Implementing More and Better Use of ICES Survey Data"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - text: "Background"
+        menu:
+          - href: IMBUS/IMBUS_proposal_summary.qmd
+            text: "Project Overview"
+          - href: IMBUS/wp2_progress_review.qmd
+            text: "WP2 Progress Review"
+      - text: "Deliverables"
+        menu:
+          - href: deliverables/D2.1_user_requirements.qmd
+            text: "D2.1 — User Requirements"
+          - href: deliverables/D2.2_data_formats_metadata.qmd
+            text: "D2.2 — Data Formats and Metadata"
+          - href: deliverables/D2.3_imbus_product_specification.qmd
+            text: "D2.3 — IMBUS Product Specification"
+      - text: "DATRAS"
+        menu:
+          - href: DATRAS/reporting_format.qmd
+            text: "Reporting Format"
+          - href: DATRAS/DATRAS_FAQ.qmd
+            text: "DATRAS FAQ"
+          - href: DATRAS/DATRAS_Technical_Reference.qmd
+            text: "DATRAS Technical Reference"
+          - href: DATRAS/sex_determination.qmd
+            text: "Sex determination"
+          - href: DATRAS/cpue_derivation.qmd
+            text: "CPUE derivation: CPUEL vs HL"
+          - href: DATRAS/issues.qmd
+            text: "Data issues and QC"
+      - text: "Meetings"
+        menu:
+          - href: meetings/20260601_WP2-WP5.qmd
+            text: "2026-06-01 WP2–WP5"
+      - text: "Other projects"
+        menu:
+          - href: other_projects/DATRAS_package_checks.qmd
+            text: "DATRAS R package — data checks"
+
+    right:
+      - icon: github
+        href: https://github.com/einarhjorleifsson/imbus
+
+execute:
+  warning: false
+  echo: false
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true

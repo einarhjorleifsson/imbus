@@ -1,0 +1,208 @@
+---
+title: "WP2 Progress Review"
+subtitle: "Against Proposal SEP-211134616"
+date: "2026-06-19"
+format:
+  html:
+    toc: true
+    number-sections: true
+---
+
+## Purpose
+
+This document reviews progress in Work Package 2 (WP2 — User Requirements, Data Formats and
+Metadata) against the commitments in the EMFAF proposal SEP-211134616 (IMBUS, 101241455). The
+assessment is based solely on the proposal PDF and the current draft deliverables D2.2 and D2.3.
+
+---
+
+## WP2 Objectives (from proposal)
+
+The proposal specifies four WP2 objectives:
+
+1. Assess user requirements of different user groups for survey data applications.
+2. Develop a data format that can generate products for WP3–5.
+3. Generate metadata descriptions of overall data.
+4. Process current DATRAS data into the new format with error corrections and accounting for
+   zero observations.
+
+---
+
+## Deliverables and Status
+
+| Deliverable | Title | Due | Assessment |
+|-------------|-------|-----|------------|
+| D2.1 | User Requirements | M6 (Apr 2026) | **Delivered** — 55 respondents surveyed |
+| D2.2 | Data Formats and Metadata | M11 (Jul 2026) | **Draft circulated** — ~95% complete |
+| D2.3 | Integrated Data Product | M12 (Aug 2026) | **Draft** — ~90% complete; `by_length` parquet delivered, `by_tow` forthcoming |
+| D2.4 | Data on ICES Open Access Portal | M12 (Aug 2026) | **Not started** — blocked pending D2.3 finalisation and ICES coordination |
+
+---
+
+## Task-level Assessment
+
+### T2.1 — User Requirements Survey {#t21}
+
+**Proposal commitment:** Survey data users across institutions to identify requirements and
+prioritise user needs; results to feed D2.2 format design and WP3–5 product scope.
+
+**Status: Complete.**
+
+D2.1 was delivered in April 2026 (Month 6, on schedule). 55 respondents were surveyed. Four
+dominant user challenges were identified:
+
+- Complex three-table structure (HH / HL / CA hierarchy).
+- Inconsistent column naming (legacy vs. post-2020 standard names).
+- Quality-control inconsistencies.
+- Slow data downloads.
+
+These findings directly shaped D2.2's scope (field documentation, naming harmonisation, sentinel
+value handling) and the D2.3 product design (parquet format, pre-computed CPUE tiers, composite
+haul key).
+
+---
+
+### T2.2 — Data Format Design {#t22}
+
+**Proposal commitment:** Design a new data format capable of generating products for WP3–5,
+including handling zero observations and error corrections.
+
+**Status: Substantially complete — minor open items remain.**
+
+D2.2 documents the current DATRAS exchange format in detail (HH, HL, CA record types), and D2.3
+specifies the IMBUS proposed format. The following design decisions are documented and
+implemented:
+
+1. **Unified column naming** — standard names applied across all surveys and record types.
+   Naming map maintained in `{obus}` as `dr_lookup_fields`.
+2. **Parquet distribution** — columnar format enabling fast, column-selective queries without
+   full downloads.
+3. **Sentinel value removal** — DATRAS sentinel value −9 replaced with proper `NA`.
+4. **Species standardisation** — historical numeric codes mapped to WoRMS AphiaIDs.
+5. **Unique haul identifier** — 8-field composite key
+   (`Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber`) resolves all known
+   haul-join ambiguities.
+6. **DataType-aware CPUE** — transparent CPUE calculation handling DataTypes C, R, S, and P
+   correctly, including size-stratified subsampling.
+
+Zero observations are handled via `HH left_join HL` in `dr_cpue_length()`: hauls with no catch
+for a target species appear as `length_mm = 0, n_haul = 0, n_hour = 0` (zero-fill by design).
+
+**Open items:**
+
+- ~~CA section stub~~ — **completed 2026-06-20**: CA now has the same subsection structure
+  as HH and HL (haul ID, species ID, area/individual ID, length/sex, age determination,
+  biological measurements, administrative).
+- **Resolved (2026-06-19):** `aphia` and `sex` confirmed as IMBUS canonical names for the
+  WoRMS AphiaID and sex fields in both HL and CA (interim pending IMBUS project approval).
+- Action point A2: confirmation pending from Vaishav Soni and Adrianna Villamor on
+  `SubsampledNumber`, `SubsampleWeight`, `DevelopmentStage` prevalence, and `LengthType` in CA.
+
+---
+
+### T2.3 — Metadata Documentation {#t23}
+
+**Proposal commitment:** Generate metadata descriptions of overall data, including survey
+coverage, temporal range, and data quality characteristics.
+
+**Status: Substantially complete for HH and HL; CA pending.**
+
+D2.2 documents metadata at two levels:
+
+**Survey-level metadata** — statistics for all 29 DATRAS surveys: year range, number of valid
+hauls, distinct AphiaIDs. NS-IBTS is the largest (36,566 hauls, 1965–present); CODS-Q4 the
+smallest (42 hauls, 2024). BTS is the most species-rich (1,012 AphiaIDs). A 30th entry,
+`NS-IBTS_UNIFtest`, is a test survey (5 hauls) and flagged for upstream filtering.
+
+**Field-level metadata** — HH and HL exchange tables are documented field-by-field with:
+- Field name (legacy and proposed standard)
+- Data type, units, vocabulary where applicable
+- DataType dependencies (HL)
+- Known issues and data quality caveats (~20 specific issues identified with mitigations)
+
+**Not yet complete:**
+
+- Per-survey fact sheets (coverage maps, gear history, time-series breaks, QC caveats) were
+  identified as a user requirement (UR-Q1) but are deferred to further work; they are not
+  explicitly scoped as a D2.2 deliverable in the proposal.
+- CA metadata is a stub — same field-by-field treatment as HH/HL needed.
+
+---
+
+### T2.4 — Data Processing into New Format {#t24}
+
+**Proposal commitment:** Process current DATRAS data into the new format with error corrections
+and accounting for zero observations.
+
+**Status: Tier 0 and Tier 2 (partial) delivered; Tier 1 and remaining Tier 2 product pending.**
+
+The data tier structure implemented:
+
+| Tier | Product | Status |
+|------|---------|--------|
+| 0 (Raw) | HH.parquet, HL.parquet, CA.parquet, LT.parquet | Delivered (interim hosting) |
+| 1 (On-demand) | `dr_hl_length()` function | Proposed; candidate for `{obus}` |
+| 2 (Pre-computed) | `by_length.parquet` — CPUE-by-length | **Delivered**; 29 surveys, 1965–present |
+| 2 (Pre-computed) | `by_tow.parquet` — catch totals per haul | **Not yet delivered** |
+| 2 (Pre-computed) | `CA_raised.parquet` — raised age data | Design pending WP4 input |
+
+The `by_length` product covers all 29 surveys and provides DataType-corrected CPUE-by-length
+without requiring users to manage DATRAS table joins or DataType arithmetic. The `{obus}` R
+package (`dr_con()`, `dr_get()`, `dr_add_n_and_cpue()`, etc.) is functional as a
+proof-of-concept.
+
+Hosting is interim (personal server: `https://heima.hafro.is/~einarhj/datras/`). Transfer to
+ICES infrastructure is the D2.4 task and is not yet started.
+
+---
+
+## Summary: Which Tasks Are Complete?
+
+| Task | Complete? | Notes |
+|------|-----------|-------|
+| T2.1 User requirements survey | **Yes** | D2.1 delivered M6, on schedule |
+| T2.2 Data format design | **Mostly** | Core design done; CA naming unresolved; 2 action points open |
+| T2.3 Metadata documentation | **Mostly** | HH + HL + CA complete; per-survey fact sheets deferred |
+| T2.4 Data processing / products | **Partially** | `by_length` delivered; `by_tow` forthcoming; ICES hosting not started |
+
+---
+
+## Risks and Observations
+
+**On track:**
+D2.1 delivered on schedule. D2.2 is well-advanced ahead of its M11 deadline (July 2026) and
+demonstrates thorough technical depth. The `by_length` parquet product works and provides a
+meaningful immediate improvement over the ICES CPUEL product (which covers only 8 of 30 surveys
+and has known key-ambiguity and `HaulValidity` issues documented in D2.2).
+
+**Moderate risk:**
+
+- The CA section of D2.2 is a stub. If field-by-field CA documentation is required before
+  M11, this needs to be prioritised in the next few weeks.
+- `by_tow` is needed for WP3–5 biomass-index workflows and is currently forthcoming with no
+  firm delivery date within D2.3's M12 window.
+- ~~Naming inconsistencies (`aphia`/`ValidAphiaID`; `sex`/`SpeciesSex`) — **resolved
+  2026-06-19.**~~
+
+**Structural dependency:**
+
+- D2.4 (ICES portal hosting) and D5.3 (integration into `icesDatras`) are both downstream
+  dependencies that require external coordination with ICES. Neither is within WP2's direct
+  control. The interim personal-server hosting carries continuity risk that should be flagged
+  to the project coordinator.
+
+**Out of scope (correctly deferred):**
+
+- Per-survey metadata fact sheets — useful but not explicitly promised in the proposal; listed
+  as further work.
+- Area standardisation (C-squares, ICES divisions) — partial implementation in {obus}; not a
+  D2.2/D2.3 commitment.
+- `CA_raised.parquet` design — correctly deferred pending WP4 ALK input.
+
+---
+
+## Proposed Next Steps (WP2 priority order)
+
+1. Deliver `by_tow.parquet` (M12).
+3. Complete D2.2 Discussion and References sections.
+4. Initiate D2.4 coordination with ICES for portal hosting.

@@ -1,0 +1,380 @@
+---
+title: "DATRAS R Package — Data Checks and Processing"
+subtitle: "A review of `R/read_datras.R`"
+date: today
+---
+
+## Overview
+
+The `{DATRAS}` R package (Kristensen & Jardim) was developed independently of and prior to the
+IMBUS project. It is not an IMBUS deliverable. This page reviews it purely as prior art — to
+understand what data checks and transformations were already established, and to inform the
+design of WP2 standardisation work and the `{obus}` proof-of-concept package.
+
+`{DATRAS}` provides tools for reading, subsetting, and analysing ICES DATRAS exchange data.
+Its core data structure is the `DATRASraw` object — a named list of three data frames
+(`CA`, `HH`, `HL`) with a shared `haul.id` factor linking records across tables.
+
+The notes below document the data checks, transformations, and integrity tests performed during
+reading and processing in `R/read_datras.R`.
+
+---
+
+## Data ingestion
+
+Data enter via two routes:
+
+- **`getDatrasExchange()`** — downloads directly from the ICES web service using
+  `icesDatras::getDATRAS()`.
+- **`readICES()` / `readExchange()`** — reads from a flat CSV exchange file (or a `.zip`
+  of one).
+
+Both routes pass through the same normalisation pipeline described below.
+
+---
+
+## Normalisation pipeline
+
+### 1. Missing value replacement (`minus9toNA`)
+
+DATRAS uses `−9` as a sentinel for missing values in numeric fields. The function
+`minus9toNA()` scans every numeric column in all three tables and replaces exact occurrences
+of `−9` (within floating-point tolerance `1e-14`) with `NA`.
+
+```r
+is9 <- which(abs(x[[i]][, ii] + 9) < 1e-14)
+if (length(is9) > 0) x[[i]][, ii][is9] <- NA
+```
+
+::: {.callout-note}
+The tolerance test rather than exact equality (`== -9`) guards against floating-point
+representation artefacts introduced during CSV parsing.
+:::
+
+### 2. Column name harmonisation (`renameDATRAS`)
+
+`renameDATRAS()` applies two normalisations:
+
+1. **Capitalise first letter** of every column name (handles inconsistencies across
+   exchange file versions).
+2. **Rename a fixed set of legacy columns** to the names expected by the rest of the package:
+
+   | Old name | New name | Note |
+   |---|---|---|
+   | `ValidAphiaID` | `Valid_Aphia` | reversal of WoRMS naming |
+   | `LngtClas` | `LngtClas` (kept) | exchange files occasionally use `LngtClass` |
+   | `AgeRings` | `Age` | CA field |
+   | `CANoAtLngt` | `NoAtALK` | CA count field |
+   | `NoAtLngt` | `NoAtALK` | alternative CA name |
+
+::: {.callout-important}
+**Relevance for {obus}/D2.2:** The DATRAS package maps `ValidAphiaID → Valid_Aphia`,
+deliberately moving *away* from the WoRMS/ICES standard name. The {obus} package and D2.2
+propose `ValidAphiaID` as the canonical name. These two packages are therefore inconsistent on
+this column name. See open issue in AGENTS.md.
+:::
+
+### 3. `StatRec` / `AreaCode` harmonisation
+
+The ICES rectangle field is named `StatRec` in HH but `AreaCode` in some older CA submissions.
+After renaming, if `CA$StatRec` is absent, it is aliased from `CA$AreaCode`:
+
+```r
+if (!is.null(d$CA) && is.null(d$CA$StatRec)) d$CA$StatRec <- d$CA$AreaCode
+```
+
+---
+
+## Derived variables (`addExtraVariables`)
+
+### 4. Composite haul key (`haul.id`)
+
+A character key is constructed and stored as a factor in all three tables:
+
+```r
+haul.id <- factor(paste(Survey, Year, Quarter, Country, Ship, Gear, StNo, HaulNo, sep = ":"))
+```
+
+This is the analogue of {obus}'s `.id` field, with `Ship` instead of `Platform` and `StNo`
+instead of `StationName`.
+
+### 5. Length class to centimetres (`LngtCm`)
+
+Length classes are converted to centimetres using a lookup on `LngtCode`:
+
+| `LngtCode` | Multiplier (cm) | Interpretation |
+|---|---|---|
+| `.` | 0.1 | 1 mm resolution (e.g. LngtClas 500 → 50.0 cm) |
+| `0` | 0.1 | same |
+| `1` | 1 | 1 cm resolution |
+| `2` | 1 | 1 cm resolution |
+| `5` | 1 | 1 cm resolution (5 cm bins, but class = lower bound in cm) |
+
+```r
+LngtCm = lookup(LngtCode, LngtCode2cm) * LngtClas
+```
+
+::: {.callout-warning}
+Mixed `LngtCode` values within a dataset trigger a warning ("Mixed accuracies found").
+NA values in `LngtCode` also warn and are assumed to take the maximum (worst) accuracy
+present.
+:::
+
+### 6. Species name lookup
+
+Scientific names are resolved from two internal lookup tables:
+
+- **`SpeciesTable.csv`** (TSN codes → scientific name): used when `SpecCodeType != "W"`.
+- **`WoRMSTable.csv`** (WoRMS AphiaID → `ScientificName_WoRMS`): used when `SpecCodeType == "W"`.
+
+The resulting `Species` column is a factor of scientific names, applied to both HL and CA.
+
+::: {.callout-note}
+The WoRMS table is a static file bundled with the package; it does not query the live WoRMS
+API and will drift out of date as taxonomy changes.
+:::
+
+### 7. Count reconstruction (`Count` in HL)
+
+A key correction: `HLNoAtLngt` as submitted to DATRAS is normalised differently depending on
+`DataType`. The package reverses this to recover the **actual count observed in the haul**:
+
+| `DataType` | Interpretation | Correction applied |
+|---|---|---|
+| `C` | Already standardised to 1 hour | `Count = HLNoAtLngt × (HaulDur / 60) × SubFactor` |
+| `R` | Raw (not hour-standardised) | `Count = HLNoAtLngt × SubFactor` |
+| `S` | Treated as `R` (see note) | `Count = HLNoAtLngt × SubFactor` |
+
+```r
+multiplier1 <- ifelse(d3$DataType == "C", d3$HaulDur / 60, 1)
+multiplier2 <- ifelse(!is.na(d3$SubFactor), d3$SubFactor, 1)
+d3$Count <- d3$HLNoAtLngt * multiplier1 * multiplier2
+```
+
+::: {.callout-note}
+**DataType `S`:** An ICES February 2012 clarification states that `S` submissions at that
+time were misinterpreted by data submitters and are functionally identical to `R`. The package
+therefore treats `S` as `R`.
+:::
+
+::: {.callout-important}
+**Relevance for D2.2 / {obus}:** The {obus} equivalent is `dr_add_n_and_cpue()`, which
+computes `n_haul = NumberAtLength × SubsamplingFactor` at the individual record level and
+additionally produces `n_hour = n_haul / HaulDuration × 60` as an explicit second output.
+The two implementations differ in several ways described below.
+:::
+
+### Differences between `{DATRAS}` and `{obus}` for DataType `"R"`
+
+Both packages apply the subsampling factor record-by-record, so summed totals per haul agree
+under normal conditions. The differences arise in edge cases and in what the functions
+produce.
+
+#### NA `SubFactor` / `SubsamplingFactor`
+
+When the subsampling factor is missing, the two packages diverge immediately:
+
+| Field values | DATRAS `Count` | {obus} `n_haul` |
+|---|---|---|
+| `HLNoAtLngt = 10`, `SubFactor = 2` | `10 × 2 = 20` | `10 × 2 = 20` |
+| `HLNoAtLngt = 10`, `SubFactor = NA` | `10 × 1 = 10` | `10 × 1 = 10` |
+
+Both packages substitute 1 for a missing `SubFactor` / `SubsamplingFactor` when
+`DataType == "R"`, reflecting the assumption that absence of a subsampling factor implies
+the full catch was measured. *(The {obus} package was updated to match this behaviour in
+June 2026; prior to that it propagated `NA`.)*
+
+#### DataType `"P"` (pseudocategory sampling)
+
+DataType `"P"` is not in the DATRAS branching logic. It falls through to the same arithmetic
+as `"R"` without any acknowledgement:
+
+```r
+# DATRAS — "P" not mentioned; multiplier1 = 1 silently
+multiplier1 <- ifelse(d3$DataType == "C", d3$HaulDur / 60, 1)
+```
+
+```r
+# {obus} — "P" listed explicitly
+n_haul = case_when(
+  DataType == "C" ~ NumberAtLength * SubsamplingFactor * HaulDuration / 60,
+  DataType == "R" ~ NumberAtLength * SubsamplingFactor,
+  DataType == "P" ~ NumberAtLength * SubsamplingFactor,   # explicit
+  DataType == "S" ~ NumberAtLength * SubsamplingFactor,
+  DataType == "-9" ~ NA,
+  is.na(DataType)  ~ NA,
+  TRUE ~ NA
+)
+```
+
+The computed value is numerically identical for `"P"`, but {obus} makes the intent explicit and
+correctly returns `NA` for `"-9"` and unknown DataTypes rather than silently computing a number.
+
+#### Invalid or missing `DataType`
+
+`DataType = "-9"` is a character string and is **not** caught by `minus9toNA()` (which only
+processes numeric columns). It therefore survives into the DATRAS count calculation, where
+`ifelse(DataType == "C", ...)` evaluates to `FALSE` and `multiplier1 = 1` — a number is
+produced rather than flagged as invalid:
+
+| `DataType` | DATRAS `Count` | {obus} `n_haul` |
+|---|---|---|
+| `"R"` | `HLNoAtLngt × SubFactor` | `NumberAtLength × SubsamplingFactor` |
+| `"P"` | `HLNoAtLngt × SubFactor` (silent fallthrough) | `NumberAtLength × SubsamplingFactor` |
+| `"-9"` | `HLNoAtLngt × SubFactor` ← not caught | `NA` |
+| `NA` | `HLNoAtLngt × SubFactor` ← not caught | `NA` |
+
+#### `n_hour` not produced by `{DATRAS}`
+
+The DATRAS package produces only `Count` (estimated numbers in the haul). Per-hour CPUE is
+left to the user to compute downstream. {obus} makes it a first-class output:
+
+```r
+# {obus} always produces both
+n_haul = NumberAtLength * SubsamplingFactor          # numbers in haul
+n_hour = n_haul / HaulDuration * 60                 # numbers per hour
+```
+
+#### Size-stratified subsampling — a note on aggregation
+
+When `SubFactor` varies within a haul × species group (size-stratified subsampling, documented
+in D2.2 for GB-SCT and DK under DataType `"P"` and `"R"`), **both packages compute correctly
+at the record level**. The risk is not in the per-row multiplication but in any downstream
+workflow that assumes a single uniform `SubFactor` per group — for example, extracting
+`SubFactor` from the first record and multiplying by a summed `HLNoAtLngt`. Neither package
+protects against that misuse, but it is a more common error pattern with the DATRAS
+`Count` column (which masks the original `HLNoAtLngt` and `SubFactor` individually) than with
+{obus}, where both `NumberAtLength` and `SubsamplingFactor` remain visible.
+
+### 8. Temporal and spatial convenience variables
+
+Added to HH:
+
+| Variable | Derivation |
+|---|---|
+| `abstime` | `Year + (Month-1)/12 + (Day-1)/365` (decimal year) |
+| `timeOfYear` | `(Month-1)/12 + (Day-1)/365` (seasonal position) |
+| `TimeShotHour` | `floor(TimeShot/100) + (TimeShot %% 100)/60` (decimal hour) |
+| `lon` | alias of `ShootLong` |
+| `lat` | alias of `ShootLat` |
+
+### 9. Roundfish area
+
+A static lookup table (`roundfish.csv`) maps ICES rectangle codes (`StatRec`) to North Sea
+roundfish area numbers, added as the factor `Roundfish` in HH.
+
+---
+
+## Integrity checks
+
+### 10. Duplicate rows in HH (hard stop)
+
+```r
+dups <- duplicated(d2)
+if (any(dups)) stop("Duplicated rows found in HH data - data file is corrupt")
+```
+
+Any duplicated row in the Haul Header table causes an immediate error. This is the strictest
+check in the pipeline.
+
+### 11. Hauls without length records (warning)
+
+After constructing `haul.id`, HH hauls that have no matching HL records are identified and
+printed as a warning:
+
+```r
+diff <- setdiff(levels(d2$haul.id), levels(d3$haul.id))
+if (length(diff) > 0) {
+    cat("========= WARNING: ============\n")
+    cat("Hauls without length info will be interpreted as empty hauls:\n")
+    print(diff)
+}
+```
+
+These hauls are retained in HH and treated as zero-catch hauls — consistent with the
+"zero-station" concept used in `dr_cpue_length()`.
+
+### 12. HL haul level consistency (hard stop)
+
+```r
+stopifnot(nlevels(d3$haul.id) == nrow(d2))
+```
+
+After alignment, the number of distinct haul levels in HL must equal the number of rows in HH.
+Failure would indicate a mismatch between the exchange tables.
+
+### 13. CSV file row-count integrity (`readICES`)
+
+When reading from a flat CSV exchange file, the function counts header lines and data rows and
+checks they account for every line in the file:
+
+```r
+if (sum(sapply(d, nrow)) + length(i) != length(lines))
+    stop("csv file appears to be corrupt.")
+```
+
+### 14. Unique haul IDs when combining datasets (`c.DATRASraw`)
+
+When merging two or more `DATRASraw` objects with `c()`, a pre-flight check ensures no `haul.id`
+appears in more than one object:
+
+```r
+testUniqueHaulID <- function(args) {
+    x <- lapply(args, function(x) levels(x$haul.id))
+    if (length(unique(unlist(x))) != length(unlist(x)))
+        stop("Haul ids must be unique.")
+}
+```
+
+### 15. Missing haul IDs in CA (`fixMissingHaulIds`)
+
+Older DATRAS CA submissions sometimes omit the full haul key. The package attempts to impute
+missing `haul.id` values by fuzzy-matching on (`StatRec`, `Year`, `Quarter`, `Country`, `Ship`).
+
+Two modes controlled by `strict`:
+
+- **`strict = TRUE`** (default): only uniquely matched CA records get a haul ID; ambiguous
+  matches are left as `NA` and warned about.
+- **`strict = FALSE`**: ambiguous matches receive a randomly chosen candidate haul; a fallback
+  on `Roundfish` area is attempted for still-unmatched records.
+
+A warning reports counts: total missing, uniquely matched, randomly assigned, and permanently
+unmatched.
+
+---
+
+## Downstream checks in `addSpectrum`
+
+`addSpectrum()` (used to aggregate HL into per-ICES-square length frequency matrices) performs
+additional checks:
+
+| Condition | Action |
+|---|---|
+| Multiple species in HL | Warning ("spectrum will contain all species") |
+| `NA` in HH `DataType` | Warning + those hauls removed before spectrum calculation |
+| `DataType == "S"` in HL | Warning ("will be interpreted as DataType `R`") |
+
+---
+
+## Summary of checks
+
+| # | Check | Location | Severity |
+|---|---|---|---|
+| 1 | Replace `-9` with `NA` | `minus9toNA` | Transform |
+| 2 | Capitalise / rename columns | `renameDATRAS` | Transform |
+| 3 | `AreaCode` → `StatRec` in CA | `addExtraVariables` | Transform |
+| 4 | Composite `haul.id` constructed | `addExtraVariables` | Transform |
+| 5 | `LngtCm` derived; mixed `LngtCode` | `addExtraVariables` | Transform / Warning |
+| 6 | Species names from TSN/WoRMS lookup | `addExtraVariables` | Transform |
+| 7 | Count corrected for DataType & SubFactor | `addExtraVariables` | Transform |
+| 8 | Temporal/spatial convenience fields | `addExtraVariables` | Transform |
+| 9 | Roundfish area lookup | `addExtraVariables` | Transform |
+| 10 | Duplicated HH rows | `addExtraVariables` | **Error** |
+| 11 | Hauls without HL records | `addExtraVariables` | Warning |
+| 12 | HL haul level count vs HH rows | `addExtraVariables` | **Error** |
+| 13 | CSV row-count integrity | `readICES` | **Error** |
+| 14 | Unique haul IDs across combined objects | `c.DATRASraw` | **Error** |
+| 15 | Missing CA haul IDs imputed | `fixMissingHaulIds` | Transform / Warning |
+| 16 | Multiple species in spectrum | `addSpectrum` | Warning |
+| 17 | `NA` DataType in spectrum | `addSpectrum` | Warning + removal |
+| 18 | DataType `S` in spectrum | `addSpectrum` | Warning |

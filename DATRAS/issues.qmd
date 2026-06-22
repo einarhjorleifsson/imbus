@@ -1,0 +1,540 @@
+---
+title: "DATRAS Data Issues and Quality Checks"
+subtitle: "Known limitations and inconsistencies requiring ICES attention, plus reproducible QC procedures"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+  docx:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    reference-doc: ../reference.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(obus)
+```
+
+> **Purpose of this document.** This page documents two categories of content: (1) **Data Issues** — known inconsistencies, ambiguities, and format problems that should be addressed by the ICES Datacenter or are survey-specific quirks users must be aware of; and (2) **Quality Checks** — reproducible R code to detect and verify these issues in the data.
+
+---
+
+## Part I: Known Data Issues for ICES Datacenter
+
+Issues in this section represent either:
+- **Format inconsistencies** across DATRAS systems (legacy vs. standard naming, inconsistent field definitions)
+- **Data inconsistencies** (values not matching expected relationships, format violations)
+- **Survey-specific quirks** that affect data interpretation
+- **Empirical deviations** from intended submission standards
+
+These are issues that **users must know about** to process data correctly, and many represent **upstream problems that should be reported to ICES** for correction.
+
+---
+
+## Format Inconsistencies {#sec-format-issues}
+
+### Column naming convention: legacy vs. standard {#sec-naming-convention}
+
+Two naming conventions coexist in DATRAS, reflecting a change introduced by ICES around 2020. This is not a data quality issue per se, but a **system inconsistency** that causes silent failures in downstream code.
+
+| Convention | Source | Example fields |
+|------------|--------|----------------|
+| **Legacy** | `getDATRAS()` (XML API); pre-~2020 DATRAS downloads | `Ship`, `HaulNo`, `StNo`, `LngtCode`, `HLNoAtLngt`, `SubFactor`, `TotalNo`, `HaulVal`, `HaulDur` |
+| **Standard** | Parquet files; IMBUS product; current ICES convention | `Platform`, `HaulNumber`, `StationName`, `LengthCode`, `NumberAtLength`, `SubsamplingFactor`, `TotalNumber`, `HaulValidity`, `HaulDuration` |
+
+Code written against one naming scheme fails silently or with cryptic errors against the other. {obus} and the IMBUS parquet use the standard names throughout.
+
+**See:** [D2.2 §Column naming convention](../deliverables/D2.2_data_formats_metadata.qmd#column-naming-convention)
+
+---
+
+### IMBUS interim canonical names: `sex` and `aphia` {#sec-interim-names}
+
+The ICES upload schema contains **naming inconsistencies that must be resolved upstream**:
+
+| IMBUS name | ICES "new" name(s) | Problem |
+|------------|--------------------|---------|
+| `sex` | `SpeciesSex` (HL), `IndividualSex` (CA) | **Same concept, different names** — the ICES upload field list gives the same vocabulary two different field names depending on table. |
+| `aphia` | `Valid_Aphia` (HL, CA), `AphiaID` / `ValidAphiaID` (derived products) | **Not in formal upload schema** — the datacenter-resolved WoRMS identifier is named differently depending on product type. |
+
+These are **interim** canonical names used by IMBUS pending upstream resolution by the ICES Datacenter. Users should be aware that different systems (raw download vs. parquet vs. derived products) use different names for the same concept.
+
+**See:** [D2.2 §IMBUS interim canonical names](../deliverables/D2.2_data_formats_metadata.qmd#sec-interim-names)
+
+---
+
+### Cross-table semantic ambiguities {#sec-cross-table-ambiguities}
+
+Several fields share names across tables (HH, HL, CA) but carry different meanings. Users must be aware of these semantic shifts:
+
+| Field | HL meaning | CA meaning |
+|-------|------------|------------|
+| **`sex`** | Visual, population-level assessment (bulk catch) | Determined by dissection (individual) |
+| **`NumberAtLength`** | Sub-sample count per length bin; multiply by `SubsamplingFactor` for population estimate | Count of aged fish at that length class; used as raising key for age-length keys (ALK) |
+| **`LengthClass`** | Lower boundary of a length frequency bin | Measured length of an individual fish |
+
+Additionally, **gear fields are duplicated** across HH, HL, and CA with identical values — this is a submission artefact. HH is authoritative; HL and CA copies are redundant after joining.
+
+**See:** [D2.2 §Cross-table ambiguities](../deliverables/D2.2_data_formats_metadata.qmd#cross-table-ambiguities)
+
+---
+
+## Data Inconsistencies {#sec-data-inconsistencies}
+
+### Size-stratified subsampling submitted as DataType R (data inconsistency) {#sec-datatype-r-stratified}
+
+**Issue:** The DATRAS schema intends DataType `P` for size-stratified hauls, but a minority (95 groups) are submitted as DataType `R`, **predominantly Danish vessels in NS-IBTS and BITS from 2024 onward** (82 of 95 groups). This is a **submission error that should be corrected at source**.
+
+The row-level formula `NumberAtLength × SubsamplingFactor` remains correct, but `TotalNumber` reflects the stratum total, not the species-haul total. This is a **data inconsistency** that downstream users must work around.
+
+**See:** [D2.2 §The DataType field](../deliverables/D2.2_data_formats_metadata.qmd#sec-datatype)
+
+---
+
+### DataType C with `SubsamplingFactor ≠ 1` (data errors) {#sec-datatype-c-invalid}
+
+For DataType C, `SubsamplingFactor` **must always equal 1**. Records with missing or `SubsamplingFactor ≠ 1` are **submission errors** and should be flagged to the ICES Datacenter.
+
+**Scope:** At least **4,093+ records** have invalid `SubsamplingFactor` values for DataType C. Combined with the ~1,856 NA values (see §sec-subfactor-na), this represents a meaningful data quality issue affecting DataType C records.
+
+---
+
+### `TotalNumber` is not consistently defined across surveys (data inconsistency) {#sec-totalnumber-reconciliation}
+
+The reporting format states that `TotalNumber = SubsampledNumber × SubsamplingFactor`. However, empirical reconciliation reveals **the two are not always equal**, and the **discrepancy pattern is survey-specific**:
+
+**Three patterns identified:**
+
+1. **All-sex total repeated on each sex row (Can-Mar)** — `TotalNumber` records the total count across *all* sexes, but the same value is repeated on every sex-specific row. After collapsing across sexes, most Can-Mar groups reconcile.
+
+2. **Sex-specific `TotalNumber` (BTS, NL-BSAS)** — `TotalNumber` is reported separately for each sex. Comparing against any single sex's estimate gives apparent mismatches.
+
+3. **Rounding (DYFS)** — `TotalNumber` and estimated totals both large (~2,000) but differ by ~2%, consistent with rounding during data entry.
+
+**Implication:** `TotalNumber` **should not be relied upon as a portable cross-check** without knowing the survey-specific convention. The safe formula — `n_haul = sum(NumberAtLength × SubsamplingFactor)` from length rows — is self-consistent and does not depend on `TotalNumber`.
+
+**See:** [DATRAS data issues §TotalNumber reconciliation](#sec-totalnumber-qc) for the reconciliation check code below.
+
+---
+
+### `SubsamplingFactor = NA` (data error) {#sec-subfactor-na}
+
+**0.986% of valid HL records** have missing `SubsamplingFactor`. This is a **significant data submission error** affecting multiple surveys and DataTypes. `SubsamplingFactor` is required for CPUE arithmetic and propagates as `NA` in computed `n_haul` and `n_hour`.
+
+**Distribution by DataType:**
+- DataType R: 138,572 records (majority)
+- DataType C: 1,856 records
+- DataType S: 14 records
+
+The issue spans multiple surveys, not only NS-IBTS.
+
+---
+
+### ICES statistical rectangle boundary mismatches {#sec-statrec-mismatch}
+
+`StatisticalRectangle` in HH should match the ICES rectangle derived from `ShootLatitude`/`ShootLongitude`. Empirically, **only 0.23% of records** (308 of 132,989 records with complete data, excluding Can-Mar) show mismatches. Most surveys report correct rectangles; **DYFS has the highest mismatch rate** (139 records).
+
+Mismatches can indicate:
+- Data entry error
+- Boundary cases (hauls spanning rectangle boundaries; rare)
+- Coordinate rounding or precision issues
+- Minor survey-specific spatial conventions
+
+**Note:** Can-Mar (Northwest Atlantic) doesn't report `StatisticalRectangle` at all — it's 100% NA. This is not a mismatch issue but a geographic exclusion: `StatisticalRectangle` is an ICES system covering the Northeast Atlantic only (see §sec-can-mar-boundaries).
+
+---
+
+## Survey-Specific Quirks {#sec-survey-quirks}
+
+### SWC-IBTS ended 2010; superseded by SCOWCGFS {#sec-swc-ibts}
+
+SWC-IBTS (Southwest Coast IBTS) records end in 2010 and are superseded by SCOWCGFS (Southwest Coast Continental Shelf Groundfish Survey). **Account for this break when analyzing time series.**
+
+---
+
+### Can-Mar is outside ICES statistical rectangle coverage {#sec-can-mar-boundaries}
+
+Can-Mar (Canadian Maritime) survey **does not populate the `StatisticalRectangle` field** — all 11,372 valid Can-Mar records have `NA` for this field. This is **correct and expected**: `StatisticalRectangle` is an ICES grid system covering the **Northeast Atlantic only** (see [ICES maps](https://www.ices.dk/data/maps/pages/ices-statistical-rectangles.aspx)). Can-Mar operates in the **Northwest Atlantic (Canadian waters)**, which falls outside the ICES rectangle system.
+
+This is **not a data quality issue**, simply a geographic mismatch.
+
+Can-Mar does report complete shooting coordinates (latitude/longitude at tow start) for all records (11,372/11,372) and haul coordinates for most records (6,537/11,372 = 57%). For spatial analysis, **use coordinates for Can-Mar instead of relying on statistical rectangles** (which are unavailable for this survey).
+
+---
+
+## HL Grouping Key Constancy Violations {#sec-hl-constancy}
+
+The sampling protocol fields (e.g., `SpeciesValidity`, `SubsamplingFactor`) should be constant within a natural group (`.id × aphia × sex × DevelopmentStage × SpeciesCategory`), but empirical checking reveals **intentional and unintentional violations**:
+
+### `SpeciesValidity` varies within groups (by design) {#sec-specval-variation}
+
+`SpeciesValidity` varies within **2,786 of ~2.6 million total groups (0.1%)**, predominantly BTS (1,289) and Can-Mar (1,272). This is **intentional** — full length-frequency rows (`SpeciesValidity = 1`) coexist with supplementary rows (totals-only, presence/absence) within the same group.
+
+Most common co-occurrences: `{1, 5}` (1,281 groups) and `{4, 7}` (580 groups).
+
+---
+
+### `SubsamplingFactor` varies within groups (size-stratified subsampling) {#sec-subfactor-variation}
+
+`SubsamplingFactor` varies within **389 of ~2.1 million valid groups (0.02%)** due to **size-stratified subsampling**. Small and large fish are subsampled at different rates within the same species group.
+
+**Pattern by DataType:**
+- **P** (293 groups) — all GB-SCT, the intended encoding (across NS-IBTS, SCOWCGFS, SCOROC)
+- **R** (95 groups) — predominantly DK from 2024 onward; **submission error** (should be P)
+- **C** (1 group) — anomaly
+
+**Key formula:** `n_haul = Σ(NumberAtLength × SubsamplingFactor)` applied **row by row** is correct for all DataTypes, including size-stratified cases.
+
+---
+
+### `TotalNumber` varies by stratum (consequence of size-stratification) {#sec-totalno-variation}
+
+`TotalNumber` and `SpeciesCategoryWeight` vary by stratum in **104 of ~2.1 million valid groups (0.005%)** as a direct consequence of size-stratified subsampling. This is a **data structure issue**, not an error.
+
+---
+
+## Product Coverage Limitations {#sec-product-limitations}
+
+### CPUEL available for only 8 of 29 surveys; CPUEA/IDX vary by expert group {#sec-product-availability}
+
+Derived products (CPUEL, CPUEA, IDX) are **developed and verified in cooperation with ICES Expert Groups**. This is time-consuming; newer surveys may lack products.
+
+**Current coverage:**
+- CPUEL: 8 surveys (BITS, EVHOE, IE-IGFS, NS-IBTS, ROCKALL, SCOROC, SCOWCGFS, SWC-IBTS)
+- CPUEA and IDX: Vary by expert group agreement
+
+---
+
+### CPUEL haul key ambiguity {#sec-cpuel-haul-key}
+
+**Issue:** CPUEL records lack `Country` and `StationName` fields present in HH. The short key (Survey, Year, Quarter, Platform, Gear, HaulNumber) is **not guaranteed unique**. This creates **join ambiguity** when attempting to map CPUEL back to HH metadata.
+
+When joining CPUEL to HH, **always use the full 8-field `.id` key if possible**, or manually verify uniqueness.
+
+---
+
+---
+
+# Part II: Quality Checks — Reproducible Code {#sec-qc-checks}
+
+The following sections provide reproducible R code to **detect, verify, and quantify** the data issues documented above. All code chunks execute against the parquet-backed `dr_con()` lazy connection.
+
+> **Note:** The code below reflects empirical verification performed in June 2026. All findings reported in Part I are based on this code and have been verified against the live data. These code blocks can be run interactively to confirm findings in real time.
+
+---
+
+## TotalNumber Reconciliation {#sec-totalnumber-qc}
+
+Check whether `TotalNumber` matches the estimated total from length rows. This is a complex check because `TotalNumber` is scoped inconsistently across surveys:
+
+```{r}
+#| label: totno-reconcile
+group_key <- c(".id", "aphia", "SpeciesCategory")
+
+# Collect all HL data
+all_hl <- dr_con("HL") |> collect()
+
+# Length-frequency rows: estimated haul total
+lf <- all_hl |>
+  filter(!is.na(LengthClass), !is.na(NumberAtLength)) |>
+  mutate(SpeciesCategory = coalesce(SpeciesCategory, -1L)) |>
+  group_by(across(all_of(group_key))) |>
+  summarise(estimated_n = sum(NumberAtLength * SubsamplingFactor, na.rm = TRUE),
+            .groups = "drop")
+
+# Catch-totals rows: stated total (take max per group — see text for caveats)
+tot <- all_hl |>
+  filter(is.na(LengthClass), !is.na(TotalNumber)) |>
+  mutate(SpeciesCategory = coalesce(SpeciesCategory, -1L)) |>
+  group_by(across(all_of(group_key))) |>
+  summarise(TotalNumber = max(TotalNumber), .groups = "drop")
+
+reconcile <- tot |>
+  inner_join(lf, by = group_key) |>
+  mutate(diff     = TotalNumber - estimated_n,
+         rel_diff = diff / TotalNumber)
+
+# Survey-level summary
+reconcile |>
+  filter(!is.na(rel_diff)) |>
+  mutate(
+    Survey = sub(":.*", "", .id),
+    bucket = cut(abs(rel_diff),
+                 breaks = c(0, 0.001, 0.01, 0.1, 0.5, Inf),
+                 right  = FALSE,
+                 labels = c("exact", "<1%", "1–10%", "10–50%", ">50%"))
+  ) |>
+  count(Survey, bucket) |>
+  tidyr::pivot_wider(names_from = bucket, values_from = n, values_fill = 0L) |>
+  select(Survey, exact, `<1%`, `1–10%`, `10–50%`, `>50%`) |>
+  arrange(desc(exact + `<1%`)) |>
+  knitr::kable(caption = "TotalNumber reconciliation by survey (survey-specific scoping creates apparent mismatches)")
+
+# Show survey-specific patterns
+cat("\nDiscordant groups by survey (>1% difference):\n")
+reconcile |>
+  filter(!is.na(rel_diff), abs(rel_diff) > 0.01) |>
+  mutate(Survey = sub(":.*", "", .id)) |>
+  group_by(Survey) |>
+  summarise(
+    n = n(),
+    median_TotalNo = median(TotalNumber),
+    median_est_n = median(estimated_n),
+    median_rel_diff = round(median(rel_diff), 3),
+    .groups = "drop"
+  ) |>
+  arrange(desc(n)) |>
+  print()
+```
+
+---
+
+## Size-Stratified Subsampling Submitted as DataType R {#sec-datatype-r-qc}
+
+Identify hauls with size-stratified structure but DataType `R` (should be `P`):
+
+```{r}
+#| label: datatype-r-violations
+sf_violations_R <- dr_con("HL") |>
+  filter(SpeciesValidity == "1") |>
+  group_by(.id, aphia, sex, DevelopmentStage, SpeciesCategory) |>
+  summarise(n_sf = n_distinct(SubsamplingFactor), .groups = "drop") |>
+  filter(n_sf > 1) |>
+  left_join(dr_con("HH") |> distinct(.id, DataType, Country), by = ".id") |>
+  filter(DataType == "R") |>
+  collect()
+
+sf_violations_R |>
+  group_by(Country) |>
+  count(sort = TRUE) |>
+  knitr::kable(caption = "Size-stratified DataType R hauls by country (95 groups total)")
+```
+
+---
+
+## DataType C with Invalid `SubsamplingFactor` {#sec-datatype-c-qc}
+
+Check for DataType C records where `SubsamplingFactor` is missing or not equal to 1 (all are data submission errors):
+
+```{r}
+#| label: datatype-c-violations
+# Collect all data to avoid connection issues
+all_hl <- dr_con("HL") |> collect()
+all_hh <- dr_con("HH") |>
+  select(.id, DataType) |>
+  collect()
+
+hl_with_dt <- all_hl |> inner_join(all_hh, by = ".id")
+
+# Check DataType C
+dt_c_total <- hl_with_dt |> filter(DataType == "C") |> nrow()
+dt_c_na <- hl_with_dt |> filter(DataType == "C", is.na(SubsamplingFactor)) |> nrow()
+dt_c_ne1 <- hl_with_dt |> filter(DataType == "C", !is.na(SubsamplingFactor), SubsamplingFactor != 1) |> nrow()
+dt_c_invalid <- dt_c_na + dt_c_ne1
+
+cat(sprintf("DataType C records with invalid SubsamplingFactor:\n"))
+cat(sprintf("  SubsamplingFactor = NA: %d\n", dt_c_na))
+cat(sprintf("  SubsamplingFactor ≠ 1: %d\n", dt_c_ne1))
+cat(sprintf("  Total invalid: %d / %d (%.2f%%)\n\n", dt_c_invalid, dt_c_total, dt_c_invalid/dt_c_total*100))
+
+# Show distribution of actual values
+cat("Breakdown of SubsamplingFactor values in DataType C:\n")
+dt_c_breakdown <- hl_with_dt |>
+  filter(DataType == "C") |>
+  count(SubsamplingFactor, sort = TRUE)
+print(dt_c_breakdown |> head(10))
+```
+
+---
+
+## Missing `SubsamplingFactor` {#sec-subfactor-na-qc}
+
+Identify and quantify records with `NA` SubsamplingFactor. Note: empirical checking reveals this affects **0.986% of valid HL records** across multiple surveys, not just NS-IBTS.
+
+```{r}
+#| label: subfactor-na-qc
+# Collect metadata once to avoid connection issues
+all_hl <- dr_con("HL") |> collect()
+all_hh <- dr_con("HH") |>
+  filter(HaulValidity == "V") |>
+  select(.id, DataType) |>
+  collect()
+
+# Merge and check
+hl_with_meta <- all_hl |> inner_join(all_hh, by = ".id")
+
+na_by_dt <- hl_with_meta |>
+  filter(is.na(SubsamplingFactor)) |>
+  count(DataType, sort = TRUE)
+
+na_total <- sum(na_by_dt$n)
+pct_total <- na_total / nrow(hl_with_meta) * 100
+
+cat(sprintf("Total SubsamplingFactor = NA: %d / %d (%.3f%%)\n\n", na_total, nrow(hl_with_meta), pct_total))
+cat("By DataType:\n")
+print(na_by_dt)
+
+cat("\n\nTop 15 surveys affected:\n")
+na_by_survey <- hl_with_meta |>
+  filter(is.na(SubsamplingFactor)) |>
+  count(Survey, sort = TRUE) |>
+  head(15)
+print(na_by_survey)
+```
+
+---
+
+## StatisticalRectangle Coverage by Survey {#sec-statrec-coverage-qc}
+
+Some surveys do not populate the `StatisticalRectangle` field. Check coverage:
+
+```{r}
+#| label: statrec-coverage
+statrec_coverage <- dr_con("HH") |>
+  filter(HaulValidity == "V") |>
+  group_by(Survey) |>
+  summarise(
+    n_total = n(),
+    n_missing = sum(is.na(StatisticalRectangle)),
+    .groups = "drop"
+  ) |>
+  collect() |>
+  mutate(pct_missing = round(n_missing / n_total * 100, 2)) |>
+  arrange(desc(pct_missing)) |>
+  filter(pct_missing > 0)
+
+if (nrow(statrec_coverage) > 0) {
+  statrec_coverage |>
+    knitr::kable(caption = "Surveys with missing StatisticalRectangle data")
+} else {
+  cat("All surveys report StatisticalRectangle for valid hauls.\n")
+}
+```
+
+---
+
+## ICES Statistical Rectangle Boundary Mismatch {#sec-statrec-qc}
+
+Check for mismatches between reported and derived statistical rectangles (excluding surveys that don't populate this field):
+
+```{r}
+#| label: statrec-check
+hh <- dr_con("HH") |>
+  filter(HaulValidity == "V", Survey != "Can-Mar") |>
+  distinct(.id, Survey, lon = ShootLongitude, lat = ShootLatitude, ir = StatisticalRectangle) |>
+  collect() |>
+  drop_na(lon, lat, ir)
+
+mismatches <- hh |>
+  mutate(ir_derived = tryCatch(geo::d2ir(lat, lon), error = function(e) NA)) |>
+  filter(!is.na(ir_derived)) |>
+  filter(ir != ir_derived)
+
+cat(sprintf("Total valid records with complete data (excluding Can-Mar): %d\n", nrow(hh)))
+cat(sprintf("Mismatches: %d (%.2f%%)\n", nrow(mismatches), nrow(mismatches)/nrow(hh)*100))
+
+if (nrow(mismatches) > 0) {
+  cat("\nMismatches by survey:\n")
+  mismatch_summary <- mismatches |>
+    group_by(Survey) |>
+    count(sort = TRUE)
+  print(mismatch_summary)
+
+  cat("\nFirst 5 examples:\n")
+  mismatches |> slice_head(n = 5) |>
+    select(.id, ir, ir_derived) |>
+    knitr::kable(caption = "Sample StatisticalRectangle mismatches (reported vs. derived)")
+}
+```
+
+---
+
+## SpeciesValidity Variation Within Groups {#sec-specval-qc}
+
+Identify groups where `SpeciesValidity` varies (intentional coexistence of record types):
+
+```{r}
+#| label: specval-variation
+specval_v <- dr_con("HL") |>
+  group_by(.id, aphia, sex, DevelopmentStage, SpeciesCategory) |>
+  summarise(n_vals = n_distinct(SpeciesValidity), .groups = "drop") |>
+  filter(n_vals > 1) |>
+  collect()
+
+specval_v |>
+  left_join(dr_con("HH") |> select(.id, Survey) |> collect(), by = ".id") |>
+  count(Survey, sort = TRUE) |>
+  knitr::kable(caption = "Groups with varying SpeciesValidity by survey (2,786 total; 0.1%)")
+```
+
+---
+
+## SubsamplingFactor Variation Within Groups {#sec-subfactor-qc}
+
+Identify groups where `SubsamplingFactor` varies (size-stratified subsampling):
+
+```{r}
+#| label: subfactor-variation
+sf_v <- dr_con("HL") |>
+  filter(SpeciesValidity == "1") |>
+  group_by(.id, aphia, sex, DevelopmentStage, SpeciesCategory) |>
+  summarise(n_vals = n_distinct(SubsamplingFactor), .groups = "drop") |>
+  filter(n_vals > 1) |>
+  left_join(dr_con("HH") |> distinct(.id, DataType, Country), by = ".id") |>
+  collect()
+
+sf_v |>
+  count(Country, DataType, sort = TRUE) |>
+  knitr::kable(caption = "Groups with varying SubsamplingFactor by country and DataType (389 total; 0.02%)")
+```
+
+---
+
+## CPUEL Haul Key Ambiguity {#sec-cpuel-qc}
+
+Check how many short keys (without Country/StationName) match multiple full `.id` keys in HH:
+
+```{r}
+#| label: cpuel-haul-key
+cpuel_haul <- dr_con("CPUEL") |>
+  mutate(.id_short = paste(Survey, Year, Quarter,
+            Platform, Gear, HaulNumber,
+            sep = ":")) |>
+  distinct(.id_short) |>
+  collect()
+
+hh <- dr_con("HH") |>
+  mutate(.id_short = paste(Survey, Year, Quarter,
+            Platform, Gear, HaulNumber,
+            sep = ":")) |>
+  collect()
+
+dupes <- hh |>
+  distinct(.id, .id_short) |>
+  inner_join(cpuel_haul, by = ".id_short") |>
+  group_by(.id_short) |>
+  filter(n() > 1) |>
+  ungroup()
+
+cat("CPUEL haul keys with multiple matches in HH:", nrow(dupes %>% distinct(.id_short)) / nrow(cpuel_haul) * 100, "%\n")
+
+if (nrow(dupes) > 0) {
+  dupes |> slice_head(n = 10) |>
+    select(.id_short, .id) |>
+    knitr::kable(caption = "Sample of ambiguous short keys")
+}
+```
+
+---
+
+## Version history
+
+| Date | Changes |
+|------|---------|
+| June 22, 2026 | Reorganized into two clear parts: (1) Data Issues for ICES (format inconsistencies, data inconsistencies, survey quirks, product limitations); (2) Quality Checks (reproducible R code to detect/verify each issue). Added cross-references to D2.2 sections. |
+| June 2026 | Consolidated from `DATRAS_data_issues.qmd` and `miscellaneous.qmd`. |

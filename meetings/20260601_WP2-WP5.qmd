@@ -1,0 +1,110 @@
+---
+title: "IMBUS WP2–WP5 Meeting — Minutes"
+date: "2026-06-01"
+format:
+  html:
+    toc: true
+  docx:
+    toc: true
+    reference-doc: ../reference.docx
+---
+
+**IMBUS WP2-WP5 meeting - minutes**
+
+**1 June 2026, 16:00-17:00 CEST**
+
+**Attendees**
+
+Martin Pastoors (chair), Vaishav Soni, Adrianna Villamor, Einar Hjörleifsson
+
+# 1. Background and Context
+
+This meeting was convened to improve alignment between WP2 (Data Standardisation & Format Definition) and WP5 (Sustainability and Replication), which share a strong upstream--downstream dependency. Einar Hjörleifsson has been exploring the ICES DATRAS exchange data structure, developing an experimental R package (OBUS) for standardising haul-header (HH), haul-level length (HL) and catch-at-age (CA) data tables. Vaishav Soni (ICES) coordinates WP5 and also represents the ICES DATRAS data team with intimate knowledge on the current data architecture and known usage problems.
+
+# 2. Key Topics Discussed
+
+## 2.1 Scope and Objective of Work Package 2
+
+A significant portion of the meeting was dedicated to clarifying what WP2 is actually required to produce. Key points of discussion included:
+
+- WP2 so far focused exclusively on submitted (Exchange) data, not on derived data products such as CPUE data. The grant agreement does not mention the CPUE product.
+
+- The core objective of WP2 is to standardise the metadata structure and schema of the submitted DATRAS exchange data to produce a generalised, flat-file representation of the HH, HL and CA hierarchy that removes hidden complexity and lookup dependencies.
+
+- The output of WP2 is primarily a data format specification and metadata description document, not necessarily a fully-deployed data product, though illustrative code should accompany it.
+
+- A key value-added highlighted by Vaishav is bringing all fragmented metadata descriptions under one umbrella, making the data accessible to new users without expert knowledge.
+
+## 2.2 Data Structure and Known User Challenges
+
+Vaishav Soni identified several structural issues that WP2 should address to improve usability of the Exchange format:
+
+- Users frequently struggle to understand the hierarchical relationship between HH (haul header), HL (length data) and CA (catch-at-age) tables. A unified, relational mapping would resolve this.
+
+- Field descriptions and metadata are not bundled with the download -- users must navigate to a separate link. Including field-level descriptions in the data schema would be a significant improvement.
+
+- Several fields contain hidden calculations or rely on implicit rules that are not documented (e.g. CatCatchWeight is defined by a combination of sex, maturity, length class, development stage and length measurement type).
+
+- Area standardisation is a known gap: survey area codes vary across surveys, and a mapping to ICES statistical rectangles, C-squares or ICES divisions is needed.
+
+- Length unit inconsistencies (centimetres vs. millimetres) and sub-sampling factors require explicit handling and documentation.
+
+- Data type flags in HH (e.g. DataType = 'C') do not always align with duration fields, creating subtle interpretation errors.
+
+## 2.3 CPUE Data Products -- Scope and Limitations
+
+The meeting explored whether CPUE-by-length or CPUE-by-age products should be within WP2 scope:
+
+- CPUE-by-length is available in DATRAS for a limited set of surveys (IBTS North Sea, Baltic BTS, French survey). Extending this to all surveys is the longer-term plan, but is outside current WP2 resources.
+
+- CPUE-by-age requires a full age-slicing procedure that varies by survey and country -- this was collectively agreed to be out of scope for WP2.
+
+- WP2 should, however, describe the standardisation steps needed to reach CPUE-by-length from raw Exchange data, in a way that other work packages and users can use.
+
+- The data volume challenge of CPUE products was noted: CPUE-by-length generates large zero-expanded tables and would strain the DATRAS data warehouse if extended to all surveys. A code/script-based approach is preferred over maintaining a static data product.
+
+## 2.4 Data Access and Technical Infrastructure
+
+- Einar referenced the faster data download mechanism for DATRAS exchange data that has been implemented by Vaishav. He has been experimenting with (CSV/parquet-based, via DuckDB), noting it substantially outperforms the existing XML-based ICES-DATRAS R package for large queries.
+
+- Vaishav identified that the CSV-format download script has already been published on the ICES GitHub. It has apparently been added without his explicit authorisation and not yet up to date. The group agreed this should be moved to a development/test environment rather than left in production.
+
+- The agreed direction is that the ICES DATRAS data package should be the canonical source for data download and processing. Future enhancements -- including Einar's faster CSV/parquet mechanism -- should be integrated into this package as an optional output format.
+
+- Einar advocated for intermediate data steps being exposed to users, not just final outputs. A key design principle is that users who want to dig into the data processing should have access to intermediate tidy data frames, not just plots or final indices.
+
+## 2.5 Link to FishMap and the September Workshop
+
+Martin Pastoors reported on a recent meeting with the FishMap project (Thomas Mildenberger, DTU). While there is partial overlap in spatial mapping of survey data, the approaches differ: IMBUS focuses on the data provenance and format coming out of the survey pipeline, whereas FishMap takes exchange data as-is and applies its own corrections. The planned joint workshop in early September was agreed as a key milestone, with the expectation that by then IMBUS has a clear, documented outline of the WP2 data flow from the DATRAS database to downstream users, including the link with the ICES Secretariat.
+
+# 3. Decisions
+
+  -------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ --------------------------
+  **\#**   **Decision**                                                                                                                                                                                                                                                                                                                                                                         **Owner(s)**
+
+  **D1**   WP2 will focus on defining a standardised data format and accompanying metadata description for the HH, HL and CA Exchange data. It will not produce a full CPUE-by-age data product. It is primarily a specification and descriptive document (and supporting code), not a deployed data service. The document should describe how the data should flow from DATRAS to end users.   Einar / Martin
+
+  **D2**   The CSV fast-download script currently published in the ICES IC Status GitHub production environment should be moved to a development/test branch to avoid users relying on it with outdated data.                                                                                                                                                                                   Vaishav
+
+  **D3**   Future fast-download functionality (CSV/parquet via DuckDB) should be incorporated into the ICES DATRAS data package as an optional output format, rather than maintained as a separate tool.                                                                                                                                                                                        Martin / Einar / Vaishav
+  -------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ --------------------------
+
+# 4. Action Points
+
+  -------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------------------- ---------------------
+  **\#**   **Action**                                                                                                                                                                                                                                **By**               **Due**
+
+  **A1**   Draft a table of contents / outline for the WP2 deliverable document and circulate by email for feedback before the next IMBUS meeting.                                                                                                   Martin               Next day (tomorrow)
+
+  **A2**   Review Einar's WP2 R script and email documentation (shared prior to meeting) together with Adrianna; identify gaps, particularly missing parameters in layers B and C (development stage, length measurement type, sub-sample weight).   Vaishav + Adrianna   This week
+
+  **A3**   Move the CSV fast-download script from the production environment of the IC Status GitHub to a development/test branch, and add a status warning.                                                                                         Vaishav Soni         ASAP
+  -------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------------------- ---------------------
+
+# 5. Next Steps and Upcoming Meetings
+
+- Next IMBUS project meeting: the following Monday after this call (agenda item: WP2 progress update and document outline review).
+
+- Joint IMBUS--FishMap workshop: planned for early September -- WP2 data-flow document to be ready beforehand.
+
+- Ongoing: weekly or bi-weekly WP2 catch-up calls proposed between Einar, Vaishav and Adrian to work through the data structure exercise and schema gaps.

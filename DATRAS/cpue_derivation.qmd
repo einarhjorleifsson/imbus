@@ -1,0 +1,367 @@
+---
+title: "CPUE derivation: CPUEL product vs HL-derived"
+author: "Einar Hjörleifsson"
+date: "June 2026"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+execute:
+  warning: false
+  message: false
+  echo: true
+---
+
+## Preamble
+
+ICES provides a pre-computed CPUE-by-length product (`CPUEL`) for a subset of DATRAS surveys. This document compares it against CPUE derived directly from the raw HH and HL tables, identifies three structural problems with the CPUEL product, and proposes `dr_cpue_length()` as the recommended derivation function.
+
+Atlantic cod (*Gadus morhua*, AphiaID 126436) is used as a concrete species throughout. The structural findings apply across species.
+
+### The `by_length` product
+
+The IMBUS D2.3 data product includes `by_length.parquet` — a pre-computed CPUE-by-length
+table covering **all 29 DATRAS surveys** and all species. It is accessible via
+`dr_con("by_length")` and can be used directly without needing to work through the raw HH
+and HL tables.
+
+```r
+library(obus)
+
+# Ready-to-use — no CPUE arithmetic needed
+cod <- dr_con("by_length") |>
+  filter(latin == "Gadus morhua") |>
+  collect()
+```
+
+`by_length` is derived by the same logic as `dr_cpue_length()`: valid hauls only (via
+`inner_join` with HH filtered to `HaulValidity == "V"`), DataType-corrected arithmetic,
+and length standardised to cm. Sex and developmental stage are collapsed (summed over).
+Zero-catch hauls are not included; apply zero-fill from `dr_con("HH")` if needed for index
+work.
+
+`dr_cpue_length()` remains useful when you need: (1) sex- or stage-resolved CPUE
+(`collapse_sex = FALSE`), (2) zero-fill, (3) a subset of surveys/years/species without
+downloading the full `by_length` product, or (4) a custom species filter on `aphia`
+rather than species name.
+
+The three problems with CPUEL documented below do not apply to `by_length`.
+
+```{r setup}
+library(tidyverse)
+library(obus)
+
+cpuel_surveys <- dr_con("CPUEL") |> distinct(Survey) |> collect() |> pull(Survey)
+hh_surveys    <- dr_con("HH")    |> distinct(Survey) |> collect() |> pull(Survey)
+
+# Pre-compute ambiguous short-key counts for inline use
+dup_key_summary <- dr_con("HH") |>
+  filter(HaulValidity == "V") |>
+  mutate(.id2 = paste(Survey, Year, Quarter, Platform, Gear, HaulNumber, sep = ":")) |>
+  distinct(.id, .id2) |>
+  count(.id2) |>
+  filter(n > 1) |>
+  collect()
+
+n_ambiguous_keys  <- nrow(dup_key_summary)
+n_ambiguous_hauls <- sum(dup_key_summary$n)
+
+# NS-IBTS Q1 2025 specifically
+ns25_dup <- dr_con("HH") |>
+  filter(Survey == "NS-IBTS", Year == 2025, Quarter == 1, HaulValidity == "V") |>
+  mutate(.id2 = paste(Survey, Year, Quarter, Platform, Gear, HaulNumber, sep = ":")) |>
+  distinct(.id, .id2) |>
+  collect() |>
+  group_by(.id2) |>
+  filter(n() > 1) |>
+  ungroup()
+n_ns25_dup_keys  <- n_distinct(ns25_dup$.id2)
+n_ns25_dup_hauls <- nrow(ns25_dup)
+```
+
+## Recommended function: `dr_cpue_length()`
+
+The three problems documented below all stem from using the CPUEL product. The recommended alternative is to derive CPUE directly from HH and HL using `dr_cpue_length()`. The function:
+
+- Uses the **full `.id` haul key** (`Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber`), avoiding the ambiguity of CPUEL's shortened key.
+- Zero-fills via `HH |> left_join(HL)`, so every valid haul appears in the output — hauls with no catch for the target species get `length_mm = 0, n_haul = 0, n_hour = 0`.
+- Outputs the **minimum necessary columns**: `.id`, `length_mm`, `n_haul`, `n_hour`. Haul metadata (position, gear, date, etc.) is retrieved by joining the output to `dr_con("HH")` on `.id`.
+- Works **lazily** within the dplyr/DuckDB framework — call `collect()` on the result when ready to pull into memory.
+
+```{r}
+#| code-fold: false
+#' Derive length-frequency CPUE from HH and HL
+#'
+#' @param hh  Lazy HH table, pre-filtered to the target survey/year/quarter
+#'            and restricted to valid hauls (HaulValidity == "V").
+#' @param hl  Lazy HL table, pre-filtered to a single target species
+#'            (e.g. filter(aphia == 126436)).
+#' @param collapse_sex   If TRUE (default), sum across sex levels.
+#'            Set FALSE to retain sex as a grouping dimension.
+#' @param collapse_stage If TRUE (default), sum across DevelopmentStage levels.
+#'            Set FALSE to retain developmental stage as a grouping dimension.
+#'
+#' @return A lazy dplyr/DuckDB table with columns:
+#'   .id, length_mm, [sex], [DevelopmentStage], n_haul, n_hour.
+#'   Zero-catch hauls appear as a single row with length_mm = 0, n_haul = 0,
+#'   n_hour = 0. Join to dr_con("HH") on .id to retrieve haul metadata.
+dr_cpue_length <- function(hh, hl,
+                           collapse_sex   = TRUE,
+                           collapse_stage = TRUE) {
+  group_vars <- c(".id", "length_mm")
+  if (!collapse_sex)   group_vars <- c(group_vars, "sex")
+  if (!collapse_stage) group_vars <- c(group_vars, "DevelopmentStage")
+
+  hh |>
+    select(.id, HaulDuration, DataType) |>
+    left_join(
+      hl |>
+        dr_add_length_mm() |>
+        select(.id, length_mm, sex, DevelopmentStage,
+               NumberAtLength, SubsamplingFactor),
+      by = ".id"
+    ) |>
+    dr_add_n_and_cpue() |>
+    group_by(across(all_of(group_vars))) |>
+    summarise(
+      n_haul = sum(n_haul, na.rm = TRUE),
+      n_hour = sum(n_hour, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(
+      length_mm = coalesce(length_mm, 0),
+      n_haul    = coalesce(n_haul,    0),
+      n_hour    = coalesce(n_hour,    0)
+    )
+}
+```
+
+### Usage example
+
+```{r}
+#| code-fold: false
+# NS-IBTS Q1 2025, Atlantic cod — sex collapsed (default)
+hh_ns <- dr_con("HH") |>
+  filter(Survey == "NS-IBTS", Year == 2025, Quarter == 1, HaulValidity == "V")
+
+hl_cod <- dr_con("HL") |>
+  filter(aphia == 126436)
+
+cpue_derived <- dr_cpue_length(hh_ns, hl_cod) |> collect()
+
+# Sex-resolved (collapse_sex = FALSE)
+cpue_sex <- dr_cpue_length(hh_ns, hl_cod, collapse_sex = FALSE) |> collect()
+```
+
+```{r}
+tibble(
+  Variant       = c("collapsed (default)", "sex-resolved"),
+  Hauls         = c(n_distinct(cpue_derived$.id), n_distinct(cpue_sex$.id)),
+  Rows          = c(nrow(cpue_derived), nrow(cpue_sex)),
+  `Zero hauls`  = c(sum(cpue_derived$length_mm == 0), sum(cpue_sex$length_mm == 0))
+) |> knitr::kable()
+```
+
+## CPUEL coverage
+
+Only **`r length(cpuel_surveys)`** of the **`r length(hh_surveys)`** surveys in the HH table have a CPUEL product.
+
+```{r}
+#| label: tbl-coverage
+#| tbl-cap: "Surveys with and without a CPUEL product. The 22 surveys without CPUEL have no alternative but to use the HL-derived approach."
+tibble(
+  Status  = c("Has CPUEL", "No CPUEL"),
+  Surveys = c(
+    paste(sort(cpuel_surveys), collapse = ", "),
+    paste(sort(setdiff(hh_surveys, cpuel_surveys)), collapse = ", ")
+  )
+) |> knitr::kable()
+```
+
+## Problem 1 — Ambiguous haul key
+
+The CPUEL output uses a **shortened haul key** — `Survey:Year:Quarter:Platform:Gear:HaulNumber` — omitting `Country` and `StationName`. The full key used in HH and HL is `Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber`. In any year-quarter where two different hauls share the same short key (same vessel, same haul number, but different station), CPUEL cannot identify which haul a record belongs to.
+
+Across all valid HH records, **`r n_ambiguous_keys`** unique short keys each resolve to more than one full `.id` (covering `r n_ambiguous_hauls` hauls):
+
+```{r}
+#| label: tbl-dup-keys
+#| tbl-cap: "Short haul keys (.id2) that resolve to more than one full haul .id in valid HH."
+dr_con("HH") |>
+  filter(HaulValidity == "V") |>
+  mutate(.id2 = paste(Survey, Year, Quarter, Platform, Gear, HaulNumber, sep = ":")) |>
+  distinct(.id, .id2) |>
+  count(.id2) |>
+  filter(n > 1) |>
+  count(n, name = "n_ambiguous_keys") |>
+  collect() |>
+  rename(`Full .id per short key` = n, `Number of ambiguous short keys` = n_ambiguous_keys) |>
+  knitr::kable()
+```
+
+A concrete example — two valid BITS hauls sharing the same short key, distinguished only by `StationName`, with similar positions:
+
+```{r}
+dr_con("HH") |>
+  filter(HaulValidity == "V") |>
+  mutate(.id2 = paste(Survey, Year, Quarter, Platform, Gear, HaulNumber, sep = ":")) |>
+  distinct(.id, .id2, Survey, Year, Country, StationName,
+           ShootLatitude, ShootLongitude) |>
+  collect() |>
+  group_by(.id2) |>
+  filter(n() == 2) |>
+  ungroup() |>
+  arrange(.id2) |>
+  slice_head(n = 4) |>
+  knitr::kable()
+```
+
+CPUEL does contain `ShootLatitude` and `ShootLon`, which might appear to offer a way to disambiguate. However, as the example above shows, hauls that differ only in `StationName` can have near-identical positions. Lat/lon is not a reliable join key.
+
+The consequence for users is not that CPUEL's CPUE values are wrong — ICES computes CPUEL internally using the full key, then truncates the output. The problem arises when users try to **join CPUEL back to HH** (e.g. to retrieve depth, gear parameters, or exact position): for any of the 2,400+ ambiguous short keys, the join is indeterminate and may pull metadata from the wrong haul.
+
+For NS-IBTS Q1 2025 specifically, `r n_ns25_dup_keys` short keys resolve to 2 hauls each (`r n_ns25_dup_hauls` hauls total). CPUEL presents 312 distinct short keys; the correct count is 361 distinct hauls. Of those 98 hauls with duplicated keys, **66 had cod catch**. The CPUE totals happen to agree because CPUEL computes internally with the full key and only truncates the output — but any attempt to join CPUEL records back to HH on the short key to retrieve metadata (position, depth, gear) will return wrong results for those 49 ambiguous keys.
+
+## Problem 2 — Non-valid hauls included
+
+CPUEL does not filter by `HaulValidity`. For BITS, a comparison across all years shows:
+
+```{r}
+#| label: tbl-haul-coverage
+#| tbl-cap: "Haul set comparison: CPUEL vs valid HH (HaulValidity='V'). Haul keys are compared as short .id2 here; full-.id counts are larger."
+haul_coverage <- map_dfr(cpuel_surveys, function(sv) {
+  cpuel_h <- dr_con("CPUEL") |>
+    filter(Survey == sv) |>
+    mutate(.id2 = paste(Survey, Year, Quarter, Platform, Gear, HaulNumber, sep = ":")) |>
+    distinct(.id2) |>
+    collect() |>
+    pull(.id2)
+
+  valid_h <- dr_con("HH") |>
+    filter(Survey == sv, HaulValidity == "V") |>
+    mutate(.id2 = paste(Survey, Year, Quarter, Platform, Gear, HaulNumber, sep = ":")) |>
+    distinct(.id2) |>
+    collect() |>
+    pull(.id2)
+
+  tibble(
+    Survey                = sv,
+    `CPUEL keys`          = length(cpuel_h),
+    `Valid HH keys`       = length(valid_h),
+    `Extra in CPUEL`      = length(setdiff(cpuel_h, valid_h)),
+    `Missing from CPUEL`  = length(setdiff(valid_h, cpuel_h))
+  )
+})
+
+haul_coverage |> knitr::kable()
+```
+
+Only ROCKALL has a clean match. The `Extra in CPUEL` hauls are the critical concern — these are keys present in CPUEL but absent from valid HH, meaning CPUEL contains catches from hauls that should be excluded. For BITS 2023 cod specifically, this inflates the total CPUE:
+
+```{r}
+#| label: tbl-bits-totals
+#| tbl-cap: "BITS 2023 cod: haul sets and total CPUE from CPUEL vs HL-derived."
+hh_bits <- dr_con("HH") |>
+  filter(HaulValidity == "V", Survey == "BITS", Year == 2023)
+
+cpue_bits_cpuel <- dr_con("CPUEL") |>
+  filter(Survey == "BITS", Year == 2023, Species == "Gadus morhua") |>
+  collect()
+
+cpue_bits_derived <- dr_cpue_length(
+    hh_bits,
+    dr_con("HL") |> filter(aphia == 126436)
+  ) |>
+  collect()
+
+tibble(
+  Source               = c("CPUEL", "dr_cpue_length() on valid HH"),
+  `Haul keys`          = c(n_distinct(cpue_bits_cpuel$HaulNumber), n_distinct(cpue_bits_derived$.id)),
+  `Total CPUE (n/hr)`  = c(
+    round(sum(cpue_bits_cpuel$CPUE_number_per_hour), 0),
+    round(sum(cpue_bits_derived$n_hour), 0)
+  )
+) |> knitr::kable()
+```
+
+
+
+## Problem 3 — Sex aggregated to NA
+
+CPUEL groups by `(haul × length class)` and sums across `sex`, setting the field to `NA`. This is the case for **7 of the 8 CPUEL surveys**. EVHOE is the only exception, retaining M, F, and U — though it also has many NA rows for species where sex is not recorded.
+
+```{r}
+#| label: tbl-sex
+#| tbl-cap: "sex distribution in CPUEL by survey."
+dr_con("CPUEL") |>
+  count(Survey, sex) |>
+  collect() |>
+  pivot_wider(names_from = sex, values_from = n, values_fill = 0) |>
+  arrange(Survey) |>
+  knitr::kable()
+```
+
+For any survey other than EVHOE, using CPUEL means **all sex-at-length information is lost**. Using `dr_cpue_length(..., collapse_sex = FALSE)` preserves whatever sex information was recorded in HL.
+
+The row-count consequence: for NS-IBTS Q1 2025 cod, HL records both M and F at the same length class in 3 `(haul × length)` combinations. CPUEL merges these pairs into single NA rows, producing 3 fewer rows than the sex-resolved HL derivation. Per-haul totals are identical:
+
+```{r}
+#| label: tbl-ns-totals
+#| tbl-cap: "NS-IBTS Q1 2025 cod: row counts and total CPUE comparing CPUEL (sex aggregated) vs dr_cpue_length() with and without sex."
+cpue_ns_cpuel <- dr_con("CPUEL") |>
+  filter(Survey == "NS-IBTS", Quarter == 1, Year == 2025,
+         Species == "Gadus morhua") |>
+  collect()
+
+cpue_ns_coll <- dr_cpue_length(
+    dr_con("HH") |>
+      filter(Survey == "NS-IBTS", Year == 2025, Quarter == 1, HaulValidity == "V"),
+    dr_con("HL") |> filter(aphia == 126436)
+  ) |>
+  collect()
+
+cpue_ns_sex <- dr_cpue_length(
+    dr_con("HH") |>
+      filter(Survey == "NS-IBTS", Year == 2025, Quarter == 1, HaulValidity == "V"),
+    dr_con("HL") |> filter(aphia == 126436),
+    collapse_sex = FALSE
+  ) |>
+  collect()
+
+tibble(
+  Source          = c("CPUEL (sex=NA)", "dr_cpue_length() collapsed", "dr_cpue_length() sex-resolved"),
+  Rows            = c(nrow(cpue_ns_cpuel), nrow(cpue_ns_coll), nrow(cpue_ns_sex)),
+  `Total n/hour`  = c(
+    round(sum(cpue_ns_cpuel$CPUE_number_per_hour), 1),
+    round(sum(cpue_ns_coll$n_hour), 1),
+    round(sum(cpue_ns_sex$n_hour), 1)
+  )
+) |> knitr::kable()
+```
+
+## Summary
+
+```{r}
+#| echo: false
+tibble(
+  Problem = c(
+    "Ambiguous haul key",
+    "Non-valid hauls included",
+    "Sex aggregated to NA"
+  ),
+  Description = c(
+    "CPUEL omits Country and StationName from the output key. 2,400+ short keys resolve to multiple full hauls in HH. Joining CPUEL to HH for metadata retrieval is unreliable for those hauls.",
+    "CPUEL does not filter by HaulValidity. 94% of the extra-in-CPUEL BITS hauls were already non-valid when CPUEL was computed — staleness explains only 4%.",
+    "7 of 8 CPUEL surveys have Sex=NA for all records. Sex-at-length is unrecoverable from CPUEL. Only EVHOE retains M/F/U."
+  ),
+  Remedy = c(
+    "Use full .id key via dr_cpue_length()",
+    "Filter HH to HaulValidity=='V' before calling dr_cpue_length()",
+    "Use collapse_sex = FALSE in dr_cpue_length()"
+  )
+) |> knitr::kable()
+```
+
+`dr_cpue_length()` addresses all three problems. It operates on all 30 surveys (not just the 8 with CPUEL), uses the unambiguous full `.id` key, includes only hauls the user has chosen to include, and preserves sex and developmental stage when requested.

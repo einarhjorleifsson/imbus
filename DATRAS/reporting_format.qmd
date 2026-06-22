@@ -1,0 +1,337 @@
+---
+title: "DATRAS Exchange Format: Reporting Format"
+subtitle: "Field definitions, mandatory status, and survey-specific constraints across all 34 surveys"
+date: "June 2026"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+---
+
+```{r setup}
+#| include: false
+library(httr)
+library(rvest)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(ggplot2)
+library(DT)
+library(stringr)
+```
+
+This page documents the DATRAS exchange format as reported by the [DATRAS Reporting
+Format](https://datras.ices.dk/Data_products/ReportingFormat.aspx) web page. It covers all 34
+surveys and five record types (HH, HL, CA, LT, FA), and answers two questions:
+
+1. **Which fields are mandatory vs. optional?** — and does this vary across surveys?
+2. **What are the allowed value ranges (Min / Max)?** — and how do these vary across surveys?
+
+The data are scraped directly from the DATRAS web page and are current as of the document
+build date.
+
+---
+
+## Scraping the reporting format {#sec-scrape}
+
+```{r scrape}
+#| cache: true
+#| echo: true
+
+DATRAS_URL <- "https://datras.ices.dk/Data_products/ReportingFormat.aspx"
+
+get_hidden_fields <- function(page) {
+  hid <- page |> html_elements("input[type='hidden']")
+  setNames(html_attr(hid, "value"), html_attr(hid, "name"))
+}
+
+post_form <- function(handle, hidden, survey_val, record_val) {
+  POST(
+    handle = handle,
+    path   = "/Data_products/ReportingFormat.aspx",
+    encode = "form",
+    body   = as.list(c(
+      hidden,
+      `__EVENTTARGET`   = "",
+      `__EVENTARGUMENT` = "",
+      `ctl00$ContentPlaceHolder1$ddl_Datatype_new` = survey_val,
+      `ctl00$ContentPlaceHolder1$ddl_RecordTypes`  = record_val,
+      `ctl00$ContentPlaceHolder1$BtnDisplay`       = "Display"
+    ))
+  ) |> (\(r) read_html(content(r, "raw")))()
+}
+
+extract_field_table <- function(page) {
+  tbls <- page |> html_elements("table")
+  result <- NULL
+  for (tbl in tbls) {
+    candidate <- tryCatch(html_table(tbl), error = \(e) NULL)
+    if (!is.null(candidate) &&
+        nrow(candidate) > 3 &&
+        "FieldName" %in% names(candidate) &&
+        "Mandatory" %in% names(candidate)) {
+      result <- candidate
+    }
+  }
+  result
+}
+
+# --- Fetch initial page ---
+h  <- handle("https://datras.ices.dk")
+r0 <- GET(handle = h, path = "/Data_products/ReportingFormat.aspx")
+p0 <- read_html(content(r0, "raw"))
+hidden0 <- get_hidden_fields(p0)
+
+survey_opts <- p0 |>
+  html_elements("#ContentPlaceHolder1_ddl_Datatype_new option") |>
+  (\(x) data.frame(
+    survey_val  = html_attr(x, "value"),
+    survey_name = html_text(x) |> trimws(),
+    stringsAsFactors = FALSE
+  ))() |>
+  filter(survey_val != "none")
+
+record_opts <- p0 |>
+  html_elements("#ContentPlaceHolder1_ddl_RecordTypes option") |>
+  (\(x) data.frame(
+    record_val  = html_attr(x, "value"),
+    record_name = html_text(x) |> trimws(),
+    stringsAsFactors = FALSE
+  ))()
+
+# --- Scrape all combinations ---
+scrape_one <- function(survey_val, survey_name, record_val, record_name) {
+  Sys.sleep(0.3)
+  page <- tryCatch(
+    post_form(h, hidden0, survey_val, record_val),
+    error = \(e) NULL
+  )
+  if (is.null(page)) return(NULL)
+  tbl <- extract_field_table(page)
+  if (is.null(tbl)) return(NULL)
+  tbl |>
+    select(Order, FieldName, Width, Format, Mandatory,
+           any_of(c("Min", "Max"))) |>
+    mutate(
+      Survey     = survey_val,
+      SurveyName = survey_name,
+      RecordType = record_name,
+      Mandatory  = Mandatory == "True",
+      .before    = 1
+    )
+}
+
+combos <- crossing(survey_opts, record_opts)
+results <- pmap(
+  list(combos$survey_val, combos$survey_name,
+       combos$record_val, combos$record_name),
+  scrape_one
+)
+rf <- bind_rows(results)
+```
+
+```{r derived}
+# Identify fields whose Min/Max vary by survey (shown separately below)
+varying_fields <- rf |>
+  group_by(RecordType, FieldName) |>
+  filter(n_distinct(Min, na.rm = TRUE) > 1 | n_distinct(Max, na.rm = TRUE) > 1) |>
+  ungroup() |>
+  distinct(RecordType, FieldName)
+
+# Reference field table: one row per RecordType × FieldName.
+# Ranges are uniform across surveys for all non-varying fields, so first() is safe.
+# Varying fields keep NA for Min/Max (per-survey detail shown in the constraints section).
+rf_ref <- rf |>
+  group_by(RecordType, Order, FieldName, Width, Format, Mandatory) |>
+  summarise(Min = first(Min), Max = first(Max), .groups = "drop") |>
+  rows_update(
+    varying_fields |> mutate(Min = NA_real_, Max = NA_real_),
+    by = c("RecordType", "FieldName"),
+    unmatched = "ignore"
+  ) |>
+  arrange(RecordType, Order)
+
+# Survey-varying min/max: fields where Min or Max differs across surveys
+rf_ranges <- rf |>
+  filter(!is.na(Min) | !is.na(Max)) |>
+  group_by(RecordType, FieldName) |>
+  filter(n_distinct(Min, na.rm = TRUE) > 1 |
+         n_distinct(Max, na.rm = TRUE) > 1) |>
+  ungroup()
+
+# Survey list (drop the NS-IBTS_UNIFtest entry for range plots)
+surveys_clean <- rf |>
+  distinct(Survey, SurveyName) |>
+  filter(!str_detect(Survey, "UNIFtest"))
+```
+
+---
+
+## Overview {#sec-overview}
+
+```{r overview-table}
+rf |>
+  group_by(RecordType) |>
+  summarise(
+    Fields     = n_distinct(FieldName),
+    Mandatory  = n_distinct(FieldName[Mandatory]),
+    Optional   = n_distinct(FieldName[!Mandatory]),
+    Surveys    = n_distinct(Survey),
+    .groups = "drop"
+  ) |>
+  arrange(RecordType) |>
+  knitr::kable(caption = "Field counts per record type (mandatory status is uniform across all surveys).")
+```
+
+```{r survey-table}
+rf |>
+  distinct(Survey, SurveyName) |>
+  arrange(Survey) |>
+  knitr::kable(col.names = c("Survey code", "Full name"),
+               caption = paste0("All ", nrow(distinct(rf, Survey)),
+                                " surveys in the reporting format."))
+```
+
+**Key findings from the scrape:**
+
+- Mandatory status is **identical for every survey** within a record type — the DATRAS
+  exchange format does not vary field-level obligations by survey.
+- Min / Max value ranges are defined for fields across all record types (HH, HL, CA, FA)
+  and are likewise **uniform across surveys** — with the exception of five HH fields:
+  `BottomDepth`, `Distance`, `GroundRopeWeight`, `HaulDuration`, and `WarpLength`,
+  whose allowed ranges differ by survey and are shown separately in @sec-constraints.
+
+---
+
+## Field definitions per record type {#sec-fields}
+
+Each table shows the complete field list for that record type. Mandatory fields are
+highlighted. Min / Max are the allowed value ranges; blank cells indicate no constraint is
+specified on the page.
+
+```{r field-table-fn}
+make_field_table <- function(record_type) {
+  df <- rf_ref |>
+    filter(RecordType == record_type) |>
+    select(Order, FieldName, Format, Width, Mandatory, Min, Max) |>
+    mutate(Mandatory = ifelse(Mandatory, "M", "O"))
+
+  datatable(
+    df,
+    rownames = FALSE,
+    filter   = "none",
+    class    = "compact",
+    options  = list(
+      paging         = FALSE,
+      scrollY        = "500px",
+      scrollCollapse = TRUE,
+      dom            = "t"
+    ),
+    caption  = paste(record_type, "— field definitions")
+  ) |>
+    formatStyle(
+      "Mandatory",
+      backgroundColor = styleEqual(c("M", "O"), c("#d4edda", "#f8f9fa")),
+      fontWeight      = styleEqual("M", "bold")
+    )
+}
+```
+
+::: {.panel-tabset}
+
+### HH — Haul Header
+
+```{r tbl-hh}
+make_field_table("HH")
+```
+
+### HL — Haul Length
+
+```{r tbl-hl}
+make_field_table("HL")
+```
+
+### CA — Catch at Age
+
+```{r tbl-ca}
+make_field_table("CA")
+```
+
+### LT — Litter
+
+```{r tbl-lt}
+make_field_table("LT")
+```
+
+### FA — Fish Activity
+
+```{r tbl-fa}
+make_field_table("FA")
+```
+
+:::
+
+---
+
+## Survey-specific field constraints {#sec-constraints}
+
+All survey-specific variation in the reporting format is confined to allowed value ranges
+(Min / Max) for five HH fields. The plots below show each survey's permitted range as a
+horizontal segment. Surveys are sorted by their minimum value within each field.
+
+```{r range-plots}
+#| fig-height: 10
+#| fig-width: 9
+
+field_labels <- c(
+  BottomDepth      = "Bottom Depth (m)",
+  Distance         = "Distance (m)",
+  GroundRopeWeight = "Ground Rope Weight (kg)",
+  HaulDuration     = "Haul Duration (min)",
+  WarpLength       = "Warp Length (m)"
+)
+
+rf_ranges |>
+  filter(!str_detect(Survey, "UNIFtest")) |>
+  mutate(FieldLabel = recode(FieldName, !!!field_labels)) |>
+  group_by(FieldName) |>
+  mutate(Survey = reorder(Survey, Min, FUN = \(x) mean(x, na.rm = TRUE))) |>
+  ungroup() |>
+  ggplot(aes(y = Survey)) +
+  geom_segment(aes(x = Min, xend = Max, yend = Survey),
+               linewidth = 1.2, colour = "#2166ac") +
+  geom_point(aes(x = Min), size = 1.5, colour = "#2166ac") +
+  geom_point(aes(x = Max), size = 1.5, colour = "#2166ac") +
+  facet_wrap(~ FieldLabel, scales = "free_x", ncol = 2) +
+  labs(x = "Allowed value range", y = NULL) +
+  theme_bw(base_size = 9) +
+  theme(panel.grid.minor  = element_blank(),
+        axis.text.y       = element_text(size = 7))
+```
+
+### Full range data {#sec-range-table}
+
+```{r range-table}
+rf_ranges |>
+  filter(!str_detect(Survey, "UNIFtest")) |>
+  select(RecordType, FieldName, Survey, SurveyName, Mandatory, Min, Max) |>
+  arrange(FieldName, Min) |>
+  datatable(
+    rownames = FALSE,
+    filter   = "none",
+    class    = "compact",
+    options  = list(
+      paging         = FALSE,
+      scrollY        = "500px",
+      scrollCollapse = TRUE,
+      dom            = "t"
+    ),
+    caption  = "Survey-specific Min / Max constraints (HH fields only)."
+  ) |>
+  formatStyle(
+    "Mandatory",
+    backgroundColor = styleEqual(c(TRUE, FALSE), c("#d4edda", "#f8f9fa"))
+  )
+```
