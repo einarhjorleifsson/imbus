@@ -16,38 +16,45 @@ execute:
 
 ## Preamble
 
-ICES provides a pre-computed CPUE-by-length product (`CPUEL`) for a subset of DATRAS surveys. This document compares it against CPUE derived directly from the raw HH and HL tables, identifies three structural problems with the CPUEL product, and proposes `dr_cpue_length()` as the recommended derivation function.
+ICES provides a pre-computed CPUE-by-length product (`CPUEL`) for a subset of DATRAS surveys. This document compares it against CPUE derived directly from the raw HH and HL tables and identifies three structural problems with the CPUEL product.
 
 Atlantic cod (*Gadus morhua*, AphiaID 126436) is used as a concrete species throughout. The structural findings apply across species.
 
-### The `by_length` product
+---
 
-The IMBUS D2.3 data product includes `by_length.parquet` — a pre-computed CPUE-by-length
+## Status: Superseded
+
+**June 2026:** This document remains as a reference for the three structural problems in the ICES CPUEL product. However, guidance has been updated.
+
+**Recommended approach:** Use `dr_con("HL_standardised") |> filter(type == "length")` directly. This pre-computed table covers all 29 DATRAS surveys, addresses all three problems documented here, and is the foundation for IMBUS D2.3 deliverables.
+
+For updated guidance see the [obus catch products vignette](https://einarhjorleifsson.github.io/obus/articles/catch_products.html).
+
+### The `HL_standardised` product — **Recommended for all CPUE work**
+
+The IMBUS D2.3 data product is `HL_standardised` — a pre-computed standardised HL
 table covering **all 29 DATRAS surveys** and all species. It is accessible via
-`dr_con("by_length")` and can be used directly without needing to work through the raw HH
-and HL tables.
+`dr_con("HL_standardised")` and can be filtered directly to length-frequency rows
+without needing to work through the raw HH and HL tables.
 
 ```r
 library(obus)
 
-# Ready-to-use — no CPUE arithmetic needed
-cod <- dr_con("by_length") |>
-  filter(latin == "Gadus morhua") |>
+# Ready-to-use — no CPUE arithmetic needed. Use this for all new work.
+cod <- dr_con("HL_standardised") |>
+  filter(type == "length", latin == "Gadus morhua") |>
   collect()
 ```
 
-`by_length` is derived by the same logic as `dr_cpue_length()`: valid hauls only (via
-`inner_join` with HH filtered to `HaulValidity == "V"`), DataType-corrected arithmetic,
-and length standardised to cm. Sex and developmental stage are collapsed (summed over).
-Zero-catch hauls are not included; apply zero-fill from `dr_con("HH")` if needed for index
-work.
+**Key properties:**
 
-`dr_cpue_length()` remains useful when you need: (1) sex- or stage-resolved CPUE
-(`collapse_sex = FALSE`), (2) zero-fill, (3) a subset of surveys/years/species without
-downloading the full `by_length` product, or (4) a custom species filter on `aphia`
-rather than species name.
+- **Full haul key** (`.id`): Survey, Year, Quarter, Country, Platform, Gear, StationName, HaulNumber — unambiguous identification
+- **Valid hauls only** (`HaulValidity == "V"` pre-applied)
+- **Not zero-filled** at source: use `dr_catch_by_haul()` or `dr_expand_length()` downstream
+- **`p_females` column** retains sex composition without a separate `sex` grouping dimension
+- **All surveys** (29 total vs 8 in CPUEL)
 
-The three problems with CPUEL documented below do not apply to `by_length`.
+**The three problems with CPUEL documented below do not apply to `HL_standardised`.**
 
 ```{r setup}
 library(tidyverse)
@@ -81,9 +88,11 @@ n_ns25_dup_keys  <- n_distinct(ns25_dup$.id2)
 n_ns25_dup_hauls <- nrow(ns25_dup)
 ```
 
-## Recommended function: `dr_cpue_length()`
+## Historical reference: `dr_cpue_length()`
 
-The three problems documented below all stem from using the CPUEL product. The recommended alternative is to derive CPUE directly from HH and HL using `dr_cpue_length()`. The function:
+> **Note:** `dr_cpue_length()` is superseded by the `dr_HL_standardised()` pipeline. The function below is preserved as documentation of how the derivation works.
+
+The three problems documented below all stem from using the CPUEL product. An earlier recommended alternative was to derive CPUE directly from HH and HL using the `dr_cpue_length()` helper below. The function:
 
 - Uses the **full `.id` haul key** (`Survey:Year:Quarter:Country:Platform:Gear:StationName:HaulNumber`), avoiding the ambiguity of CPUEL's shortened key.
 - Zero-fills via `HH |> left_join(HL)`, so every valid haul appears in the output — hauls with no catch for the target species get `length_mm = 0, n_haul = 0, n_hour = 0`.
@@ -364,4 +373,4 @@ tibble(
 ) |> knitr::kable()
 ```
 
-`dr_cpue_length()` addresses all three problems. It operates on all 30 surveys (not just the 8 with CPUEL), uses the unambiguous full `.id` key, includes only hauls the user has chosen to include, and preserves sex and developmental stage when requested.
+**Guidance:** For new CPUE-by-length analysis, use `dr_con("HL_standardised") |> filter(type == "length")` directly. It covers all 29 DATRAS surveys with consistent methodology. Archive CPUEL for historical reference only.

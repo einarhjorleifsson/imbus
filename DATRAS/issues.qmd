@@ -20,23 +20,26 @@ library(tidyverse)
 library(obus)
 ```
 
-> **Purpose of this document.** This page documents two categories of content: (1) **Data Issues** — known inconsistencies, ambiguities, and format problems that should be addressed by the ICES Datacenter or are survey-specific quirks users must be aware of; and (2) **Quality Checks** — reproducible R code to detect and verify these issues in the data.
+> **Purpose of this document.** This page documents two categories of content: (1) **Known Issues** — problems and conventions requiring awareness or upstream correction; and (2) **Quality Checks** — reproducible R code to detect and verify these issues in the data.
 
 ---
 
-## Part I: Known Data Issues for ICES Datacenter
+## Part I: Known Issues
 
-Issues in this section represent either:
-- **Format inconsistencies** across DATRAS systems (legacy vs. standard naming, inconsistent field definitions)
-- **Data inconsistencies** (values not matching expected relationships, format violations)
-- **Survey-specific quirks** that affect data interpretation
-- **Empirical deviations** from intended submission standards
+Each issue is classified by **where the fix lies**:
 
-These are issues that **users must know about** to process data correctly, and many represent **upstream problems that should be reported to ICES** for correction.
+| Class | Meaning | Fix owner |
+|-------|---------|-----------|
+| **Specification gap** | The format spec is underspecified, ambiguous, or internally inconsistent | ICES documentation |
+| **Software/API bug** | Bug or design flaw in an ICES tool | ICES software team |
+| **Submission error** | Values in the submitted data violate the format specification | Data providers / ICES Datacenter |
+| **Survey convention** | Deliberate survey practice that differs from the general format; not an error | No fix — user awareness |
 
 ---
 
-## Format Inconsistencies {#sec-format-issues}
+## Specification Gaps {#sec-spec-gaps}
+
+The DATRAS format specification is underspecified, inconsistent, or allows submission practices it does not formally define. Fix lies with ICES documentation and format governance.
 
 ### Column naming convention: legacy vs. standard {#sec-naming-convention}
 
@@ -84,27 +87,7 @@ Additionally, **gear fields are duplicated** across HH, HL, and CA with identica
 
 ---
 
-## Data Inconsistencies {#sec-data-inconsistencies}
-
-### Size-stratified subsampling submitted as DataType R (data inconsistency) {#sec-datatype-r-stratified}
-
-**Issue:** The DATRAS schema intends DataType `P` for size-stratified hauls, but a minority (95 groups) are submitted as DataType `R`, **predominantly Danish vessels in NS-IBTS and BITS from 2024 onward** (82 of 95 groups). This is a **submission error that should be corrected at source**.
-
-The row-level formula `NumberAtLength × SubsamplingFactor` remains correct, but `TotalNumber` reflects the stratum total, not the species-haul total. This is a **data inconsistency** that downstream users must work around.
-
-**See:** [D2.2 §The DataType field](../deliverables/D2.2_data_formats_metadata.qmd#sec-datatype)
-
----
-
-### DataType C with `SubsamplingFactor ≠ 1` (data errors) {#sec-datatype-c-invalid}
-
-For DataType C, `SubsamplingFactor` **must always equal 1**. Records with missing or `SubsamplingFactor ≠ 1` are **submission errors** and should be flagged to the ICES Datacenter.
-
-**Scope:** At least **4,093+ records** have invalid `SubsamplingFactor` values for DataType C. Combined with the ~1,856 NA values (see §sec-subfactor-na), this represents a meaningful data quality issue affecting DataType C records.
-
----
-
-### `TotalNumber` is not consistently defined across surveys (data inconsistency) {#sec-totalnumber-reconciliation}
+### `TotalNumber` is not consistently defined across surveys {#sec-totalnumber-reconciliation}
 
 The reporting format states that `TotalNumber = SubsampledNumber × SubsamplingFactor`. However, empirical reconciliation reveals **the two are not always equal**, and the **discrepancy pattern is survey-specific**:
 
@@ -118,11 +101,102 @@ The reporting format states that `TotalNumber = SubsampledNumber × SubsamplingF
 
 **Implication:** `TotalNumber` **should not be relied upon as a portable cross-check** without knowing the survey-specific convention. The safe formula — `n_haul = sum(NumberAtLength × SubsamplingFactor)` from length rows — is self-consistent and does not depend on `TotalNumber`.
 
-**See:** [DATRAS data issues §TotalNumber reconciliation](#sec-totalnumber-qc) for the reconciliation check code below.
+**See:** [Quality Checks §TotalNumber reconciliation](#sec-totalnumber-qc) for the reconciliation check code.
 
 ---
 
-### `SubsamplingFactor = NA` (data error) {#sec-subfactor-na}
+### Presence-only HL records: `TotalNumber`, `NumberAtLength`, and `LengthClass` all NA {#sec-presence-only}
+
+**Issue:** Some HL records contain only a species identifier (`aphia`) with all quantity fields — `TotalNumber`, `NumberAtLength`, and `LengthClass` — submitted as `NA`. These are *presence-only* records: the submitting institute noted that a species was caught but provided no quantitative information.
+
+**Root cause:** The DATRAS reporting format does not explicitly prohibit submitting an HL row with all quantity fields absent, so some institutes use this to flag incidental species presence without recording counts or lengths. This is an **ambiguous submission convention** — the DATRAS exchange format specification should either formally disallow it or define it as a distinct record type.
+
+**Scope (NS-IBTS 2023 Q1):** 9 hauls affected (3 FR and 1 SE with DataType C; 4 NO and 1 NL with DataType R). These hauls produced **79 NA `n_haul` rows** out of 51,924 total non-NA rows — roughly 0.15% of haul × species combinations.
+
+**In `HL_standardised` `type == "haul"` rows:** Groups where all `TotalNumber` values are `NA` produce `n_haul = NA`. These rows are **neither zeros nor valid catches** — they signal a species was recorded as present but not counted. Users who filter `n_haul > 0` will silently drop them.
+
+**In `HL_standardised` `type == "length"` rows (fixed):** The opening `filter(NumberAtLength != 0)` previously dropped presence-only rows silently (SQL evaluates `NULL != 0` as NULL, not TRUE), causing 72 haul × species combinations to receive spurious zero rows. **Fixed in {obus}.**
+
+**Recommended treatment:**
+- Do not treat `n_haul = NA` rows as zero-catch entries.
+- For binary presence analyses, treat `n_haul = NA` as "detected but not quantified".
+- For abundance analyses, exclude `n_haul = NA` rows (do not zero-fill them).
+
+---
+
+## Software & API Bugs {#sec-software-bugs}
+
+Bugs or design flaws in ICES tools (`icesDatras`, derived products). Fix lies in ICES software. {obus} works around both issues listed here.
+
+### `xsi:nil` column name artefact in XML API responses {#sec-xsi-nil}
+
+**Issue:** When `icesDatras::getCPUEAge()` or `icesDatras::getIndices()` returns data via the XML API, columns whose values are absent or sparse arrive with `xsi:nil="true"` embedded in their column names:
+
+```
+"Age_6 xsi:nil=\"true\""
+"Age_7 xsi:nil=\"true\""
+...
+"Age_15 xsi:nil=\"true\""
+```
+
+**Root cause:** The ICES XML API marks absent elements using the W3C XML Schema nil convention (`xsi:nil="true"` attribute). The `icesDatras` XML parser does not strip this attribute — it leaks from the XML element into the parsed R column name.
+
+**Consequence:** Malformed column names cause three downstream problems:
+
+1. **Silent column mismatch on `bind_rows()`** — when iterating over multiple survey/year/quarter/species combinations, some data frames may carry `Age_6` (column had data) while others carry `Age_6 xsi:nil="true"` (column had no data). `dplyr::bind_rows()` treats these as distinct columns, producing a wider-than-expected table with mostly `NA` values in the duplicated columns.
+
+2. **Type coercion warnings** — numeric values stored under a malformed name cannot be matched to the column type specification, triggering `NAs introduced by coercion` warnings even when the underlying data is valid.
+
+3. **Inaccessible by standard column reference** — `df$Age_6` or `select(Age_6)` will fail silently; the backtick-quoted form `` df$`Age_6 xsi:nil="true"` `` is required.
+
+**Confirmed affected record types:** `CPUEA` (Age_6 – Age_15 in NS-IBTS), `IDX` (Age_7 – Age_15 in NS-IBTS), `LT` (e.g., `Tickler xsi:nil="true"`). The artefact may appear intermittently in any XML-backed record type depending on survey, year, and quarter.
+
+**{obus} workaround:** The internal `.strip_xsi_nil()` helper is applied to every data frame before `bind_rows()`:
+
+```r
+.strip_xsi_nil <- function(d) {
+  names(d) <- sub(' xsi:nil="true"', "", names(d), fixed = TRUE)
+  d
+}
+```
+
+**See:** [Quality Checks §`xsi:nil` artefact](#sec-xsi-nil-qc)
+
+---
+
+### CPUEL haul key is too short for unambiguous joins {#sec-cpuel-haul-key}
+
+**Issue:** CPUEL records lack `Country` and `StationName` fields present in HH. The short key (Survey, Year, Quarter, Platform, Gear, HaulNumber) is **not guaranteed unique**. This creates **join ambiguity** when attempting to map CPUEL back to HH metadata — over 2,400 short keys are non-unique in the current data.
+
+**Root cause:** A product design decision in the CPUEL output format. CPUEL computes correctly internally, but the truncated key it publishes is unreliable for downstream joins.
+
+When joining CPUEL to HH, **always use the full 8-field `.id` key if possible**, or manually verify uniqueness for your survey/year subset. This is one of the reasons the IMBUS `HL_standardised` product is preferred over CPUEL.
+
+---
+
+## Submission Errors {#sec-submission-errors}
+
+Values in the submitted data that violate the DATRAS format specification. Fix lies with data providers (resubmission) or the ICES Datacenter (at-ingestion correction).
+
+### Size-stratified subsampling submitted as DataType R {#sec-datatype-r-stratified}
+
+**Issue:** The DATRAS schema intends DataType `P` for size-stratified hauls, but a minority (95 groups) are submitted as DataType `R`, **predominantly Danish vessels in NS-IBTS and BITS from 2024 onward** (82 of 95 groups). This is a **submission error that should be corrected at source**.
+
+The row-level formula `NumberAtLength × SubsamplingFactor` remains correct, but `TotalNumber` reflects the stratum total, not the species-haul total.
+
+**See:** [D2.2 §The DataType field](../deliverables/D2.2_data_formats_metadata.qmd#sec-datatype)
+
+---
+
+### DataType C with `SubsamplingFactor ≠ 1` {#sec-datatype-c-invalid}
+
+For DataType C, `SubsamplingFactor` **must always equal 1**. Records with missing or `SubsamplingFactor ≠ 1` are **submission errors** and should be flagged to the ICES Datacenter.
+
+**Scope:** At least **4,093+ records** have invalid `SubsamplingFactor` values for DataType C. Combined with the ~1,856 NA values (see [§SubsamplingFactor = NA](#sec-subfactor-na)), this represents a meaningful data quality issue affecting DataType C records.
+
+---
+
+### `SubsamplingFactor = NA` {#sec-subfactor-na}
 
 **0.986% of valid HL records** have missing `SubsamplingFactor`. This is a **significant data submission error** affecting multiple surveys and DataTypes. `SubsamplingFactor` is required for CPUE arithmetic and propagates as `NA` in computed `n_haul` and `n_hour`.
 
@@ -145,31 +219,17 @@ Mismatches can indicate:
 - Coordinate rounding or precision issues
 - Minor survey-specific spatial conventions
 
-**Note:** Can-Mar (Northwest Atlantic) doesn't report `StatisticalRectangle` at all — it's 100% NA. This is not a mismatch issue but a geographic exclusion: `StatisticalRectangle` is an ICES system covering the Northeast Atlantic only (see §sec-can-mar-boundaries).
+**Note:** Can-Mar (Northwest Atlantic) doesn't report `StatisticalRectangle` at all — it's 100% NA. This is not a mismatch issue but a geographic exclusion (see [§Can-Mar outside ICES rectangle coverage](#sec-can-mar-boundaries)).
 
 ---
 
-## Survey-Specific Quirks {#sec-survey-quirks}
+## Survey-Specific Conventions {#sec-survey-quirks}
 
-### SWC-IBTS ended 2010; superseded by SCOWCGFS {#sec-swc-ibts}
+Deliberate survey practices that differ from the general format or from other surveys. Not errors — but users must account for them.
 
-SWC-IBTS (Southwest Coast IBTS) records end in 2010 and are superseded by SCOWCGFS (Southwest Coast Continental Shelf Groundfish Survey). **Account for this break when analyzing time series.**
+These include the HL grouping key constancy findings: the sampling protocol fields (`SpeciesValidity`, `SubsamplingFactor`) are expected to be constant within a natural group (`.id × aphia × sex × DevelopmentStage × SpeciesCategory`), but several surveys have by-design exceptions.
 
----
-
-### Can-Mar is outside ICES statistical rectangle coverage {#sec-can-mar-boundaries}
-
-Can-Mar (Canadian Maritime) survey **does not populate the `StatisticalRectangle` field** — all 11,372 valid Can-Mar records have `NA` for this field. This is **correct and expected**: `StatisticalRectangle` is an ICES grid system covering the **Northeast Atlantic only** (see [ICES maps](https://www.ices.dk/data/maps/pages/ices-statistical-rectangles.aspx)). Can-Mar operates in the **Northwest Atlantic (Canadian waters)**, which falls outside the ICES rectangle system.
-
-This is **not a data quality issue**, simply a geographic mismatch.
-
-Can-Mar does report complete shooting coordinates (latitude/longitude at tow start) for all records (11,372/11,372) and haul coordinates for most records (6,537/11,372 = 57%). For spatial analysis, **use coordinates for Can-Mar instead of relying on statistical rectangles** (which are unavailable for this survey).
-
----
-
-## HL Grouping Key Constancy Violations {#sec-hl-constancy}
-
-The sampling protocol fields (e.g., `SpeciesValidity`, `SubsamplingFactor`) should be constant within a natural group (`.id × aphia × sex × DevelopmentStage × SpeciesCategory`), but empirical checking reveals **intentional and unintentional violations**:
+For the `StandardSpeciesCode` and `BycatchSpeciesCode` protocol flags that govern which species are required to be recorded per haul, see [Sampling protocols](sampling_protocol.qmd).
 
 ### `SpeciesValidity` varies within groups (by design) {#sec-specval-variation}
 
@@ -184,8 +244,8 @@ Most common co-occurrences: `{1, 5}` (1,281 groups) and `{4, 7}` (580 groups).
 `SubsamplingFactor` varies within **389 of ~2.1 million valid groups (0.02%)** due to **size-stratified subsampling**. Small and large fish are subsampled at different rates within the same species group.
 
 **Pattern by DataType:**
-- **P** (293 groups) — all GB-SCT, the intended encoding (across NS-IBTS, SCOWCGFS, SCOROC)
-- **R** (95 groups) — predominantly DK from 2024 onward; **submission error** (should be P)
+- **P** (293 groups) — all GB-SCT; the intended encoding across NS-IBTS, SCOWCGFS, SCOROC
+- **R** (95 groups) — predominantly DK from 2024 onward; **submission error** (should be P; see [§DataType R](#sec-datatype-r-stratified))
 - **C** (1 group) — anomaly
 
 **Key formula:** `n_haul = Σ(NumberAtLength × SubsamplingFactor)` applied **row by row** is correct for all DataTypes, including size-stratified cases.
@@ -194,11 +254,71 @@ Most common co-occurrences: `{1, 5}` (1,281 groups) and `{4, 7}` (580 groups).
 
 ### `TotalNumber` varies by stratum (consequence of size-stratification) {#sec-totalno-variation}
 
-`TotalNumber` and `SpeciesCategoryWeight` vary by stratum in **104 of ~2.1 million valid groups (0.005%)** as a direct consequence of size-stratified subsampling. This is a **data structure issue**, not an error.
+`TotalNumber` and `SpeciesCategoryWeight` vary by stratum in **104 of ~2.1 million valid groups (0.005%)** as a direct consequence of size-stratified subsampling. This is a **data structure consequence**, not an error.
+
+---
+
+### SWC-IBTS ended 2010; superseded by SCOWCGFS {#sec-swc-ibts}
+
+SWC-IBTS (Southwest Coast IBTS) records end in 2010 and are superseded by SCOWCGFS (Southwest Coast Continental Shelf Groundfish Survey). **Account for this break when analyzing time series.**
+
+---
+
+### SWC-IBTS contains non-standard sex code "-" {#sec-swc-ibts-sex-code}
+
+**Issue:** SWC-IBTS contains **44,295 rows with sex = "-"** (hyphen/dash). This is a non-standard sex code; the DATRAS specification defines sex as `M` (male), `F` (female), `U` (unsexed), or `NA` (not recorded).
+
+**Root cause:** Unknown. The "-" code may represent:
+- Missing/undocumented data (equivalent to NA)
+- A survey-specific convention with undefined meaning
+- A data submission artefact
+
+**Recommended treatment:** Treat sex = "-" as equivalent to `NA` (missing/unknown). This aligns with other surveys that report sex as `NA` and allows aggregation across surveys.
+
+**Scope:** 44,295 rows in SWC-IBTS; no other survey exhibits this code.
+
+---
+
+### Can-Mar uses `SpeciesValidity = "5"` on rows with actual length data {#sec-canmar-specval}
+
+`SpeciesValidity = "5"` is defined as "presence/absence only" — the expectation is that
+such rows carry no length or count information (`LengthClass = NA`, `NumberAtLength = NA`).
+BTS follows this convention: all 9 of its `{1, 5}` co-occurrence rows have `LengthClass = NA`.
+
+**Can-Mar does not follow this convention.** Of 2,805 `SpeciesValidity = "5"` rows in
+Can-Mar `{1, 5}` groups, 2,088 (74%) have `LengthClass` and `NumberAtLength` filled in.
+Inspection of 535 Can-Mar groups where both `"1"` and `"5"` rows carry length data shows:
+
+| Pattern | Groups | Share |
+|---------|:------:|:-----:|
+| `"5"` LengthClasses entirely distinct from `"1"` (additive data) | 226 | 42% |
+| `"5"` LengthClasses partially overlap with `"1"` | 204 | 38% |
+| `"5"` LengthClasses fully duplicated in `"1"` | 105 | 20% |
+
+The reason for this split is not documented in the DATRAS submission format. One possibility
+is that Can-Mar uses `SpeciesValidity` to distinguish two sampling subcategories within a
+haul (e.g., different gear components, sub-tows, or species-ID confidence levels). Another
+is that the `"5"` rows are a systematic submission artefact.
+
+**Practical implication:** filtering to `SpeciesValidity == "1"` in Can-Mar discards real
+length data in at least 42% of affected groups. The correct treatment is **unresolved** and
+requires clarification from the Canadian data provider.
+
+**See also:** [DATRAS FAQ § SpeciesValidity co-occurrence](#sec-specval-faq)
+
+---
+
+### Can-Mar is outside ICES statistical rectangle coverage {#sec-can-mar-boundaries}
+
+Can-Mar (Canadian Maritime) survey **does not populate the `StatisticalRectangle` field** — all 11,372 valid Can-Mar records have `NA` for this field. This is **correct and expected**: `StatisticalRectangle` is an ICES grid system covering the **Northeast Atlantic only** (see [ICES maps](https://www.ices.dk/data/maps/pages/ices-statistical-rectangles.aspx)). Can-Mar operates in the **Northwest Atlantic (Canadian waters)**, which falls outside the ICES rectangle system.
+
+Can-Mar does report complete shooting coordinates (latitude/longitude at tow start) for all records (11,372/11,372) and haul coordinates for most records (6,537/11,372 = 57%). For spatial analysis, **use coordinates for Can-Mar instead of relying on statistical rectangles**.
 
 ---
 
 ## Product Coverage Limitations {#sec-product-limitations}
+
+Limitations in the scope of ICES-derived products. These are not bugs — they reflect the resources required to validate and produce derived products for each survey.
 
 ### CPUEL available for only 8 of 29 surveys; CPUEA/IDX vary by expert group {#sec-product-availability}
 
@@ -207,14 +327,6 @@ Derived products (CPUEL, CPUEA, IDX) are **developed and verified in cooperation
 **Current coverage:**
 - CPUEL: 8 surveys (BITS, EVHOE, IE-IGFS, NS-IBTS, ROCKALL, SCOROC, SCOWCGFS, SWC-IBTS)
 - CPUEA and IDX: Vary by expert group agreement
-
----
-
-### CPUEL haul key ambiguity {#sec-cpuel-haul-key}
-
-**Issue:** CPUEL records lack `Country` and `StationName` fields present in HH. The short key (Survey, Year, Quarter, Platform, Gear, HaulNumber) is **not guaranteed unique**. This creates **join ambiguity** when attempting to map CPUEL back to HH metadata.
-
-When joining CPUEL to HH, **always use the full 8-field `.id` key if possible**, or manually verify uniqueness.
 
 ---
 
@@ -348,6 +460,33 @@ dt_c_breakdown <- hl_with_dt |>
   filter(DataType == "C") |>
   count(SubsamplingFactor, sort = TRUE)
 print(dt_c_breakdown |> head(10))
+```
+
+---
+
+## Presence-only HL records {#sec-presence-only-qc}
+
+Identify hauls and species groups where all quantity fields are absent. These produce `n_haul = NA` in `HL_standardised` `type == "haul"` rows and should not be treated as zero catches.
+
+```{r}
+#| label: presence-only-qc
+presence_only <- dr_con("HL") |>
+  filter(is.na(TotalNumber), is.na(NumberAtLength), is.na(LengthClass)) |>
+  left_join(dr_con("HH") |> select(.id, DataType),
+            by = ".id") |>
+  group_by(Survey, Year, Quarter, Country, DataType) |>
+  summarise(
+    n_hauls   = n_distinct(.id),
+    n_species = n_distinct(aphia),
+    .groups   = "drop"
+  ) |>
+  collect()
+
+cat("Total Survey/Year/Quarter/Country/DataType combinations affected:\n")
+print(presence_only)
+
+cat(sprintf("\nTotal hauls affected: %d\n",   sum(presence_only$n_hauls))  )
+cat(sprintf("Total species groups: %d\n",     sum(presence_only$n_species)))
 ```
 
 ---
@@ -532,9 +671,73 @@ if (nrow(dupes) > 0) {
 
 ---
 
+## `xsi:nil` column name artefact {#sec-xsi-nil-qc}
+
+Fetch a raw `icesDatras::getCPUEAge()` response and inspect the malformed column names directly. The example uses NS-IBTS 2022 Q1 (all species), which reliably produces the artefact on Age_6 – Age_15.
+
+```{r}
+#| label: xsi-nil-raw-names
+#| echo: true
+#| eval: false
+
+# Raw response — bypasses obus entirely
+raw_cpuea <- icesDatras::getCPUEAge("NS-IBTS", 2022, 1)
+
+# Columns carrying the xsi:nil artefact
+cat("Columns affected by xsi:nil artefact:\n")
+print(grep('xsi:nil', names(raw_cpuea), value = TRUE))
+
+cat("\nColumn count:", ncol(raw_cpuea), "\n")
+```
+
+The artefact can cause a wider-than-expected table when `bind_rows()` is called across API responses with inconsistent sets of affected columns. Demonstrate by simulating two frames where one call has the artefact on `Age_6` and the other does not (as would happen if the same age class had data in one survey-quarter but not another):
+
+```{r}
+#| label: xsi-nil-bind-problem
+#| echo: true
+#| eval: false
+
+# Simulate the real-world mix: one frame with the artefact, one without
+frame_with    <- raw_cpuea                          # Age_6 xsi:nil="true" present
+frame_without <- raw_cpuea                          # same structure ...
+names(frame_without) <- sub(' xsi:nil="true"', "",  # ... but artefact stripped from Age_6 only
+                            names(frame_without), fixed = TRUE)
+# Put the artefact back on Age_7+ to show a partial-strip scenario
+for (col in grep('xsi:nil', names(frame_with), value = TRUE)[-1]) {
+  names(frame_without)[names(frame_without) == sub(' xsi:nil="true"', "", col, fixed = TRUE)] <- col
+}
+
+result <- dplyr::bind_rows(frame_with, frame_without)
+cat("nrow frame_with:   ", nrow(frame_with), "\n")
+cat("nrow frame_without:", nrow(frame_without), "\n")
+cat("ncol each frame:   ", ncol(frame_with), "\n")
+cat("ncol after bind:   ", ncol(result), "  <-- extra column created\n")
+cat("Duplicate Age_6 columns in result:\n")
+print(grep("Age_6", names(result), value = TRUE))
+```
+
+Verify that the obus fix (`sub()` on `names()`) produces clean, accessible column names:
+
+```{r}
+#| label: xsi-nil-fix
+#| echo: true
+#| eval: false
+
+clean <- raw_cpuea
+names(clean) <- sub(' xsi:nil="true"', "", names(clean), fixed = TRUE)
+
+cat("Artefact columns remaining after fix:", sum(grepl("xsi:nil", names(clean))), "\n")
+cat("Age_6 now accessible via clean$Age_6:", !is.null(clean$Age_6), "\n")
+cat("head(clean$Age_6):", head(clean$Age_6), "\n")
+```
+
+---
+
 ## Version history
 
 | Date | Changes |
 |------|---------|
-| June 22, 2026 | Reorganized into two clear parts: (1) Data Issues for ICES (format inconsistencies, data inconsistencies, survey quirks, product limitations); (2) Quality Checks (reproducible R code to detect/verify each issue). Added cross-references to D2.2 sections. |
+| June 24, 2026 | Part I restructured into four issue classes (Submission Errors, Specification Gaps, Software & API Bugs, Survey-Specific Conventions). CPUEL haul-key section moved from Product Limitations to Software & API Bugs. HL grouping-key constancy violations merged into Survey-Specific Conventions. |
+| June 23, 2026 | Added presence-only HL records issue and QC check. Added `xsi:nil` column name artefact issue and QC section. |
+| June 22, 2026 | Reorganized into two parts: (1) Known Issues; (2) Quality Checks. Added cross-references to D2.2. |
 | June 2026 | Consolidated from `DATRAS_data_issues.qmd` and `miscellaneous.qmd`. |

@@ -3,37 +3,55 @@ title: "IMBUS — Project Documentation"
 subtitle: "Implementing More and Better Use of ICES Survey Data"
 ---
 
-**Project:** EMFAF-2025-PIA-FisheriesScientificAdvice · Proposal 101241455  
-**Duration:** 24 months (Sep 2025 – Aug 2027)  
+**Project:** EMFAF-2025-PIA-FisheriesScientificAdvice · Proposal 101241455
+**Duration:** 24 months (Sep 2025 – Aug 2027)
 **Total budget:** ~€599k (80% EU co-funding)
+
+---
+
+## About this site
+
+This site documents the technical work of the IMBUS project, with a focus on Work Package 2 (Data Standardisation). It covers the DATRAS exchange data format, known data quality issues, the CPUE derivation pipeline, and the data products produced for IMBUS deliverables. It is a living document updated throughout the project.
+
+---
+
+## The `{obus}` R package
+
+The technical implementation of WP2 is the R package **[{obus}](https://github.com/einarhjorleifsson/obus)**
+([documentation](https://einarhjorleifsson.github.io/obus/)). `{obus}` is the software layer that
+makes the IMBUS data products accessible to end users.
+
+`{obus}` provides:
+
+- **Lazy DuckDB access** to DATRAS exchange data (HH, HL, CA) stored as Parquet files on a public server, with no download or local storage required.
+- **Pre-computed standardised products** — in particular `dr_con("HL_standardised")`, the core IMBUS D2.3 deliverable: a validated, species-resolved, length-frequency table covering all 29 DATRAS surveys.
+- **Downstream helpers** (`dr_catch_by_haul()`, `dr_expand_length()`) for zero-filling and swept-area calculations.
+
+The Parquet files served by `{obus}` are the IMBUS D2.3 integrated data product. The package, the parquet server, and this documentation site together constitute the WP2 technical output.
+
+```r
+# Install
+remotes::install_github("einarhjorleifsson/obus")
+
+# Example: Atlantic cod length-frequency across all surveys
+library(obus)
+cod <- dr_con("HL_standardised") |>
+  filter(type == "length", latin == "Gadus morhua") |>
+  collect()
+```
 
 ---
 
 ## Work Package 2
 
-WP2 (User requirements, data formats and meta-data) is led by Einar Hjörleifsson (subcontracted
-to DTU Aqua) and runs from M1–M12 (Sep 2025 – Aug 2026). Its deliverables are:
+WP2 (User requirements, data formats and meta-data) is led by Einar Hjörleifsson (MRI Iceland,
+subcontracted to DTU Aqua) and runs M1–M12 (Sep 2025 – Aug 2026).
 
 | Deliverable | Description | Due | Status |
 |-------------|-------------|-----|--------|
-| [D2.1](deliverables/D2.1_user_requirements.qmd) | User requirements document | M6 (Feb 2026) | ✅ Complete |
+| D2.1 | User requirements document | M6 (Feb 2026) | ✅ Submitted |
 | [D2.2](deliverables/D2.2_data_formats_metadata.qmd) | Data formats and meta-data | M11 (Jul 2026) | 🔶 Draft |
-| [D2.3](deliverables/D2.3_imbus_product_specification.qmd) | Integrated data product (R-binary and parquet) | M12 (Aug 2026) | 🔶 In progress |
+| [D2.3](deliverables/D2.3_imbus_product_specification.qmd) | Integrated data product (R package + Parquet) | M12 (Aug 2026) | 🔶 In progress |
 | D2.4 | Data product on ICES web portal | M12 (Aug 2026) | 🔴 Pending |
 
-The technical implementation of WP2 is in the R package
-[{obus}](https://github.com/einarhjorleifsson/obus).
-
----
-
-## Rendering to Word (for Sharepoint)
-
-Individual deliverables can be rendered to Word format:
-
-```bash
-# From the imbus/ directory
-quarto render deliverables/D2.2_data_formats_metadata.qmd --to docx
-```
-
-This produces `deliverables/D2.2_data_formats_metadata.docx` suitable for upload to the IMBUS
-Sharepoint.
+WP2 outputs feed directly into WP5 (stock assessment) — see the [WP2–WP5 meeting notes](meetings/20260601_WP2-WP5.qmd) for current coordination status.

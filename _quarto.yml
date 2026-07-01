@@ -17,8 +17,6 @@ website:
             text: "WP2 Progress Review"
       - text: "Deliverables"
         menu:
-          - href: deliverables/D2.1_user_requirements.qmd
-            text: "D2.1 — User Requirements"
           - href: deliverables/D2.2_data_formats_metadata.qmd
             text: "D2.2 — Data Formats and Metadata"
           - href: deliverables/D2.3_imbus_product_specification.qmd
@@ -31,12 +29,16 @@ website:
             text: "DATRAS FAQ"
           - href: DATRAS/DATRAS_Technical_Reference.qmd
             text: "DATRAS Technical Reference"
-          - href: DATRAS/sex_determination.qmd
-            text: "Sex determination"
+          - href: DATRAS/survey_indices.qmd
+            text: "Survey Abundance Indices"
           - href: DATRAS/cpue_derivation.qmd
             text: "CPUE derivation: CPUEL vs HL"
+          - href: DATRAS/cpuel_by_length.qmd
+            text: "CPUEL emulation and validation"
           - href: DATRAS/issues.qmd
             text: "Data issues and QC"
+          - href: DATRAS/sampling_protocol.qmd
+            text: "Sampling protocols"
       - text: "Meetings"
         menu:
           - href: meetings/20260601_WP2-WP5.qmd

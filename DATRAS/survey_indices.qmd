@@ -1,0 +1,292 @@
+---
+title: "Survey Abundance Indices — Calculation Procedures"
+subtitle: "NS-IBTS and BITS step-by-step procedures, parameter tables, and area weights"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+---
+
+*Extracted from ICES Data Centre DATRAS Procedure Documents: NS-IBTS v1.2 (2022) and BITS v1.1 (2013), both in `docs_external/DATRAS_documentation/`.*
+
+Survey abundance indices (CPUEA, IDX) are computed per **index area** defined by each expert group. The general pipeline is: construct an Age-Length Key (ALK) from CA records → derive CPUE-by-length-class from HL records → apply ALK to get CPUE-by-age → spatially aggregate with optional area weighting.
+
+The two surveys differ mainly in their spatial stratification unit and haul validity criteria:
+
+| | NS-IBTS | BITS |
+|--|---------|------|
+| Spatial unit | Statistical rectangle | ICES Subdivision × depth layer |
+| Valid hauls | `HaulValidity == "V"` only | `"V"` and `"N"` |
+| Gear standardisation | None | Cod CPUE standardised to large TVL trawl |
+
+---
+
+# NS-IBTS Indices — Calculation Procedure
+
+*Source: ICES Data Centre DATRAS Procedure Document v1.2 (2022), "NS-IBTS indices calculation procedure"*
+
+Indices are calculated per **index area** (species-specific). For most species the index is the mean
+numbers/hour at age per statistical rectangle, averaged over rectangles in the index area. For
+**herring, sprat, and saithe** the rectangle mean is **weighted** by the proportion of the rectangle's
+area with water depth 10–200 m (NS) or 10–250 m (Skagerrak/Kattegat, RFA 8–9).
+
+## General rules
+
+- Only valid hauls are used.
+- When ALK observations are sparse, data are borrowed from neighbouring roundfish areas (RFA); see ALK supplementation below.
+- For **herring and sprat**, only **day hauls** are used (based on `DayNight` code).
+- **Herring in RFA 8 and 9, Q1**: age ≥ 2 CPUE is set to zero (assumed spring spawners).
+- Two extra indices exist for Downs herring juveniles (length ≤ 12.5 cm): `NS_Her1to9` (standard) and `NS_Her1to7` (CPUE in RFA 8–9 set to zero).
+
+## Calculation steps
+
+**Step I — ALK by RFA** (from CA records)
+
+1. Extract raw age-at-length data for species + index area.
+2. Build ALK by roundfish area (RFA), in 1 cm classes (0.5 cm for herring/sprat).
+3. Fill empty RFAs from neighbouring areas (see ALK supplementation).
+4. Aggregate to plus group: ages ≥ plus group age are summed into the plus group cell.
+
+**Step II — CPUE per haul per length class** (from HL records)
+
+1. Apply species recording code rules; select only valid hauls.
+2. Apply day/night filter (herring/sprat: day hauls only).
+3. Count valid hauls per statistical rectangle.
+4. Add zero rows for absent length classes.
+5. Raise to total numbers: `NumberAtLength × SubsamplingFactor`.
+6. Sum over `SpeciesCategory` and `SpeciesSex`.
+7. If `DataType ≠ C`: `NoAtHaul = count × (60 / HaulDuration)` → convert to per-hour.
+8. Sum CPUE per haul per length per statistical rectangle (per RFA).
+
+**Step III — Fill ALK for all length classes (ALKRFA)**
+
+- Length class < minimum ALK length → age = 1 (Q1) or age = 0 (Q2–4).
+- Minimum < length class < maximum: borrow from nearest ALK entry (average if equidistant).
+- Length class > maximum ALK length → assign to plus group.
+- Merge filled ALK with CPUE by year, quarter, length class.
+
+**Step IV — CPUE at age by length class (CPUEALK)**
+
+1. Merge ALKRFA and CPUE by year, quarter, RFA, length class.
+2. Sum numbers at length per age per statistical rectangle.
+3. Sum valid hauls per statistical rectangle.
+4. Mean CPUE at age per statistical rectangle = (2) / (3).
+
+**Step IVa — Weighted CPUE** (herring, sprat, saithe only)
+
+As step IV but hauls weighted by depth-stratum area weight of the rectangle (Annex 3 weights).
+Weighted mean CPUE = Σ(numbers at age) / Σ(weights of valid hauls).
+
+**Step V — Index**
+
+1. Sum CPUE per age over all fished rectangles in the index area.
+2. Count number of fished rectangles in the index area.
+3. Index = (1) / (2) → mean numbers/hour/rectangle for the index area.
+
+## Index area and species parameters (Annex 1)
+
+Parameters governing ALK filling, length filtering, and weighting, by index area and quarter.
+
+| Index area | Q | Max age | Min length (mm) | Max length (mm) | ALK level | CPUE level | Length class | Area weighted | Day only |
+|---|---|---|---|---|---|---|---|---|---|
+| NS_Cod | 1 | 6 | 150 | 900 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Cod | 2 | 6 | 70 | 1100 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Cod | 3 | 6 | 70 | 1100 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Cod | 4 | 6 | 70 | 1100 | RFarea | Stat rect | 1 cm | no | no |
+| NS_CodCat | 1 | 6 | 150 | 900 | RFarea | Stat rect | 1 cm | no | no |
+| NS_CodCat | 3 | 6 | 70 | 1100 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Haddock | 1 | 6 | 150 | 600 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Haddock | 2 | 6 | 100 | 700 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Haddock | 3 | 6 | 100 | 700 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Haddock | 4 | 6 | 100 | 700 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Herring | 1 | 5 | 150 | 320 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Herring | 2 | 5 | 60 | 340 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Herring | 3 | 5 | 60 | 340 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Herring | 4 | 5 | 60 | 340 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Her1to9 | 1 | 5 | 60 | 125 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Her1to7 | 1 | 5 | 60 | 125 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Mackerel | 1–4 | 6 | 50–200 | 450 | RFarea | Stat rect | 1 cm | no | no |
+| NS_NorwayPout | 1–4 | 6 | 50–100 | 250 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Plaice IIIa | 1,3 | 10 | 40 | 600 | RFarea | Stat rect | 1 cm | no | no |
+| NS_Saithe | 1–4 | 6 | 70–250 | 900–1200 | RFarea | Stat rect | 1 cm | yes | no |
+| NS_Sprat IIIa | 1,3 | 6 | 70 | 160 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Sprat IV | 1–4 | 6 | 45 | 160 | RFarea | Stat rect | 0.5 cm | yes | yes |
+| NS_Whiting | 1–4 | 6 | 80–150 | 450–800 | RFarea | Stat rect | 1 cm | no | no |
+
+## ALK supplementation (Annex 2)
+
+From 2021, automated supplementation follows:
+[ICES ALK automated substitution procedure](https://www.ices.dk/data/Documents/DATRAS/ALK_automated_substitution.pdf) — code at
+[github.com/ices-tools-prod/DATRAS/tree/master/ALK_substitution](https://github.com/ices-tools-prod/DATRAS/tree/master/ALK_substitution).
+
+Key change from the old manual procedure: borrowing is done **per age class**, not per whole area.
+Rule: for each species, area, and age class, borrow from neighbouring RFAs in order until ≥ 25 otoliths. RFA 10 was added in 2009.
+
+| RFA | Borrows from (in order) |
+|-----|------------------------|
+| 1 | 2, 3 |
+| 2 | 1, 3, 4, 6, 7 |
+| 3 | 1, 2, 4 |
+| 4 | 2, 3, 5, 6 |
+| 5 | 4, 6, 2 |
+| 6 | 2, 4, 5, 7 |
+| 7 | 2, 6 |
+| 8 | 9, 7, 6 |
+| 9 | 8, 7, 2 |
+| 10 | 5, 6, 4 |
+
+For **saithe and mackerel**, age data are merged across quarters and applied to all RFAs (too few otoliths for per-RFA ALK).
+
+## Statistical rectangle depth-area weights (Annex 3)
+
+Weights = proportion of rectangle area with water depth 10–200 m (NS) or 10–250 m (Skagerrak/Kattegat).
+Used for herring, sprat, and saithe indices only. A weight of `1` means the full rectangle is within the depth range; `0` means none of it is.
+
+<details>
+<summary>Full weight table (~200 rectangles — click to expand)</summary>
+
+| StatRec | Weight | StatRec | Weight | StatRec | Weight | StatRec | Weight |
+|---------|--------|---------|--------|---------|--------|---------|--------|
+| 31F1 | 0.60 | 38F0 | 1.00 | 41F6 | 1.00 | 44F1 | 1.00 |
+| 31F2 | 0.80 | 38F1 | 1.00 | 41F7 | 1.00 | 44F2 | 1.00 |
+| 31F3 | 0.05 | 38F2 | 1.00 | 41F8 | 0.10 | 44F3 | 1.00 |
+| 32F1 | 0.80 | 38F3 | 1.00 | 41G0 | 0.20 | 44F4 | 1.00 |
+| 32F2 | 1.00 | 38F4 | 1.00 | 41G1 | 0.97 | 44F5 | 0.90 |
+| 32F3 | 0.80 | 38F5 | 1.00 | 41G2 | 0.53 | 44F8 | 0.25 |
+| 32F4 | 0.01 | 38F6 | 1.00 | 42E7 | 0.40 | 44F9 | 0.80 |
+| 33F1 | 0.30 | 38F7 | 1.00 | 42E8 | 1.00 | 44G0 | 0.94 |
+| 33F2 | 1.00 | 38F8 | 0.30 | 42E9 | 1.00 | 44G1 | 0.60 |
+| 33F3 | 1.00 | 39E8 | 0.50 | 42F0 | 1.00 | 45E6 | 0.40 |
+| 33F4 | 0.40 | 39E9 | 1.00 | 42F1 | 1.00 | 45E7 | 1.00 |
+| 34F1 | 0.40 | 39F0 | 1.00 | 42F2 | 1.00 | 45E8 | 1.00 |
+| 34F2 | 1.00 | 39F1 | 1.00 | 42F3 | 1.00 | 45E9 | 1.00 |
+| 34F3 | 1.00 | 39F2 | 1.00 | 42F4 | 1.00 | 45F0 | 1.00 |
+| 34F4 | 0.60 | 39F3 | 1.00 | 42F5 | 1.00 | 45F1 | 1.00 |
+| 35F0 | 0.80 | 39F4 | 1.00 | 42F6 | 1.00 | 45F2 | 1.00 |
+| 35F1 | 1.00 | 39F5 | 1.00 | 42F7 | 1.00 | 45F3 | 1.00 |
+| 35F2 | 1.00 | 39F6 | 1.00 | 42F8 | 0.20 | 45F4 | 0.60 |
+| 35F3 | 1.00 | 39F7 | 1.00 | 42G0 | 0.32 | 45F8 | 0.30 |
+| 35F4 | 0.90 | 39F8 | 0.40 | 42G1 | 0.89 | 45F9 | 0.02 |
+| 35F5 | 0.10 | 40E7 | 0.04 | 42G2 | 0.64 | 45G0 | 0.24 |
+| 36F0 | 0.90 | 40E8 | 0.80 | 43E7 | 0.03 | 45G1 | 0.55 |
+| 36F1 | 1.00 | 40E9 | 1.00 | 43E8 | 0.90 | 46E6 | 0.40 |
+| 36F2 | 1.00 | 40F0 | 1.00 | 43E9 | 1.00 | 46E7 | 0.90 |
+| 36F3 | 1.00 | 40F1 | 1.00 | 43F0 | 1.00 | 46E8 | 1.00 |
+| 36F4 | 1.00 | 40F2 | 1.00 | 43F1 | 1.00 | 46E9 | 1.00 |
+| 36F5 | 1.00 | 40F3 | 1.00 | 43F2 | 1.00 | 46F0 | 1.00 |
+| 36F6 | 0.90 | 40F4 | 1.00 | 43F3 | 1.00 | 46F1 | 1.00 |
+| 36F7 | 0.40 | 40F5 | 1.00 | 43F4 | 1.00 | 46F2 | 1.00 |
+| 36F8 | 0.50 | 40F6 | 1.00 | 43F5 | 1.00 | 46F3 | 0.80 |
+| 37E9 | 0.20 | 40F7 | 1.00 | 43F6 | 1.00 | 46F9 | 0.30 |
+| 37F0 | 1.00 | 40F8 | 0.10 | 43F7 | 1.00 | 46G0 | 0.52 |
+| 37F1 | 1.00 | 41E6 | 0.03 | 43F8 | 0.94 | 46G1 | 0.20 |
+| 37F2 | 1.00 | 41E7 | 0.80 | 43F9 | 0.41 | 47E6 | 0.80 |
+| 37F3 | 1.00 | 41E8 | 1.00 | 43G0 | 0.21 | 47E7 | 0.60 |
+| 37F4 | 1.00 | 41E9 | 1.00 | 43G1 | 0.70 | 47E8 | 1.00 |
+| 37F5 | 1.00 | 41F0 | 1.00 | 43G2 | 0.30 | 47E9 | 1.00 |
+| 37F6 | 1.00 | 41F1 | 1.00 | 44E6 | 0.50 | 47F0 | 1.00 |
+| 37F7 | 1.00 | 41F2 | 1.00 | 44E7 | 0.50 | 47F1 | 1.00 |
+| 37F8 | 0.80 | 41F3 | 1.00 | 44E8 | 0.90 | 47F2 | 1.00 |
+| 38E8 | 0.20 | 41F4 | 1.00 | 44E9 | 1.00 | 47F3 | 0.60 |
+| 38E9 | 0.90 | 41F5 | 1.00 | 44F0 | 1.00 | 47F9 | 0.01 |
+| | | | | | | 47G0 | 0.30 |
+| | | | | | | 47G1 | 0.02 |
+| 48E6 | 1.00 | 49E9 | 1.00 | 51E6 | 0.00 | 52E6 | 0.00 |
+| 48E7 | 1.00 | 49F0 | 1.00 | 51E7 | 0.00 | 52E7 | 0.00 |
+| 48E8 | 0.90 | 49F1 | 1.00 | 51E8 | 0.50 | 52E8 | 0.00 |
+| 48E9 | 1.00 | 49F2 | 1.00 | 51E9 | 1.00 | 52E9 | 0.10 |
+| 48F0 | 1.00 | 49F3 | 0.50 | 51F0 | 1.00 | 52F0 | 0.20 |
+| 48F1 | 1.00 | 50E6 | 0.10 | 51F1 | 1.00 | 52F1 | 0.50 |
+| 48F2 | 1.00 | 50E7 | 0.60 | 51F2 | 0.50 | 52F2 | 0.10 |
+| 48F3 | 0.50 | 50E8 | 0.70 | 51F3 | 0.00 | 52F3 | 0.00 |
+| 48G0 | 0.02 | 50E9 | 0.90 | | | | |
+| 49E6 | 0.80 | 50F0 | 1.00 | | | | |
+| 49E7 | 1.00 | 50F1 | 1.00 | | | | |
+| 49E8 | 0.40 | 50F2 | 1.00 | | | | |
+| | | 50F3 | 0.20 | | | | |
+
+</details>
+
+## Aggregation notation (Annex 5)
+
+| Symbol | Meaning |
+|--------|---------|
+| `A` | Index area |
+| `r` | Statistical rectangle |
+| `i` | Length class |
+| `j` | Age group |
+| `H(r)` | Valid hauls in rectangle r |
+| `C(r)` | Numbers/hour/haul in rectangle r |
+| `C(r,i)` | Numbers/hour/haul in length class i, rectangle r |
+| `C(r,j)` | Numbers/hour/haul in age group j, rectangle r |
+| `f(a,i,j)` | ALK proportion: fraction of length class i in age j for area a |
+| `R(a)` | Number of rectangles sampled in area a |
+| `Cr(a)` | Mean numbers/hour/haul in area a = C(a) / R(a) |
+| `Cr(a,j)` | Mean numbers/hour/haul at age j in area a = C(a,j) / R(a) |
+
+---
+
+# BITS Indices — Calculation Procedure
+
+*Source: ICES Data Centre DATRAS Procedure Document v1.1 (2013), "BITS indices calculation procedure"*
+
+BITS (Baltic International Trawl Survey) indices differ from NS-IBTS in three key ways:
+- Spatial stratification is by **ICES Subdivision (SD)** × **depth layer**, not by statistical rectangle.
+- Haul validity includes both `"V"` and `"N"` codes (NS-IBTS uses `"V"` only).
+- **Cod CPUE is gear-standardised** to the large TVL trawl using conversion factors before aggregation (see `BITS_ConversionFactor_to_TVL.csv`).
+
+## Depth layers used per SD
+
+| SD | 0–19 m | 20–39 m | 40–59 m | 60–79 m | 80–99 m | 100–120 m | 120–200 m |
+|----|--------|---------|---------|---------|---------|-----------|-----------|
+| 22 | ✓ | ✓ | ✓ | ✓ | | | |
+| 23 | ✓ | ✓ | ✓ | ✓ | | | |
+| 24 | ✓ | ✓ | ✓ | ✓ | | | |
+| 25 | | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| 26 | | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| 27 | | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| 28 | | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+Depth layer SubArea codes: 8 = 0–19 m, 9 = 20–39 m, 10 = 40–59 m, 11 = 60–79 m, 12 = 80–99 m, 13 = 100–120 m, 14 = 120–200 m.
+
+## Calculation steps (6-step)
+
+**Step I — CPUE per haul per length class** (HL records)
+
+1. Apply species recording code rules; select valid (`"V"`, `"N"`) hauls and `SpecVal = 1 or NULL`.
+2. Count valid hauls per SubArea (depth layer within SD).
+3. Add zero rows for absent length classes.
+4. Raise sub-sample to total: `NumberAtLength × SubsamplingFactor`.
+5. Sum over sex and category; convert to per-hour: `count × (60 / HaulDuration)` (if DataType ≠ C).
+6. **Multiply by gear conversion factor** (cod only) to standardise to TVL equivalent.
+
+**Step II — ALK by SD** (CA records)
+
+1. Compute age-length key per ICES Subdivision.
+2. Apply plus-group rule (ages ≥ plus group age summed into plus group cell).
+3. If ALK absent for an SD, borrow from neighbouring SDs (analogue of RFA supplementation).
+
+**Step III — Fill ALK for all length classes** (same logic as NS-IBTS Step III)
+
+**Step IV — CPUE at age per depth stratum**
+
+Apply ALK to CPUE per haul × length; aggregate to CPUE at age per depth stratum (SubArea).
+
+**Step V — Weight depth strata by km²**
+
+Weight each depth stratum's CPUE by its area in km² (see `BITS_AreaWeights.csv`).
+Area-weighted mean CPUE per SD = `Σ(CPUE × km²) / Σ(km²)`.
+
+**Step VI — Index per index area**
+
+Sum over depth strata within each SD; then aggregate SDs into the index area mean.
+
+## BITS area weights
+
+`BITS_AreaWeights.csv` gives the km² for each combination of Survey, ICES Subdivision (Area), and depth-layer SubArea (8–14). Used for the Step V weighted mean. Source: Oeberst (2013), WD2, WKBALT.
+
+## BITS gear conversion factors (cod only)
+
+`BITS_ConversionFactor_to_TVL.csv` converts national and small-trawl CPUE to TVL-equivalent. Factors vary by gear code (CHP, DT, FOT, GOV, GRT, H20, HAK, LBT, P20, SON, TVL) and by length class (10 mm bins). Columns: `ConFactor0`, `ConFactor1`, `ConFactor2` corresponding to the three conversion factor variants (see Oeberst 2013 for variable definitions). TVL gear has all factors = 1 (reference trawl).

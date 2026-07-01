@@ -4,6 +4,10 @@ subtitle: "A review of `R/read_datras.R`"
 date: today
 ---
 
+::: {.callout-note appearance="minimal"}
+**Internal working document.** This page reviews the `{DATRAS}` R package as prior art to inform IMBUS WP2 design. It is not an IMBUS deliverable and is not intended for external audiences.
+:::
+
 ## Overview
 
 The `{DATRAS}` R package (Kristensen & Jardim) was developed independently of and prior to the

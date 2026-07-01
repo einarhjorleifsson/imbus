@@ -393,82 +393,20 @@ administration describing the corrections made.
 
 #### DataType and HL field interpretation {#sec-datatype-faq}
 
-`DataType` is set at the haul level (HH record) and governs how several HL fields must be
-interpreted and populated. It is the most common source of silent errors when working with
-exchange data.
+`DataType` is set at the haul level (HH record) and governs how HL fields must be
+interpreted. It is the most common source of silent errors when working with exchange data.
 
-| DataType | Description |
-|----------|-------------|
-| `R` | Raw data; catch sorted, some species may be sub-sampled. `SubsamplingFactor` (SubFactor) ≥ 1 |
-| `S` | Bulk unsorted catch sub-sampled before sorting. `SubsamplingFactor` (SubFactor) > 1 |
-| `P` | Size-stratified (pseudocategory) subsampling — different `SubsamplingFactor` per size grade within the same species/haul. Uses `SpeciesCategory` (CatIdentifier) to distinguish strata |
-| `C` | Catch reported as CPUE; data pre-raised to 1 hour of hauling. `SubsamplingFactor` (SubFactor) = 1 |
+| DataType | Description | CPUE formula |
+|----------|-------------|--------------|
+| `R` | Raw; catch sorted, some species may be sub-sampled. `SubsamplingFactor` ≥ 1 | `n_haul = Σ(NumberAtLength × SubsamplingFactor)` |
+| `S` | Bulk unsorted catch sub-sampled before sorting. `SubsamplingFactor` > 1 | Same as R |
+| `P` | Size-stratified subsampling — different `SubsamplingFactor` per size grade. **Do not sum `TotalNumber` across strata.** | Same row-level formula as R, applied per stratum |
+| `C` | Catch pre-raised to 1 hour of hauling. `SubsamplingFactor` = 1 | `n_hour = NumberAtLength`; `n_haul = NumberAtLength × HaulDuration / 60` |
 
-**How to populate HL fields by DataType:**
-
-**DataType R:**
-
-| Field (new name) | Old name | Value to report |
-|-----------------|----------|-----------------|
-| `TotalNumber` | TotalNo | Total number of fish of one species, sex, and `SpeciesCategory` in the haul |
-| `SpeciesCategory` | CatIdentifier | Category ID within species/sex (1 if no size categorisation; ≥ 2 for additional strata). Cannot be 0 |
-| `SubsampledNumber` | NoMeas | Number of fish actually measured in the (sub-)sample |
-| `SubsamplingFactor` | SubFactor | Sub-sampling factor ≥ 1. Verify: `TotalNumber` = `SubsampledNumber` × `SubsamplingFactor` |
-| `SubsampleWeight` | SubWgt | Total weight of the measured sub-sample |
-| `SpeciesCategoryWeight` | CatCatchWgt | Catch weight per species, sex, and `SpeciesCategory` in the haul |
-| `NumberAtLength` | HLNoAtLngt | Number of fish at this length class in the (sub-)sample. Verify: `TotalNumber` = Σ(`NumberAtLength`) × `SubsamplingFactor` or `SubsampledNumber` = Σ(`NumberAtLength`) |
-
-**DataType S:**
-
-Same as DataType R, except `SubsamplingFactor` (SubFactor) must be > 1 (the catch is
-always sub-sampled before sorting).
-
-**DataType P:**
-
-Same structure as DataType R, but size-stratified subsampling means that different
-`SpeciesCategory` (CatIdentifier) strata within the same species/haul will have different
-`SubsamplingFactor` values. The row-level formula
-`n_haul = Σ(NumberAtLength × SubsamplingFactor)` across all strata gives the correct
-haul-level total. **Do not sum `TotalNumber` across strata** — it is the stratum total, not
-the species-haul total.
-
-::: {.callout-note icon=false}
-**[IMBUS]** In practice, a minority of size-stratified hauls are submitted as DataType R
-rather than DataType P — predominantly Danish vessels in NS-IBTS and BITS from 2024 onward.
-The row-level formula remains correct regardless; the risk arises only from direct use of
-`TotalNumber`. See [D2.2 §DataType](../deliverables/D2.2_data_formats_metadata.qmd#sec-datatype)
-for empirical statistics.
-:::
-
-
-**DataType C:**
-
-| Field (new name) | Old name | Value to report |
-|-----------------|----------|-----------------|
-| `TotalNumber` | TotalNo | Total number of fish per species/sex, **raised to 1 hour** of hauling |
-| `SpeciesCategory` | CatIdentifier | Always `1` |
-| `SubsampledNumber` | NoMeas | Number of fish measured, or `−9` |
-| `SubsamplingFactor` | SubFactor | Always `1` |
-| `SubsampleWeight` | SubWgt | Weight of measured sub-sample, or `−9` |
-| `SpeciesCategoryWeight` | CatCatchWgt | Total catch weight per species per haul, **raised to 1 hour** |
-| `NumberAtLength` | HLNoAtLngt | Numbers at this length class, **raised to 1 hour**. Verify: `TotalNumber` = Σ(`NumberAtLength`) |
-
-**Computing haul-level CPUE from exchange data:**
-
-For DataTypes R, S, and P:
-```
-n_haul  = Σ(NumberAtLength × SubsamplingFactor)   [per .id × ValidAphiaID × SpeciesSex × SpeciesCategory]
-n_hour  = n_haul / HaulDuration × 60
-```
-
-For DataType C:
-```
-n_hour  = NumberAtLength   (already per hour)
-n_haul  = NumberAtLength × HaulDuration / 60
-```
-
-The `{obus}` function `dr_add_n_and_cpue()` applies this logic automatically, handling all
-DataTypes correctly including size-stratified DataType P/R hauls.
+The `{obus}` function `dr_HL_standardised()` applies the correct formula for all DataTypes
+automatically. For full field-by-field specifications and empirical notes on DataType
+misuse in submissions, see
+[DATRAS Technical Reference §DataType](DATRAS_Technical_Reference.qmd#sec-datatype).
 
 #### What is `SpeciesCategory` (CatIdentifier), and how do I use it?
 
@@ -650,7 +588,7 @@ cannot be raised via `sum(NumberAtLength × SubsamplingFactor)` — they carry n
 
 `TotalNumber` in catch-totals rows is useful as a cross-check against the raised sum from
 the length-frequency rows, but note that its scope (all-sex total vs. sex-specific) is not
-consistent across surveys; see the [DATRAS EDA findings](DATRAS_data_issues.qmd#sec-totalnumber-reconciliation)
+consistent across surveys; see the [DATRAS data issues](issues.qmd#sec-totalnumber-reconciliation)
 for a survey-by-survey reconciliation.
 
 ```{r}
@@ -703,6 +641,63 @@ For both P and R, calculate haul total identically: `n_haul = Σ(NumberAtLength 
 **Recommended practice for users:**
 - Always use the row-level formula: `n_haul = Σ(NumberAtLength × SubsamplingFactor)` per haul and species
 - The `{obus}` function `dr_add_n_and_cpue()` handles all DataTypes correctly
+
+
+### Why do we have more than one value for SpeciesValidity within the same tow (.id) for the same species?
+
+`SpeciesValidity` is a **record type** field — it describes *what kind of data* is present
+for a species within a haul, not whether the haul is valid. The HL exchange format allows more
+than one record type for the same species and haul, and some surveys use this deliberately.
+
+A typical scenario: a species was fully length-measured (`"1"`, full record), but the crew
+also recorded a total count for a size group that was not individually measured (`"4"`, total
+number only), or noted a presence/absence for bycatch (`"5"`). Both rows share the same
+`.id × aphia` group, so `SpeciesValidity` is not constant within that group.
+
+This is **intentional, not an error**. BTS and Can-Mar are the main surveys that submit
+multiple record types for the same species and haul. Across all surveys, ~2,786 of ~2.6
+million HL groups (0.1%) show this pattern. The most common co-occurrences are `{1, 5}` and
+`{4, 7}`.
+
+**Worked example.** The following rows are taken directly from haul
+`BTS:2024:3:BE:1186:BT4S:40:1` for *Sepia officinalis* (aphia 141444, common cuttlefish).
+Only the `DevelopmentStage = NA` rows are shown (the egg rows, `DevelopmentStage = "E"`,
+follow the same pattern):
+
+| `LengthClass` | `NumberAtLength` | `TotalNumber` | `SpeciesValidity` |
+|:---:|:---:|:---:|:---:|
+| 10 | 1 | 18 | **1** |
+| 15 | 1 | 18 | **1** |
+| 20 | 2 | 18 | **1** |
+| 25 | 6 | 18 | **1** |
+| … | … | 18 | **1** |
+| 110 | 1 | 18 | **1** |
+| `NA` | `NA` | 18 | **5** |
+
+The ten `SpeciesValidity = "1"` rows carry the full length-frequency distribution
+(`LengthClass` 10–110 mm, `NumberAtLength` filled). The final row, `SpeciesValidity = "5"`,
+is a supplementary presence/absence marker: it carries no length or count data of its own
+(`LengthClass = NA`, `NumberAtLength = NA`) but coexists in the same `.id × aphia` group.
+This is the **intended semantics** of `SpeciesValidity = "5"` as defined in the DATRAS format.
+
+**Can-Mar exception.** Can-Mar uses `SpeciesValidity = "5"` differently — on rows that
+carry actual `LengthClass` and `NumberAtLength` values. Across 535 Can-Mar groups with both
+`"1"` and `"5"` rows containing length data, 42% have entirely distinct length classes
+between the two record types (the `"5"` rows add lengths not in the `"1"` rows), 20% are
+full duplicates, and 38% partially overlap. The reason for this split is not documented
+in the DATRAS submission format. Filtering to `SpeciesValidity == "1"` in Can-Mar will
+therefore discard real length data in at least 42% of these groups. See
+[Can-Mar SpeciesValidity="5" anomaly](#sec-canmar-specval) in the issues document.
+
+**Practical implication:** if you aggregate over `.id × aphia` without also grouping on
+`SpeciesValidity`, rows from different record types will be silently mixed together.
+For most surveys (including BTS), **filter to `SpeciesValidity == "1"` before aggregating**
+to retain only the full length-frequency records. For Can-Mar, the appropriate treatment
+of `SpeciesValidity = "5"` rows with length data is currently unresolved.
+
+See the [SpeciesValidity vocabulary](#vocab-specval) in D2.2 for the full code list, and
+[HL grouping key constancy violations](#sec-specval-variation) in the issues document for
+per-survey statistics.
 
 ---
 

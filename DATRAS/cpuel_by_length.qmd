@@ -1,0 +1,456 @@
+---
+title: "CPUEL: emulation and validation"
+subtitle: "Reconstructing CPUEL row-by-row from raw HH/HL; discrepancy anatomy across all 17 Survey-Quarters"
+author: "Einar Hjörleifsson"
+date: "June 2026"
+date-modified: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(obus)
+source("compute_cpue_emulation.R")
+res <- readRDS("cpuel_validation_results.rds")
+```
+
+This document asks: can we reconstruct CPUEL row-by-row from raw HH and HL tables?
+`compute_cpue_emulation()` does this and is validated here across all 17 Survey-Quarter
+combinations and all available years. The goal is to understand what CPUEL computes
+internally and to attribute row-count and CPUE discrepancies to their specific causes.
+
+---
+
+# Emulating CPUEL from raw HH/HL
+
+`compute_cpue_emulation.R` reconstructs the ICES CPUEL row structure from raw
+HH and HL tables. It is primarily a forensic tool — for understanding what CPUEL
+does internally and for diagnosing discrepancies.
+
+## Function overview
+
+| Parameter | Default | Purpose |
+|-----------|---------|---------|
+| `haul_key` | `"short"` | `"short"` matches CPUEL's output key `(Survey:Year:Quarter:Platform:Gear:HaulNumber)`; `"full"` uses unambiguous `.id` |
+| `collapse_sex` | `TRUE` | `FALSE` retains sex from HL — used for EVHOE in this validation (CPUEL retains F/M/U for EVHOE; all other surveys have sex = NA) |
+| `filter_species_validity` | `"1"` | Codes contributing to non-zero CPUE values; does NOT affect the zero-fill species pool |
+
+The zero-fill species pool is always built from **all** HL records in valid hauls
+for the Survey-Quarter-Year, regardless of SpeciesValidity code — matching CPUEL
+behaviour. Only CPUE values (non-zero rows) are filtered to `SpeciesValidity == "1"`.
+
+## Validation: all 17 Survey-Quarters, all years
+
+### Summary by Survey-Quarter
+
+```{r summary-table}
+res |>
+  mutate(
+    catch_contrib = (emul_catch - cpuel_catch) / cpuel_rows * 100,
+    zf_contrib    = zf_diff / cpuel_rows * 100
+  ) |>
+  group_by(Survey, Quarter) |>
+  summarise(
+    `N years`          = n(),
+    `Row diff %`       = round(mean(row_diff_pct,    na.rm = TRUE), 1),
+    `Catch contrib %`  = round(mean(catch_contrib,   na.rm = TRUE), 1),
+    `ZF contrib %`     = round(mean(zf_contrib,      na.rm = TRUE), 1),
+    `CPUE diff %`      = round(mean(n_hour_diff_pct, na.rm = TRUE), 1),
+    `Aphia diff`       = round(mean(aphia_diff,      na.rm = TRUE), 1),
+    .groups = "drop"
+  ) |>
+  arrange(Survey, Quarter) |>
+  knitr::kable(
+    caption = paste(
+      "Mean row diff decomposed into catch and zero-fill (ZF) contributions,",
+      "all as % of cpuel_rows (additive: catch + ZF = total row diff).",
+      "CPUE diff % is independent (uses total n_hour as denominator).",
+      "Positive = emulation exceeds CPUEL."
+    )
+  )
+```
+
+**Near-perfect** (mean row diff < 1 %, catch and ZF both < 1 %):
+ROCKALL Q3, SCOROC Q3, NS-IBTS Q1, NS-IBTS Q4.
+
+**Reliable — small catch diff, near-zero ZF diff**:
+IE-IGFS Q4 (row diff 2.6 %, entirely catch), NS-IBTS Q2/Q3 (< 3 %).
+
+**Moderate row diff, driven by ZF**:
+BITS Q3 (9.8 % total: 1.1 % catch + 8.7 % ZF), NS-IBTS Q2 (2.8 % total: 1.0 % catch + 1.8 % ZF).
+
+**Moderate row diff, driven by catch data changes**:
+SWC-IBTS Q1 (6.3 % total: 4.5 % catch + 1.8 % ZF — CPUE diff 7.3 %).
+
+**Large row diff — ZF methodology artefact, CPUE reliable**:
+EVHOE Q4 (37 % total: 5 % catch + 33 % ZF, CPUE diff 3 %). The April 2016
+CPUEL computation omitted zero-fill rows; the emulation always generates full
+zero-fill (see anatomy section).
+
+**Large row diff — genuine HL data changes**:
+SWC-IBTS Q4 (40 % total: 29 % catch + 10 % ZF, CPUE diff 38 %),
+SCOWCGFS Q1 (26 % total: 20 % catch + 6 % ZF, CPUE diff 19 %).
+
+**Very large row diff — both causes combined**:
+BITS Q2 (127 % total: 116 % catch + 11 % ZF — vintage effect on sparse early-years data),
+SCOWCGFS Q4 (96 % total: 66 % catch + 30 % ZF — 2019 CPUEL held only 3 aphias, a preliminary submission).
+
+### Temporal patterns
+
+Row differences have two independent causes with opposite implications:
+
+- **Catch row diff** (`catch_diff_pct`): driven by HL data changes since the CPUEL snapshot. A large catch diff means real abundance estimates have shifted.
+- **Zero-fill row diff** (`zf_diff_pct`): driven by differences in the zero-fill species pool and methodology. Zero-fill rows have n_hour = 0 and do not enter CPUE estimates.
+
+#### Total row diff and its catch / zero-fill decomposition
+
+```{r row-diff-decomp, fig.width=12, fig.height=10}
+# Express all three as % of cpuel_rows so catch + ZF = total (additive)
+res |>
+  mutate(
+    sq             = paste0(Survey, " Q", Quarter),
+    catch_contrib  = (emul_catch - cpuel_catch) / cpuel_rows * 100,
+    zf_contrib     = zf_diff / cpuel_rows * 100
+  ) |>
+  select(sq, Year,
+         `Total row diff`  = row_diff_pct,
+         `Catch component` = catch_contrib,
+         `ZF component`    = zf_contrib) |>
+  pivot_longer(-c(sq, Year), names_to = "metric", values_to = "value") |>
+  mutate(metric = factor(metric,
+    levels = c("Total row diff", "Catch component", "ZF component"))) |>
+  ggplot(aes(x = Year, y = value, colour = metric)) +
+  geom_hline(yintercept = 0, colour = "grey50", linewidth = 0.3) +
+  geom_line(linewidth = 0.5, alpha = 0.85) +
+  scale_colour_manual(
+    values = c("Total row diff"  = "grey40",
+               "Catch component" = "steelblue",
+               "ZF component"    = "firebrick")
+  ) +
+  facet_wrap(~sq, scales = "free", ncol = 4) +
+  labs(
+    title    = "Row diff decomposed into catch and zero-fill components",
+    subtitle = "All three expressed as % of cpuel_rows — catch + ZF = total row diff.",
+    x = NULL, y = "Diff vs CPUEL (% of CPUEL rows)", colour = NULL
+  ) +
+  theme_bw(base_size = 10) +
+  theme(legend.position = "bottom", panel.grid.minor = element_blank())
+```
+
+#### CPUE diff vs catch row diff
+
+CPUE diff and catch row diff should track each other: both reflect genuine
+changes in the HL data. When they diverge, it signals subsampling or CPUE
+calculation differences beyond simple row counts.
+
+```{r cpue-vs-catch, fig.width=12, fig.height=10}
+res |>
+  filter(!is.na(n_hour_diff_pct), is.finite(n_hour_diff_pct)) |>
+  mutate(sq = paste0(Survey, " Q", Quarter)) |>
+  select(sq, Year,
+         `Catch row diff %` = catch_diff_pct,
+         `CPUE diff %`      = n_hour_diff_pct) |>
+  pivot_longer(-c(sq, Year), names_to = "metric", values_to = "value") |>
+  ggplot(aes(x = Year, y = value, colour = metric)) +
+  geom_hline(yintercept = 0, colour = "grey50", linewidth = 0.3) +
+  geom_line(linewidth = 0.5, alpha = 0.85) +
+  scale_colour_manual(
+    values = c("Catch row diff %" = "steelblue", "CPUE diff %" = "darkorange")
+  ) +
+  facet_wrap(~sq, scales = "free", ncol = 4) +
+  labs(
+    title    = "Catch row diff vs CPUE diff: both reflect HL data changes",
+    subtitle = "Close tracking = consistent methodology. Divergence = subsampling or calculation differences.",
+    x = NULL, y = "Diff vs CPUEL (%)", colour = NULL
+  ) +
+  theme_bw(base_size = 10) +
+  theme(legend.position = "bottom", panel.grid.minor = element_blank())
+```
+
+Key contrasts:
+
+- **EVHOE Q4**: mean total row diff 37 %, mean catch diff ~3 %, mean CPUE diff ~3 %.
+  The large row diff is entirely in the zero-fill component. EVHOE's CPUEL is stored
+  in two independent batches per year (see anatomy section below): a main species
+  batch and a supplemental Atlantic mackerel batch. The April 2016 computation
+  (years 2005–2015) included no zero-fill rows at all; the August 2018 and later
+  computations do. The emulation always generates full zero-fill, producing 70–90 %
+  row diff for the 2005–2015 years but near-zero catch diff throughout.
+- **SWC-IBTS Q4**: both catch diff and CPUE diff ≈ 40 % — HL data has genuinely
+  changed since the 2018 CPUEL snapshot.
+- **NS-IBTS Q4, ROCKALL, SCOROC**: all three components < 1 % — near-perfect.
+
+#### Species (aphia) count difference over time
+
+```{r aphia-diff-time, fig.width=12, fig.height=9}
+res |>
+  mutate(sq = paste0(Survey, " Q", Quarter)) |>
+  ggplot(aes(x = Year, y = aphia_diff)) +
+  geom_hline(yintercept = 0, colour = "grey50", linewidth = 0.4) +
+  geom_line(colour = "grey60", linewidth = 0.4) +
+  geom_point(aes(colour = aphia_diff == 0), size = 1.5, show.legend = FALSE) +
+  scale_colour_manual(values = c("TRUE" = "steelblue", "FALSE" = "firebrick")) +
+  facet_wrap(~sq, scales = "free", ncol = 4) +
+  labs(
+    title    = "Aphia count difference: emulation minus CPUEL",
+    subtitle = "Blue = perfect match; red = mismatch.",
+    x = NULL, y = "Aphia diff (emulation − CPUEL)"
+  ) +
+  theme_bw(base_size = 10) +
+  theme(panel.grid.minor = element_blank())
+```
+
+#### BITS: the sign flip
+
+BITS Q1 and Q4 show the clearest temporal pattern. Before ~2008 the emulation
+*overshoots* CPUEL: early CPUEL snapshots were computed on sparser HL data.
+After ~2010 the emulation *undershoots*: BITS expanded to multi-vessel operations
+and short-key collapsing dominates. CPUE differences remain small throughout.
+
+```{r bits-detail, fig.width=9, fig.height=5}
+res |>
+  filter(Survey == "BITS", Quarter %in% c(1, 4)) |>
+  mutate(Quarter = paste0("BITS Q", Quarter)) |>
+  select(Quarter, Year, `Row diff %` = row_diff_pct,
+         `CPUE diff %` = n_hour_diff_pct, `Aphia diff` = aphia_diff) |>
+  pivot_longer(-c(Quarter, Year), names_to = "metric", values_to = "value") |>
+  ggplot(aes(x = Year, y = value)) +
+  geom_hline(yintercept = 0, colour = "grey40") +
+  annotate("rect", xmin = 2008, xmax = 2011, ymin = -Inf, ymax = Inf,
+           fill = "orange", alpha = 0.15) +
+  annotate("text", x = 2009.5, y = Inf,
+           label = "Transition\nperiod", hjust = 0.5, vjust = 1.3,
+           size = 3, colour = "orange4") +
+  geom_line(colour = "steelblue", linewidth = 0.6) +
+  geom_point(size = 1.5, colour = "steelblue") +
+  facet_grid(metric ~ Quarter, scales = "free_y") +
+  labs(
+    title    = "BITS Q1 and Q4: temporal decomposition",
+    subtitle = "Orange band = multi-vessel expansion period (~2008–2011)",
+    x = NULL, y = NULL
+  ) +
+  theme_bw(base_size = 10) +
+  theme(panel.grid.minor = element_blank())
+```
+
+#### EVHOE Q4: two-batch CPUEL structure and its effect on zero-fill
+
+EVHOE Q4 CPUEL is stored as **two independent computation batches per year**,
+each with its own `DateofCalculation`:
+
+1. **Main species batch** — the bulk of the data. The computation date determines
+   whether zero-fill was applied:
+   - April 2016 vintage (years 2005–2015, 2016): **zero zero-fill rows**.
+   - August 2018 vintage (years 1997–2004, 2017): full zero-fill included.
+   - 2019+ vintage (2018 onward): full zero-fill included.
+2. **Supplemental Atlantic mackerel batch** (DateofCalculation = 20181205, all
+   years): aphia 127023 (*Scomber scombrus*) computed separately with proper
+   zero-fill, adding 50–84 zero-fill rows per year.
+
+```{r evhoe-batches}
+dr_con("CPUEL") |>
+  filter(Survey == "EVHOE", Quarter == 4) |>
+  group_by(Year, DateofCalculation) |>
+  summarise(
+    n_aphias = n_distinct(aphia),
+    n_catch  = sum(length_mm > 0, na.rm = TRUE),
+    n_zf     = sum(length_mm == 0, na.rm = TRUE),
+    .groups  = "drop"
+  ) |>
+  collect() |>
+  # label the two batch types
+  mutate(
+    Batch = if_else(n_aphias == 1, "Mackerel supplement", "Main species batch")
+  ) |>
+  filter(Batch == "Main species batch") |>
+  select(Year, DateofCalculation, `N aphias` = n_aphias,
+         `Catch rows` = n_catch, `ZF rows` = n_zf) |>
+  arrange(Year) |>
+  knitr::kable(
+    caption = paste(
+      "EVHOE Q4 main batch per year.",
+      "April 2016 vintage (2005–2015) has zero ZF rows;",
+      "August 2018 and later vintages include full zero-fill."
+    )
+  )
+```
+
+The emulation always generates full zero-fill from the current HL species pool.
+For years with the April 2016 CPUEL vintage, this creates a structural mismatch:
+CPUEL has essentially no zero-fill rows while the emulation generates ~15,000–22,000.
+That alone accounts for 70–90 % row diff in those years, with catch differences
+remaining below 5 %.
+
+```{r evhoe-year-decomp, fig.width=9, fig.height=4}
+res |>
+  filter(Survey == "EVHOE", Quarter == 4) |>
+  mutate(
+    catch_contrib = (emul_catch - cpuel_catch) / cpuel_rows * 100,
+    zf_contrib    = zf_diff / cpuel_rows * 100
+  ) |>
+  select(Year, `Total row diff`  = row_diff_pct,
+         `Catch component` = catch_contrib,
+         `ZF component`    = zf_contrib) |>
+  pivot_longer(-Year, names_to = "metric", values_to = "value") |>
+  mutate(metric = factor(metric,
+    levels = c("Total row diff", "Catch component", "ZF component"))) |>
+  ggplot(aes(x = Year, y = value, colour = metric)) +
+  geom_hline(yintercept = 0, colour = "grey50", linewidth = 0.3) +
+  annotate("rect", xmin = 2004.5, xmax = 2016.5, ymin = -Inf, ymax = Inf,
+           fill = "orange", alpha = 0.12) +
+  annotate("text", x = 2010.5, y = Inf,
+           label = "April 2016 vintage\n(no ZF in CPUEL)",
+           hjust = 0.5, vjust = 1.3, size = 3, colour = "orange4") +
+  geom_line(linewidth = 0.7) +
+  geom_point(size = 1.5) +
+  scale_colour_manual(
+    values = c("Total row diff"  = "grey40",
+               "Catch component" = "steelblue",
+               "ZF component"    = "firebrick")
+  ) +
+  labs(
+    title    = "EVHOE Q4: row diff decomposed by year",
+    subtitle = "Orange band = years computed April 2016 (no zero-fill in CPUEL). All as % of cpuel_rows.",
+    x = NULL, y = "Diff vs CPUEL (% of CPUEL rows)", colour = NULL
+  ) +
+  theme_bw(base_size = 10) +
+  theme(legend.position = "bottom", panel.grid.minor = element_blank())
+```
+
+**Key takeaway:** The large row diff for EVHOE is overwhelmingly a zero-fill
+methodology artefact, not a CPUE error. Catch row diffs remain < 5 % throughout,
+and CPUE diffs < 3 %. The April 2016 CPUEL computation simply omitted zero-fill
+rows for the main species batch; later computations include them. The emulation
+matches the 1997–2004 and 2018+ years well once zero-fill is accounted for.
+
+### Per-year detail
+
+```{r per-year}
+res |>
+  select(Survey, Quarter, Year, cpuel_rows, emul_rows, row_diff_pct,
+         cpuel_aphias, emul_aphias, aphia_diff, n_hour_diff_pct) |>
+  arrange(Survey, Quarter, Year) |>
+  knitr::kable(
+    caption   = "Per Survey-Quarter-Year results",
+    digits    = 1,
+    col.names = c("Survey", "Q", "Year", "CPUEL rows", "Emul rows",
+                  "Row diff %", "CPUEL aphias", "Emul aphias",
+                  "Aphia diff", "CPUE diff %")
+  )
+```
+
+## Known discrepancy causes
+
+### Cause 1 — Short-key haul collapsing (emulation < CPUEL)
+
+Multi-vessel surveys assign HaulNumbers 1–*n* independently per vessel; two
+physically distinct hauls can share the same `(Platform, Gear, HaulNumber)` key.
+The emulation's `distinct()` collapses them, producing fewer zero-fill rows than
+CPUEL, which computes internally at the full `.id` level before truncating the key.
+
+```{r short-key-example}
+hh <- dr_con("HH") |>
+  filter(Survey == "NS-IBTS", Year == 2018, Quarter == 1, HaulValidity == "V") |>
+  collect()
+
+tibble(
+  Metric = c("Total valid hauls (.id)",
+             "Distinct (Platform, Gear, HaulNumber)",
+             "Hauls collapsed by short key"),
+  Value  = c(nrow(hh),
+             nrow(distinct(hh, Platform, Gear, HaulNumber)),
+             nrow(hh) - nrow(distinct(hh, Platform, Gear, HaulNumber)))
+) |> knitr::kable(caption = "NS-IBTS Q1 2018: short-key collapsing example")
+```
+
+Effect: ~5–15 % row undercounting for affected Survey-Years. Use
+`haul_key = "full"` to avoid this at the cost of CPUEL output-format
+compatibility.
+
+### Cause 2 — CPUEL data vintage (emulation > CPUEL)
+
+Each CPUEL record carries `DateofCalculation`. When that date precedes the
+current HH/HL data, the local HL contains species not present in the CPUEL
+snapshot, producing more emulation rows.
+
+```{r vintage}
+dr_con("CPUEL") |>
+  group_by(Survey) |>
+  summarise(
+    `Earliest calc`    = min(DateofCalculation),
+    `Latest calc`      = max(DateofCalculation),
+    `N distinct dates` = n_distinct(DateofCalculation),
+    .groups = "drop"
+  ) |>
+  collect() |>
+  arrange(Survey) |>
+  knitr::kable(caption = "DateofCalculation range per survey (format YYYYMMDD)")
+```
+
+SWC-IBTS last computed 2018; SCOWCGFS Q4 2019 has only 3 aphias in CPUEL
+(preliminary submission) while the emulation correctly finds 99 from current HL.
+
+### Cause 3 — Presence-only species (fixed in current version)
+
+Species recorded with `SpeciesValidity` ≠ `"1"` and `NumberAtLength = NA`
+(presence-only notes) had previously been excluded from the zero-fill pool
+via `filter(NumberAtLength != 0)` before the species list was built. Fix:
+build the pool from ALL HL records for valid hauls before that filter.
+
+```{r presence-only}
+all_aphias <- dr_con("HL") |>
+  filter(Survey == "NS-IBTS", Year == 2018, Quarter == 1) |>
+  distinct(aphia, SpeciesValidity) |>
+  collect()
+
+v1_aphias  <- all_aphias |> filter(SpeciesValidity == "1") |> pull(aphia)
+only_nonv1 <- setdiff(all_aphias$aphia, v1_aphias)
+
+dr_con("species") |>
+  filter(aphia %in% only_nonv1) |>
+  select(aphia, latin, species) |>
+  collect() |>
+  left_join(
+    all_aphias |>
+      filter(aphia %in% only_nonv1) |>
+      group_by(aphia) |>
+      summarise(validity_codes = paste(sort(unique(SpeciesValidity)), collapse = ","),
+                .groups = "drop"),
+    by = "aphia"
+  ) |>
+  arrange(latin) |>
+  knitr::kable(
+    caption = "NS-IBTS Q1 2018: presence-only species (SpeciesValidity ≠ '1') now included in zero-fill"
+  )
+```
+
+### Cause 4 — Residual aphia gaps (NS-IBTS Q3, small)
+
+NS-IBTS Q3 shows a consistent 1–3 aphia gap (emulation < CPUEL). Cause not
+fully resolved; magnitude is small and does not affect CPUE values for species
+that are present.
+
+## Function status
+
+```{r status-table}
+tribble(
+  ~Aspect, ~Status, ~Notes,
+  "HaulValidity filter",       "✅ Correct",   "Filters HH to HaulValidity == 'V'",
+  "Length units",              "✅ Correct",   "Converts LengthClass to mm",
+  "Sex/stage collapse",        "✅ Handled",  "collapse_sex=TRUE for 7 surveys (CPUEL sex=NA); collapse_sex=FALSE for EVHOE (CPUEL retains F/M/U) — validation uses survey-specific setting",
+  "CPUE calculation",          "✅ Correct",   "n_haul and n_hour via dr_add_n_and_cpue()",
+  "Zero-fill species pool",    "✅ Fixed",     "Includes presence-only (NA NumberAtLength) species",
+  "Short-key haul collapsing", "⚠️ Known gap", "distinct() collapses ~5-15 % of hauls in multi-vessel surveys",
+  "CPUEL vintage mismatch",    "⚠️ By design", "Emulation uses current HL; CPUEL snapshots vary 2013–2026",
+  "NS-IBTS Q3 aphia gap",      "⚠️ Residual",  "1-3 aphias consistently missing; cause unresolved"
+) |>
+  knitr::kable(caption = "compute_cpue_emulation() function status")
+```
+
