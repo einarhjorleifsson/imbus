@@ -35,8 +35,9 @@ jobs:
             "httr", "rvest",
             "knitr", "rmarkdown",
             "duckdb", "arrow", "DBI",
-            "icesDatras", "icesVocab", "geo"
+            "icesDatras", "icesVocab"
           ))
+          remotes::install_github("hafro/geo")
           remotes::install_github("einarhjorleifsson/obus")
         shell: Rscript {0}
 
