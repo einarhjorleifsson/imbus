@@ -563,6 +563,7 @@ Check for mismatches between reported and derived statistical rectangles (exclud
 
 ```{r}
 #| label: statrec-check
+#| eval: false
 hh <- dr_con("HH") |>
   filter(HaulValidity == "V", Survey != "Can-Mar") |>
   distinct(.id, Survey, lon = ShootLongitude, lat = ShootLatitude, ir = StatisticalRectangle) |>
