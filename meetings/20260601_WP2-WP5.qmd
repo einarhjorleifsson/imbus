@@ -4,9 +4,6 @@ date: "2026-06-01"
 format:
   html:
     toc: true
-  docx:
-    toc: true
-    reference-doc: ../reference.docx
 ---
 
 **IMBUS WP2-WP5 meeting - minutes**

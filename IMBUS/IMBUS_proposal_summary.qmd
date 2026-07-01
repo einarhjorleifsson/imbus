@@ -4,9 +4,6 @@ subtitle: "WP2 task status and user requirements summary (D2.1)"
 format:
   html:
     toc: true
-  docx:
-    toc: true
-    reference-doc: ../reference.docx
 ---
 
 # IMBUS Project --- Proposal Summary

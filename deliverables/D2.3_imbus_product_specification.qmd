@@ -9,10 +9,6 @@ format:
     toc: true
     toc-depth: 4
     number-sections: true
-  docx:
-    reference-doc: ../reference.docx
-    toc: true
-    number-sections: true
 ---
 
 ```{r setup, include=FALSE}
