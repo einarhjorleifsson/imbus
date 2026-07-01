@@ -57,7 +57,8 @@ cod <- dr_con("HL_standardised") |>
 **The three problems with CPUEL documented below do not apply to `HL_standardised`.**
 
 ```{r setup}
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(obus)
 
 cpuel_surveys <- dr_con("CPUEL") |> distinct(Survey) |> collect() |> pull(Survey)

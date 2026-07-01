@@ -15,7 +15,9 @@ execute:
 ---
 
 ```{r setup, include=FALSE}
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
 library(obus)
 source("compute_cpue_emulation.R")
 res <- readRDS("cpuel_validation_results.rds")

@@ -2,7 +2,9 @@
 #' Runs emulation once per Survey-Quarter (all years), then compares row-by-row
 #' with CPUEL aggregated at the Survey x Quarter x Year level.
 
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(purrr)
 library(obus)
 
 source("DATRAS/compute_cpue_emulation.R")

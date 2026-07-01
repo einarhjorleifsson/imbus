@@ -594,7 +594,7 @@ for a survey-by-survey reconciliation.
 ```{r}
 #| label: lc-na-summary
 #| echo: false
-library(tidyverse)
+library(dplyr)
 library(obus)
 
 # Confirm that all NA-LengthClass rows also have NA NumberAtLength,

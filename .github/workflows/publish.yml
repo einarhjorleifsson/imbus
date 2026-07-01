@@ -33,7 +33,8 @@ jobs:
         run: |
           install.packages(c(
             "remotes",
-            "tidyverse", "Hmisc", "gridExtra", "DT",
+            "dplyr", "ggplot2", "tidyr", "stringr", "purrr",
+            "Hmisc", "DT",
             "httr", "rvest",
             "knitr", "rmarkdown",
             "duckdb", "arrow", "DBI",
@@ -41,6 +42,8 @@ jobs:
           ))
           remotes::install_github("einarhjorleifsson/obus")
         shell: Rscript {0}
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Render site
         run: quarto render
