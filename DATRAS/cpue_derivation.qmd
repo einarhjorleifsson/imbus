@@ -59,6 +59,7 @@ cod <- dr_con("HL_standardised") |>
 ```{r setup}
 library(dplyr)
 library(ggplot2)
+library(purrr)
 library(obus)
 
 cpuel_surveys <- dr_con("CPUEL") |> distinct(Survey) |> collect() |> pull(Survey)
