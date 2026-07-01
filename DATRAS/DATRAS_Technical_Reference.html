@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>datras_technical_reference – IMBUS</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">IMBUS</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../IMBUS/IMBUS_proposal_summary.html">
+ <span class="dropdown-text">Project Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../IMBUS/wp2_progress_review.html">
+ <span class="dropdown-text">WP2 Progress Review</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deliverables" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deliverables</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deliverables">    
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.2_data_formats_metadata.html">
+ <span class="dropdown-text">D2.2 — Data Formats and Metadata</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.3_imbus_product_specification.html">
+ <span class="dropdown-text">D2.3 — IMBUS Product Specification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-datras" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">DATRAS</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-datras">    
+        <li>
+    <a class="dropdown-item" href="../DATRAS/reporting_format.html">
+ <span class="dropdown-text">Reporting Format</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_FAQ.html">
+ <span class="dropdown-text">DATRAS FAQ</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_Technical_Reference.html">
+ <span class="dropdown-text">DATRAS Technical Reference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/survey_indices.html">
+ <span class="dropdown-text">Survey Abundance Indices</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpue_derivation.html">
+ <span class="dropdown-text">CPUE derivation: CPUEL vs HL</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpuel_by_length.html">
+ <span class="dropdown-text">CPUEL emulation and validation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/issues.html">
+ <span class="dropdown-text">Data issues and QC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/sampling_protocol.html">
+ <span class="dropdown-text">Sampling protocols</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-meetings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Meetings</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-meetings">    
+        <li>
+    <a class="dropdown-item" href="../meetings/20260601_WP2-WP5.html">
+ <span class="dropdown-text">2026-06-01 WP2–WP5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-projects" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-projects">    
+        <li>
+    <a class="dropdown-item" href="../other_projects/DATRAS_package_checks.html">
+ <span class="dropdown-text">DATRAS R package — data checks</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/einarhjorleifsson/imbus"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#datras-technical-reference" id="toc-datras-technical-reference" class="nav-link active" data-scroll-target="#datras-technical-reference"><span class="header-section-number">1</span> DATRAS Technical Reference</a>
+  <ul class="collapse">
+  <li><a href="#record-type-join-key" id="toc-record-type-join-key" class="nav-link" data-scroll-target="#record-type-join-key"><span class="header-section-number">1.1</span> Record-type join key</a></li>
+  <li><a href="#field-dependencies" id="toc-field-dependencies" class="nav-link" data-scroll-target="#field-dependencies"><span class="header-section-number">1.2</span> Field dependencies</a>
+  <ul class="collapse">
+  <li><a href="#raw-datras-fields" id="toc-raw-datras-fields" class="nav-link" data-scroll-target="#raw-datras-fields"><span class="header-section-number">1.2.1</span> Raw DATRAS fields</a></li>
+  <li><a href="#column-added-to-server-parquets" id="toc-column-added-to-server-parquets" class="nav-link" data-scroll-target="#column-added-to-server-parquets"><span class="header-section-number">1.2.2</span> Column added to server parquets</a></li>
+  <li><a href="#user-pipeline-derived-fields" id="toc-user-pipeline-derived-fields" class="nav-link" data-scroll-target="#user-pipeline-derived-fields"><span class="header-section-number">1.2.3</span> User-pipeline derived fields</a></li>
+  </ul></li>
+  <li><a href="#sentinel-values" id="toc-sentinel-values" class="nav-link" data-scroll-target="#sentinel-values"><span class="header-section-number">1.3</span> Sentinel values</a></li>
+  <li><a href="#sec-datatype" id="toc-sec-datatype" class="nav-link" data-scroll-target="#sec-datatype"><span class="header-section-number">1.4</span> DataType (HH field, also governs HL interpretation)</a>
+  <ul class="collapse">
+  <li><a href="#typical-on-board-sampling-process" id="toc-typical-on-board-sampling-process" class="nav-link" data-scroll-target="#typical-on-board-sampling-process"><span class="header-section-number">1.4.1</span> Typical on-board sampling process</a></li>
+  <li><a href="#hl-field-rules-per-datatype" id="toc-hl-field-rules-per-datatype" class="nav-link" data-scroll-target="#hl-field-rules-per-datatype"><span class="header-section-number">1.4.2</span> HL field rules per DataType</a></li>
+  <li><a href="#catidentifier" id="toc-catidentifier" class="nav-link" data-scroll-target="#catidentifier"><span class="header-section-number">1.4.3</span> CatIdentifier</a></li>
+  </ul></li>
+  <li><a href="#exchange-data-field-units-hh-record" id="toc-exchange-data-field-units-hh-record" class="nav-link" data-scroll-target="#exchange-data-field-units-hh-record"><span class="header-section-number">1.5</span> Exchange Data field units — HH record</a></li>
+  <li><a href="#exchange-data-field-units-hl-record-additional-fields" id="toc-exchange-data-field-units-hl-record-additional-fields" class="nav-link" data-scroll-target="#exchange-data-field-units-hl-record-additional-fields"><span class="header-section-number">1.6</span> Exchange Data field units — HL record (additional fields)</a></li>
+  <li><a href="#exchange-data-field-units-ca-record-additional-fields" id="toc-exchange-data-field-units-ca-record-additional-fields" class="nav-link" data-scroll-target="#exchange-data-field-units-ca-record-additional-fields"><span class="header-section-number">1.7</span> Exchange Data field units — CA record (additional fields)</a></li>
+  <li><a href="#litter-exchange-data-lt-record" id="toc-litter-exchange-data-lt-record" class="nav-link" data-scroll-target="#litter-exchange-data-lt-record"><span class="header-section-number">1.8</span> Litter Exchange Data (LT record)</a></li>
+  <li><a href="#cpue-per-length-per-haul-cpuel" id="toc-cpue-per-length-per-haul-cpuel" class="nav-link" data-scroll-target="#cpue-per-length-per-haul-cpuel"><span class="header-section-number">1.9</span> CPUE per length per haul (CPUEL)</a></li>
+  <li><a href="#cpue-per-age-per-haul-cpuea" id="toc-cpue-per-age-per-haul-cpuea" class="nav-link" data-scroll-target="#cpue-per-age-per-haul-cpuea"><span class="header-section-number">1.10</span> CPUE per age per haul (CPUEA)</a></li>
+  <li><a href="#indices-idx" id="toc-indices-idx" class="nav-link" data-scroll-target="#indices-idx"><span class="header-section-number">1.11</span> Indices (IDX)</a></li>
+  <li><a href="#survey-abundance-indices" id="toc-survey-abundance-indices" class="nav-link" data-scroll-target="#survey-abundance-indices"><span class="header-section-number">1.12</span> Survey Abundance Indices</a></li>
+  <li><a href="#smalk" id="toc-smalk" class="nav-link" data-scroll-target="#smalk"><span class="header-section-number">1.13</span> SMALK</a></li>
+  <li><a href="#alk-age-length-key" id="toc-alk-age-length-key" class="nav-link" data-scroll-target="#alk-age-length-key"><span class="header-section-number">1.14</span> ALK (Age-Length Key)</a></li>
+  <li><a href="#cpue-per-length-per-hour-and-swept-area" id="toc-cpue-per-length-per-hour-and-swept-area" class="nav-link" data-scroll-target="#cpue-per-length-per-hour-and-swept-area"><span class="header-section-number">1.15</span> CPUE per length per hour and swept area</a>
+  <ul class="collapse">
+  <li><a href="#distance-calculation-all-surveys" id="toc-distance-calculation-all-surveys" class="nav-link" data-scroll-target="#distance-calculation-all-surveys"><span class="header-section-number">1.15.1</span> Distance calculation (all surveys)</a></li>
+  <li><a href="#beam-trawl-swept-area-bts-dyfs-sns" id="toc-beam-trawl-swept-area-bts-dyfs-sns" class="nav-link" data-scroll-target="#beam-trawl-swept-area-bts-dyfs-sns"><span class="header-section-number">1.15.2</span> Beam trawl swept area (BTS, DYFS, SNS)</a></li>
+  <li><a href="#otter-trawl-swept-area-ns-ibts-nea-ibts" id="toc-otter-trawl-swept-area-ns-ibts-nea-ibts" class="nav-link" data-scroll-target="#otter-trawl-swept-area-ns-ibts-nea-ibts"><span class="header-section-number">1.15.3</span> Otter trawl swept area (NS-IBTS, NEA-IBTS)</a></li>
+  </ul></li>
+  <li><a href="#confidence-limits-and-bootstrap-variance" id="toc-confidence-limits-and-bootstrap-variance" class="nav-link" data-scroll-target="#confidence-limits-and-bootstrap-variance"><span class="header-section-number">1.16</span> Confidence Limits and Bootstrap Variance</a>
+  <ul class="collapse">
+  <li><a href="#bootstrap-algorithm" id="toc-bootstrap-algorithm" class="nav-link" data-scroll-target="#bootstrap-algorithm"><span class="header-section-number">1.16.1</span> Bootstrap algorithm</a></li>
+  <li><a href="#haul-level-design-structure" id="toc-haul-level-design-structure" class="nav-link" data-scroll-target="#haul-level-design-structure"><span class="header-section-number">1.16.2</span> Haul-level design structure</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes"><span class="header-section-number">1.16.3</span> Notes</a></li>
+  </ul></li>
+  <li><a href="#species-codes" id="toc-species-codes" class="nav-link" data-scroll-target="#species-codes"><span class="header-section-number">1.17</span> Species codes</a></li>
+  <li><a href="#haulvalidity" id="toc-haulvalidity" class="nav-link" data-scroll-target="#haulvalidity"><span class="header-section-number">1.18</span> HaulValidity</a></li>
+  <li><a href="#specval-species-validity" id="toc-specval-species-validity" class="nav-link" data-scroll-target="#specval-species-validity"><span class="header-section-number">1.19</span> SpecVal (species validity)</a></li>
+  <li><a href="#day-night-definition" id="toc-day-night-definition" class="nav-link" data-scroll-target="#day-night-definition"><span class="header-section-number">1.20</span> Day / Night definition</a></li>
+  <li><a href="#age-plus-groups" id="toc-age-plus-groups" class="nav-link" data-scroll-target="#age-plus-groups"><span class="header-section-number">1.21</span> Age plus groups</a></li>
+  <li><a href="#coordinate-system" id="toc-coordinate-system" class="nav-link" data-scroll-target="#coordinate-system"><span class="header-section-number">1.22</span> Coordinate system</a></li>
+  <li><a href="#litter-assessment-output" id="toc-litter-assessment-output" class="nav-link" data-scroll-target="#litter-assessment-output"><span class="header-section-number">1.23</span> Litter Assessment Output</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="datras-technical-reference" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> DATRAS Technical Reference</h1>
+<p>Synthesised from ICES DATRAS specification documents (all in <code>docs_external/DATRAS_documentation/</code>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>3.1.DATRAS_dataproducts_units.pdf</code></td>
+<td>Units in DATRAS Products, v3.1 (2021)</td>
+</tr>
+<tr class="even">
+<td><code>DATRAS_FAQs.pdf</code></td>
+<td>DATRAS FAQs, v3.0 (2014)</td>
+</tr>
+<tr class="odd">
+<td><code>Indices_Calculation_Steps_IBTS.pdf</code></td>
+<td>NS-IBTS indices calculation procedure, v1.2 (2022)</td>
+</tr>
+<tr class="even">
+<td><code>Indices_Calculation_Steps_BITS.pdf</code></td>
+<td>BITS indices calculation procedure, v1.1 (2013)</td>
+</tr>
+<tr class="odd">
+<td><code>ALK_automated_substitution.pdf</code></td>
+<td>Automated ALK substitution procedure (2020)</td>
+</tr>
+<tr class="even">
+<td><code>Swept_area_km2_algorithms_pdf.pdf</code></td>
+<td>Swept area calculation algorithms, v1.4 (2022)</td>
+</tr>
+<tr class="odd">
+<td><code>Final_report_to_EU_Bootstrap_calculation.pdf</code></td>
+<td>Bootstrap confidence limits for abundance indices (2007)</td>
+</tr>
+<tr class="even">
+<td><code>Workshop_report_on_variance_estimation.pdf</code></td>
+<td>DATRAS workshop on confidence limit estimation (2006)</td>
+</tr>
+<tr class="odd">
+<td><code>SWC-IBTS_and_ROCKALL_IndicesCalculation_pre2011.pdf</code></td>
+<td>SWC-IBTS/Rockall historical indices (pre-2011)</td>
+</tr>
+<tr class="even">
+<td><code>BITS_AreaWeights.csv</code></td>
+<td>BITS depth-stratum area weights (km²) by SD and depth layer</td>
+</tr>
+<tr class="odd">
+<td><code>BITS_ConversionFactor_to_TVL.csv</code></td>
+<td>BITS gear conversion factors for cod CPUE to TVL equivalent</td>
+</tr>
+</tbody>
+</table>
+<p>This file is a domain reference for field names, units, and data conventions across all DATRAS record types. For obus package code-flow notes see AGENTS.md.</p>
+<hr>
+<section id="record-type-join-key" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="record-type-join-key"><span class="header-section-number">1.1</span> Record-type join key</h2>
+<p>HH, HL, and CA records are linked by their <strong>first 11 fields</strong>:</p>
+<blockquote class="blockquote">
+<p>Quarter · Country · Ship · Gear · StNo · HaulNo · Year</p>
+</blockquote>
+<p>(plus RecordType, SweepLngt, GearEx, DoorType — completing position 1–11)</p>
+<p>In practice, the meaningful subset is: <strong>Survey + Year + Quarter + Country + Ship + Gear + StNo + HaulNo</strong>. <code>dr_add_id()</code> builds a unique <code>.id</code> from Survey, Year, Quarter, Country, Platform, Gear, StationName, HaulNumber.</p>
+<hr>
+</section>
+<section id="field-dependencies" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="field-dependencies"><span class="header-section-number">1.2</span> Field dependencies</h2>
+<p>Several DATRAS fields have values or units that can only be interpreted correctly in the context of another field — sometimes from the same record, sometimes from the HH table. The tables below map those relationships.</p>
+<section id="raw-datras-fields" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="raw-datras-fields"><span class="header-section-number">1.2.1</span> Raw DATRAS fields</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 18%">
+<col style="width: 20%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Table</th>
+<th>Depends on</th>
+<th>Dep. table</th>
+<th>Nature of dependency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>TotalNo</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R/S: total fish in haul. C: total raised to 1 hr haul</td>
+</tr>
+<tr class="even">
+<td><code>NoMeas</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R/S: fish measured in sub-sample. C: fish measured (or NA)</td>
+</tr>
+<tr class="odd">
+<td><code>SubFactor</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R: must be ≥ 1. S: must be &gt; 1. C: must be = 1</td>
+</tr>
+<tr class="even">
+<td><code>SubWgt</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R/S: weight of sub-sampled fish. C: weight raised to 1 hr</td>
+</tr>
+<tr class="odd">
+<td><code>CatCatchWgt</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R/S: total catch weight (same scope as TotalNo). C: raised to 1 hr</td>
+</tr>
+<tr class="even">
+<td><code>HLNoAtLngt</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R/S: fish at this length in sub-sample. C: fish per hour at this length</td>
+</tr>
+<tr class="odd">
+<td><code>CatIdentifier</code></td>
+<td>HL</td>
+<td><code>DataType</code></td>
+<td>HH</td>
+<td>R/S: ≥ 1, up to 5 size-sorting categories. C: always 1</td>
+</tr>
+<tr class="even">
+<td><code>LngtClass</code></td>
+<td>HL</td>
+<td><code>LngtCode</code></td>
+<td>HL</td>
+<td><code>"."</code> or <code>"0"</code>: value in mm (divide by 10 for cm). <code>"1"</code>,<code>"2"</code>,<code>"5"</code>: value already in cm</td>
+</tr>
+<tr class="odd">
+<td><code>SpecCode</code></td>
+<td>HL/CA</td>
+<td><code>SpecCodeType</code></td>
+<td>HL/CA</td>
+<td><code>W</code>: WoRMS AphiaID. <code>T</code>: ITIS TSN. <code>N</code>: NODC code</td>
+</tr>
+<tr class="even">
+<td><code>AreaCode</code></td>
+<td>CA</td>
+<td><code>AreaType</code></td>
+<td>CA</td>
+<td>Code system depends on area type (ICES rect, national, etc.)</td>
+</tr>
+<tr class="odd">
+<td><code>Maturity</code></td>
+<td>CA</td>
+<td><code>MaturityScale</code></td>
+<td>CA</td>
+<td>Maturity code meaning depends on which scale was used (ICES, national, etc.)</td>
+</tr>
+<tr class="even">
+<td><code>LT_Weight</code></td>
+<td>LT</td>
+<td><code>UnitWgt</code></td>
+<td>LT</td>
+<td>Physical unit of weight varies per record</td>
+</tr>
+<tr class="odd">
+<td><code>LT_Items</code></td>
+<td>LT</td>
+<td><code>UnitItem</code></td>
+<td>LT</td>
+<td>Physical unit of count varies per record</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="column-added-to-server-parquets" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="column-added-to-server-parquets"><span class="header-section-number">1.2.2</span> Column added to server parquets</h3>
+<p>The HH, HL, and CA parquets on the server contain the original DATRAS exchange fields (new-style names) plus one obus-added column:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 31%">
+<col style="width: 25%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Function</th>
+<th>Inputs</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>.id</code></td>
+<td><code>dr_add_id()</code></td>
+<td>Survey, Year, Quarter, Country, Platform, Gear, StationName, HaulNumber (HH/HL/CA)</td>
+<td>Paste 8 fields with <code>":"</code> separator</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="user-pipeline-derived-fields" class="level3" data-number="1.2.3">
+<h3 data-number="1.2.3" class="anchored" data-anchor-id="user-pipeline-derived-fields"><span class="header-section-number">1.2.3</span> User-pipeline derived fields</h3>
+<p>These are not stored anywhere; compute them in your own pipeline with <code>dr_add_*</code> functions after fetching the raw parquet data.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 17%">
+<col style="width: 26%">
+<col style="width: 28%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Derived field</th>
+<th>Function</th>
+<th>Inputs (table)</th>
+<th>Formula / rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>date</code></td>
+<td><code>dr_add_date()</code></td>
+<td>Year, Month, Day (HH)</td>
+<td><code>make_date(Year, Month, Day)</code></td>
+</tr>
+<tr class="even">
+<td><code>time</code></td>
+<td><code>dr_add_starttime()</code></td>
+<td>Year, Month, Day, TimeShot (HH)</td>
+<td>Parse <code>TimeShot</code> as hhmm, combine with date</td>
+</tr>
+<tr class="odd">
+<td><code>length_cm</code></td>
+<td><code>dr_add_length_cm()</code></td>
+<td>LngtClass, LngtCode (HL)</td>
+<td>LngtCode <code>"."</code>/<code>"0"</code>: <code>LngtClass / 10</code>. Others: <code>LngtClass</code></td>
+</tr>
+<tr class="even">
+<td><code>length_mm</code></td>
+<td><code>dr_add_length_mm()</code></td>
+<td>LngtClass, LngtCode (HL)</td>
+<td>LngtCode <code>"."</code>/<code>"0"</code>: <code>LngtClass</code>. Others: <code>LngtClass * 10</code></td>
+</tr>
+<tr class="odd">
+<td><code>n_haul</code></td>
+<td><code>dr_add_n_and_cpue()</code></td>
+<td>HLNoAtLngt, SubFactor (HL); DataType, HaulDur (HH)</td>
+<td>R/S/P: <code>HLNoAtLngt * SubFactor</code>. C: <code>HLNoAtLngt * SubFactor * HaulDur / 60</code></td>
+</tr>
+<tr class="even">
+<td><code>n_hour</code></td>
+<td><code>dr_add_n_and_cpue()</code></td>
+<td>HLNoAtLngt, SubFactor (HL); DataType, HaulDur (HH)</td>
+<td>R/S/P: <code>HLNoAtLngt * SubFactor / HaulDur * 60</code>. C: <code>HLNoAtLngt * SubFactor</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="sentinel-values" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="sentinel-values"><span class="header-section-number">1.3</span> Sentinel values</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>-9</code></td>
+<td>Missing / not applicable. Not a real value. Replaced with <code>NA</code> in obus fetchers.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="sec-datatype" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="sec-datatype"><span class="header-section-number">1.4</span> DataType (HH field, also governs HL interpretation)</h2>
+<p>Four reporting modes used by national submitters:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 24%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>DataType</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>R</code></td>
+<td>Raw / recorded by haul</td>
+<td>Sorted catch; some species may be subsampled. SubFactor ≥ 1.</td>
+</tr>
+<tr class="even">
+<td><code>S</code></td>
+<td>Sub-sampled</td>
+<td>Bulk unsorted catch sub-sampled before sorting. SubFactor &gt; 1.</td>
+</tr>
+<tr class="odd">
+<td><code>C</code></td>
+<td>CPUE</td>
+<td>All counts already raised to 1 hour of hauling. SubFactor = 1.</td>
+</tr>
+<tr class="even">
+<td><code>P</code></td>
+<td>Pseudocategory / size-stratified</td>
+<td>Sorted catch split into explicit size strata, each with its own CatIdentifier and SubFactor. Arithmetic identical to R.</td>
+</tr>
+</tbody>
+</table>
+<section id="typical-on-board-sampling-process" class="level3" data-number="1.4.1">
+<h3 data-number="1.4.1" class="anchored" data-anchor-id="typical-on-board-sampling-process"><span class="header-section-number">1.4.1</span> Typical on-board sampling process</h3>
+<p>NOTE: This is inferred from the data structure, so possibly wrong.</p>
+<p><strong>DataType R — sort, then optionally subsample:</strong> The full catch is sorted by species on deck. For low-abundance species the entire sorted pile is counted and measured (SubFactor = 1). For abundant species a random weight sub-sample is drawn from the sorted pile; only that sub-sample is measured, and SubFactor = total_sorted_weight / subsample_weight encodes the raising factor. <code>HLNoAtLngt</code> is the measured count in the sub-sample; <code>TotalNo ≈ sum(HLNoAtLngt) × SubFactor</code> recovers the estimated total catch.</p>
+<p><strong>DataType P — size-stratified subsampling:</strong> Same general flow as R, but the sorted catch is further divided into explicit size strata before subsampling. Each stratum gets its own CatIdentifier and SubFactor. A typical pattern is that abundant medium-sized fish are subsampled (SubFactor &gt; 1) while rare large (or very small) fish are fully enumerated in their own CatIdentifier (SubFactor = 1) — simply because there are too few of them to bother subsampling. For example: 169 fish at 280–370 mm measured from a subsample with SubFactor 2.65 (CatIdentifier 21); 2 fish at 380–390 mm all measured with SubFactor 1 (CatIdentifier 22). The arithmetic is identical to R: <code>n_haul = HLNoAtLngt × SubFactor</code>, applied per stratum.</p>
+<p><strong>DataType S — subsample first, then sort:</strong> The bulk catch is too large to sort entirely. A random weight sub-sample is drawn from the <em>unsorted</em> pile; that sub-sample is then sorted and measured. SubFactor &gt; 1 always. <code>HLNoAtLngt</code> is the measured count in the sub-sample; <code>TotalNo ≈ sum(HLNoAtLngt) × SubFactor</code> recovers the estimated total catch.</p>
+<p><strong>DataType C — national lab pre-raises before submission:</strong> The national laboratory has already standardised all counts to a 1-hour tow before submitting to DATRAS. The submission does <strong>not</strong> contain raw haul counts; it contains CPUE values. This does <em>not</em> imply that every fish was individually measured — the lab may well have applied its own sub-sampling protocol on-board — but any such raising was resolved internally and is invisible in the submitted data. SubFactor = 1 (no further raising is required by the recipient). <code>HLNoAtLngt</code> is fish <em>per hour</em> at that length, not fish in a physical sub-sample.</p>
+</section>
+<section id="hl-field-rules-per-datatype" class="level3" data-number="1.4.2">
+<h3 data-number="1.4.2" class="anchored" data-anchor-id="hl-field-rules-per-datatype"><span class="header-section-number">1.4.2</span> HL field rules per DataType</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>HL field</th>
+<th>DataType R</th>
+<th>DataType S</th>
+<th>DataType C</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>TotalNo</code></td>
+<td>Total fish (species/sex/category) in haul</td>
+<td>Same</td>
+<td>Total fish raised to 1 hr haul</td>
+</tr>
+<tr class="even">
+<td><code>NoMeas</code></td>
+<td>Fish measured in sub-sample</td>
+<td>Same</td>
+<td>Fish measured, or -9 if not recorded</td>
+</tr>
+<tr class="odd">
+<td><code>SubFactor</code></td>
+<td>≥ 1; TotalNo = NoMeas × SubFactor</td>
+<td>&gt; 1; same</td>
+<td>Always 1 (no raising needed)</td>
+</tr>
+<tr class="even">
+<td><code>SubWgt</code></td>
+<td>Weight of sub-sampled fish (NoMeas)</td>
+<td>Same</td>
+<td>Weight raised to 1 hr (or -9)</td>
+</tr>
+<tr class="odd">
+<td><code>CatCatchWgt</code></td>
+<td>Catch weight (same scope as TotalNo)</td>
+<td>Same</td>
+<td>Catch weight raised to 1 hr</td>
+</tr>
+<tr class="even">
+<td><code>HLNoAtLngt</code></td>
+<td>Fish in sub-sample at this length; TotalNo = Sum(HLNoAtLngt) × SubFactor</td>
+<td>Same</td>
+<td>Fish <em>per hour</em> at this length (CPUE); TotalNo = Sum(HLNoAtLngt)</td>
+</tr>
+<tr class="odd">
+<td><code>CatIdentifier</code></td>
+<td>Category ID (≥1); use 1 if only one category</td>
+<td>Same</td>
+<td>Always 1</td>
+</tr>
+</tbody>
+</table>
+<p><code>dr_add_n_and_cpue()</code> back-converts DataType C to per-haul counts: <code>n_haul = HLNoAtLngt × SubFactor × HaulDur / 60</code>; <code>n_hour = HLNoAtLngt × SubFactor</code>. For R/S/P: <code>n_haul = HLNoAtLngt × SubFactor</code>; <code>n_hour = n_haul / HaulDur × 60</code>.</p>
+</section>
+<section id="catidentifier" class="level3" data-number="1.4.3">
+<h3 data-number="1.4.3" class="anchored" data-anchor-id="catidentifier"><span class="header-section-number">1.4.3</span> CatIdentifier</h3>
+<p>Used when a species catch is size-sorted into subgroups with different sub-sampling factors within the same haul/species/sex. Up to 5 categories per species per haul. If no size sorting occurred, CatIdentifier = 1. Different sex codes for the same species do <strong>not</strong> require different CatIdentifier values.</p>
+<hr>
+</section>
+</section>
+<section id="exchange-data-field-units-hh-record" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="exchange-data-field-units-hh-record"><span class="header-section-number">1.5</span> Exchange Data field units — HH record</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 59%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field (old-style)</th>
+<th>Unit / vocab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>RecordType</code></td>
+<td>vocab.ices.dk ref=191</td>
+</tr>
+<tr class="even">
+<td><code>Quarter</code></td>
+<td>vocab.ices.dk ref=12</td>
+</tr>
+<tr class="odd">
+<td><code>Country</code></td>
+<td>vocab.ices.dk ref=4</td>
+</tr>
+<tr class="even">
+<td><code>Ship</code></td>
+<td>vocab.ices.dk ref=3</td>
+</tr>
+<tr class="odd">
+<td><code>Gear</code></td>
+<td>vocab.ices.dk ref=2</td>
+</tr>
+<tr class="even">
+<td><code>SweepLngt</code></td>
+<td>Metres</td>
+</tr>
+<tr class="odd">
+<td><code>GearEx</code></td>
+<td>vocab.ices.dk ref=97</td>
+</tr>
+<tr class="even">
+<td><code>DoorType</code></td>
+<td>vocab.ices.dk ref=98</td>
+</tr>
+<tr class="odd">
+<td><code>StNo</code></td>
+<td>National station code/number</td>
+</tr>
+<tr class="even">
+<td><code>HaulNo</code></td>
+<td>Numeric</td>
+</tr>
+<tr class="odd">
+<td><code>Year</code></td>
+<td>yyyy</td>
+</tr>
+<tr class="even">
+<td><code>Month</code></td>
+<td>vocab.ices.dk ref=13</td>
+</tr>
+<tr class="odd">
+<td><code>Day</code></td>
+<td>dd</td>
+</tr>
+<tr class="even">
+<td><code>TimeShot</code></td>
+<td>GMT, <strong>hhmm</strong></td>
+</tr>
+<tr class="odd">
+<td><code>DepthStratum</code></td>
+<td>vocab.ices.dk ref=99</td>
+</tr>
+<tr class="even">
+<td><code>HaulDur</code></td>
+<td><strong>Minutes</strong></td>
+</tr>
+<tr class="odd">
+<td><code>DayNight</code></td>
+<td>vocab.ices.dk ref=8</td>
+</tr>
+<tr class="even">
+<td><code>ShootLat</code></td>
+<td>Degree.Decimal Degree</td>
+</tr>
+<tr class="odd">
+<td><code>ShootLong</code></td>
+<td>Degree.Decimal Degree</td>
+</tr>
+<tr class="even">
+<td><code>HaulLat</code></td>
+<td>Degree.Decimal Degree</td>
+</tr>
+<tr class="odd">
+<td><code>HaulLong</code></td>
+<td>Degree.Decimal Degree</td>
+</tr>
+<tr class="even">
+<td><code>StatRec</code></td>
+<td>ICES statistical rectangle (based on shooting position)</td>
+</tr>
+<tr class="odd">
+<td><code>Depth</code></td>
+<td><strong>Metres</strong> (bottom depth; equals trawling depth for bottom trawls)</td>
+</tr>
+<tr class="even">
+<td><code>HaulVal</code></td>
+<td>vocab.ices.dk ref=1</td>
+</tr>
+<tr class="odd">
+<td><code>HydroStNo</code></td>
+<td>National hydrographic station code</td>
+</tr>
+<tr class="even">
+<td><code>StdSpecRecCode</code></td>
+<td>vocab.ices.dk ref=88</td>
+</tr>
+<tr class="odd">
+<td><code>BySpecRecCode</code></td>
+<td>vocab.ices.dk ref=89</td>
+</tr>
+<tr class="even">
+<td><code>DataType</code></td>
+<td>vocab.ices.dk ref=9</td>
+</tr>
+<tr class="odd">
+<td><code>Netopening</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>Rigging</code></td>
+<td>vocab.ices.dk ref=181</td>
+</tr>
+<tr class="odd">
+<td><code>Tickler</code></td>
+<td>vocab.ices.dk ref=182</td>
+</tr>
+<tr class="even">
+<td><code>Distance</code></td>
+<td><strong>Metres</strong></td>
+</tr>
+<tr class="odd">
+<td><code>Warplngt</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>Warpdia</code></td>
+<td>Millimetres</td>
+</tr>
+<tr class="odd">
+<td><code>WarpDen</code></td>
+<td>Kg per linear metre</td>
+</tr>
+<tr class="even">
+<td><code>DoorSurface</code></td>
+<td>Square metres</td>
+</tr>
+<tr class="odd">
+<td><code>DoorWgt</code></td>
+<td>Kilograms</td>
+</tr>
+<tr class="even">
+<td><code>DoorSpread</code></td>
+<td>Metres</td>
+</tr>
+<tr class="odd">
+<td><code>WingSpread</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>Buoyancy</code></td>
+<td>Kilograms</td>
+</tr>
+<tr class="odd">
+<td><code>KiteDim</code></td>
+<td>Square metres</td>
+</tr>
+<tr class="even">
+<td><code>WgtGroundRope</code></td>
+<td>Kilograms</td>
+</tr>
+<tr class="odd">
+<td><code>TowDir</code></td>
+<td>Degrees</td>
+</tr>
+<tr class="even">
+<td><code>GroundSpeed</code></td>
+<td>Knots</td>
+</tr>
+<tr class="odd">
+<td><code>SpeedWater</code></td>
+<td>Knots</td>
+</tr>
+<tr class="even">
+<td><code>SurCurDir</code></td>
+<td>Degrees</td>
+</tr>
+<tr class="odd">
+<td><code>SurCurSpeed</code></td>
+<td>Metres/second</td>
+</tr>
+<tr class="even">
+<td><code>BotCurDir</code></td>
+<td>Degrees</td>
+</tr>
+<tr class="odd">
+<td><code>BotCurSpeed</code></td>
+<td>Metres/second</td>
+</tr>
+<tr class="even">
+<td><code>WindDir</code></td>
+<td>Degrees</td>
+</tr>
+<tr class="odd">
+<td><code>WindSpeed</code></td>
+<td>Metres/second</td>
+</tr>
+<tr class="even">
+<td><code>SwellDir</code></td>
+<td>Degrees</td>
+</tr>
+<tr class="odd">
+<td><code>SwellHeight</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>SurTemp</code></td>
+<td>Celsius degrees</td>
+</tr>
+<tr class="odd">
+<td><code>BotTemp</code></td>
+<td>Celsius degrees</td>
+</tr>
+<tr class="even">
+<td><code>SurSal</code></td>
+<td>PSU</td>
+</tr>
+<tr class="odd">
+<td><code>BotSal</code></td>
+<td>PSU</td>
+</tr>
+<tr class="even">
+<td><code>ThermoCline</code></td>
+<td>vocab.ices.dk ref=112</td>
+</tr>
+<tr class="odd">
+<td><code>ThClineDepth</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>CodendMesh</code></td>
+<td>Millimetres</td>
+</tr>
+<tr class="odd">
+<td><code>SecchiDepth</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>Turbidity</code></td>
+<td>NTU</td>
+</tr>
+<tr class="odd">
+<td><code>TidePhase</code></td>
+<td>Minutes</td>
+</tr>
+<tr class="even">
+<td><code>TideSpeed</code></td>
+<td>Metres/second</td>
+</tr>
+<tr class="odd">
+<td><code>PelSampType</code></td>
+<td>vocab.ices.dk ref=1391</td>
+</tr>
+<tr class="even">
+<td><code>MinTrawlDepth</code></td>
+<td>Metres</td>
+</tr>
+<tr class="odd">
+<td><code>MaxTrawlDepth</code></td>
+<td>Metres</td>
+</tr>
+<tr class="even">
+<td><code>DateofCalculation</code></td>
+<td>YYYYMMDD</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="exchange-data-field-units-hl-record-additional-fields" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="exchange-data-field-units-hl-record-additional-fields"><span class="header-section-number">1.6</span> Exchange Data field units — HL record (additional fields)</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field (old-style)</th>
+<th>Unit / vocab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SpecCodeType</code></td>
+<td>vocab.ices.dk ref=96</td>
+</tr>
+<tr class="even">
+<td><code>SpecCode</code></td>
+<td>datras.ices.dk species query</td>
+</tr>
+<tr class="odd">
+<td><code>SpecVal</code></td>
+<td>vocab.ices.dk ref=5</td>
+</tr>
+<tr class="even">
+<td><code>Sex</code></td>
+<td>vocab.ices.dk ref=17</td>
+</tr>
+<tr class="odd">
+<td><code>TotalNo</code></td>
+<td>Number of fish</td>
+</tr>
+<tr class="even">
+<td><code>CatIdentifier</code></td>
+<td>vocab.ices.dk ref=16</td>
+</tr>
+<tr class="odd">
+<td><code>NoMeas</code></td>
+<td>Number of fish</td>
+</tr>
+<tr class="even">
+<td><code>SubFactor</code></td>
+<td>Factor of subsampling</td>
+</tr>
+<tr class="odd">
+<td><code>SubWgt</code></td>
+<td><strong>Grams</strong></td>
+</tr>
+<tr class="even">
+<td><code>CatCatchWgt</code></td>
+<td><strong>Grams</strong></td>
+</tr>
+<tr class="odd">
+<td><code>LngtCode</code></td>
+<td>vocab.ices.dk ref=18</td>
+</tr>
+<tr class="even">
+<td><code>LngtClass</code></td>
+<td><strong>mm</strong> for mm and ½-cm classes; <strong>cm</strong> for cm classes</td>
+</tr>
+<tr class="odd">
+<td><code>HLNoAtLngt</code></td>
+<td>Number of fish</td>
+</tr>
+<tr class="even">
+<td><code>DevStage</code></td>
+<td>vocab.ices.dk ref=1397</td>
+</tr>
+<tr class="odd">
+<td><code>LenMeasType</code></td>
+<td>vocab.ices.dk ref=1392</td>
+</tr>
+<tr class="even">
+<td><code>ValidAphiaID</code></td>
+<td>Valid WoRMS AphiaID</td>
+</tr>
+<tr class="odd">
+<td><code>AreaType</code></td>
+<td>vocab.ices.dk ref=10</td>
+</tr>
+<tr class="even">
+<td><code>AreaCode</code></td>
+<td>See AreaType vocab</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="exchange-data-field-units-ca-record-additional-fields" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="exchange-data-field-units-ca-record-additional-fields"><span class="header-section-number">1.7</span> Exchange Data field units — CA record (additional fields)</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field (old-style)</th>
+<th>Unit / vocab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Maturity</code></td>
+<td>vocab.ices.dk ref=128</td>
+</tr>
+<tr class="even">
+<td><code>PlusGr</code></td>
+<td>vocab.ices.dk ref=14 (<code>"+"</code> = plus-group age)</td>
+</tr>
+<tr class="odd">
+<td><code>AgeRings</code></td>
+<td>Years</td>
+</tr>
+<tr class="even">
+<td><code>CANoAtLngt</code></td>
+<td>Number of fish</td>
+</tr>
+<tr class="odd">
+<td><code>IndWgt</code></td>
+<td><strong>Grams</strong></td>
+</tr>
+<tr class="even">
+<td><code>MaturityScale</code></td>
+<td>vocab.ices.dk CodeID=201781</td>
+</tr>
+<tr class="odd">
+<td><code>FishID</code></td>
+<td>Sample ID (national lab)</td>
+</tr>
+<tr class="even">
+<td><code>GenSamp</code></td>
+<td>vocab.ices.dk ref=1390</td>
+</tr>
+<tr class="odd">
+<td><code>StomSamp</code></td>
+<td>vocab.ices.dk ref=1390</td>
+</tr>
+<tr class="even">
+<td><code>AgeSource</code></td>
+<td>vocab.ices.dk ref=1393</td>
+</tr>
+<tr class="odd">
+<td><code>AgePrepMet</code></td>
+<td>vocab.ices.dk ref=1394</td>
+</tr>
+<tr class="even">
+<td><code>OtGrading</code></td>
+<td>vocab.ices.dk ref=1395</td>
+</tr>
+<tr class="odd">
+<td><code>ParSamp</code></td>
+<td>vocab.ices.dk ref=1390</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="litter-exchange-data-lt-record" class="level2" data-number="1.8">
+<h2 data-number="1.8" class="anchored" data-anchor-id="litter-exchange-data-lt-record"><span class="header-section-number">1.8</span> Litter Exchange Data (LT record)</h2>
+<p>Haul-level join: Survey · Year · Quarter · Country · Ship · Gear · StNo · HaulNo.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Unit / vocab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>LTREF</code></td>
+<td>Litter reference list ref=1381</td>
+</tr>
+<tr class="even">
+<td><code>PARAM</code></td>
+<td>Litter parameter (see LTREF vocab)</td>
+</tr>
+<tr class="odd">
+<td><code>LTSZC</code></td>
+<td>Litter size category ref=1380</td>
+</tr>
+<tr class="even">
+<td><code>UnitWgt</code></td>
+<td>Units for LT_Weight ref=1421</td>
+</tr>
+<tr class="odd">
+<td><code>LT_Weight</code></td>
+<td>Litter weight (unit per prev. field)</td>
+</tr>
+<tr class="even">
+<td><code>UnitItem</code></td>
+<td>Units for LT_Items ref=1422</td>
+</tr>
+<tr class="odd">
+<td><code>LT_Items</code></td>
+<td>Number of litter items</td>
+</tr>
+<tr class="even">
+<td><code>LTSRC</code></td>
+<td>Litter source ref=1382</td>
+</tr>
+<tr class="odd">
+<td><code>TYPPL</code></td>
+<td>Type of polymer ref=1385</td>
+</tr>
+<tr class="even">
+<td><code>LTPRP</code></td>
+<td>Additional litter properties ref=1403</td>
+</tr>
+<tr class="odd">
+<td><code>Reserved1</code>, <code>Reserved2</code></td>
+<td>System reserved, always -9</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="cpue-per-length-per-haul-cpuel" class="level2" data-number="1.9">
+<h2 data-number="1.9" class="anchored" data-anchor-id="cpue-per-length-per-haul-cpuel"><span class="header-section-number">1.9</span> CPUE per length per haul (CPUEL)</h2>
+<p>Standard and other species. CPUE = numbers per <strong>1 hour of hauling</strong>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>LngtClass</code></td>
+<td>Millimetres</td>
+</tr>
+<tr class="even">
+<td><code>CPUE_number_per_hour</code></td>
+<td>Catch in numbers per hour</td>
+</tr>
+<tr class="odd">
+<td><code>HaulDur</code></td>
+<td>Minutes</td>
+</tr>
+<tr class="even">
+<td><code>Depth</code></td>
+<td>Metres</td>
+</tr>
+<tr class="odd">
+<td><code>ShootLat/Long</code></td>
+<td>Degree.Decimal Degree</td>
+</tr>
+<tr class="even">
+<td><code>DateTime</code></td>
+<td>dd/mm/yyyy hh:mm:ss (beware Excel reformatting)</td>
+</tr>
+<tr class="odd">
+<td><code>DateofCalculation</code></td>
+<td>YYYYMMDD</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="cpue-per-age-per-haul-cpuea" class="level2" data-number="1.10">
+<h2 data-number="1.10" class="anchored" data-anchor-id="cpue-per-age-per-haul-cpuea"><span class="header-section-number">1.10</span> CPUE per age per haul (CPUEA)</h2>
+<p>Standard species only. Age columns <code>Age_0</code> … <code>Age_10</code> = catch in numbers per hour. Plus-group age determined per species per survey by expert group (e.g.&nbsp;NS-IBTS = Age_6).</p>
+<hr>
+</section>
+<section id="indices-idx" class="level2" data-number="1.11">
+<h2 data-number="1.11" class="anchored" data-anchor-id="indices-idx"><span class="header-section-number">1.11</span> Indices (IDX)</h2>
+<p>Standard species only. Age columns <code>Age_0</code> … <code>Age_15</code> = <strong>number per hour per area</strong> for standard gear.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 65%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Unit / vocab</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>IndexArea</code></td>
+<td>vocab.ices.dk ref=162</td>
+</tr>
+<tr class="even">
+<td><code>PlusGr</code></td>
+<td>vocab.ices.dk ref=14 (renamed <code>PlusGrAge</code> in obus to avoid clash with CA <code>PlusGr</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>Sex</code></td>
+<td>vocab.ices.dk ref=17</td>
+</tr>
+</tbody>
+</table>
+<p>CPUE zeroes in CPUE products: species absent from haul but reported by ≥ 1 country in the same survey/year/quarter → zero-records added automatically for all hauls in that combination.</p>
+<hr>
+</section>
+<section id="survey-abundance-indices" class="level2" data-number="1.12">
+<h2 data-number="1.12" class="anchored" data-anchor-id="survey-abundance-indices"><span class="header-section-number">1.12</span> Survey Abundance Indices</h2>
+<p>CPUEA and IDX products are computed from raw exchange data following survey-specific procedures developed with the relevant ICES Expert Groups. The pipeline: build ALK from CA records → derive CPUE-by-length from HL → apply ALK to get CPUE-by-age → spatially aggregate with optional area weighting.</p>
+<p>For the full step-by-step procedures, Annex tables, and area/gear-conversion weights, see <a href="../DATRAS/survey_indices.html">Survey Abundance Indices</a>.</p>
+<hr>
+</section>
+<section id="smalk" class="level2" data-number="1.13">
+<h2 data-number="1.13" class="anchored" data-anchor-id="smalk"><span class="header-section-number">1.13</span> SMALK</h2>
+<p>Sex/Maturity/Age/Length/Key product. <code>CANoAtLngt</code> = catch in numbers per hour; <code>IndWgt</code> = Grams. Non-BTS surveys: area-level aggregation. BTS/DYFS: ship-level, wide age columns.</p>
+<hr>
+</section>
+<section id="alk-age-length-key" class="level2" data-number="1.14">
+<h2 data-number="1.14" class="anchored" data-anchor-id="alk-age-length-key"><span class="header-section-number">1.14</span> ALK (Age-Length Key)</h2>
+<p>Standard species only. Age columns <code>Age_0</code> … <code>Age_10</code> = <strong>number of fish</strong> (not per hour).</p>
+<hr>
+</section>
+<section id="cpue-per-length-per-hour-and-swept-area" class="level2" data-number="1.15">
+<h2 data-number="1.15" class="anchored" data-anchor-id="cpue-per-length-per-hour-and-swept-area"><span class="header-section-number">1.15</span> CPUE per length per hour and swept area</h2>
+<p>BTS, BTS-VIIa, DYFS, SNS surveys only.</p>
+<p><em>Source: ICES Data Centre DATRAS Procedure Document v1.4 (2022), “Swept area calculation algorithms”</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>CPUE_number_per_hour</code></td>
+<td>Catch in numbers per hour of hauling</td>
+</tr>
+<tr class="even">
+<td><code>SweptArea_km2</code></td>
+<td>Square kilometre</td>
+</tr>
+<tr class="odd">
+<td><code>CPUE_number_per_km2</code></td>
+<td>Catch in numbers per km²</td>
+</tr>
+<tr class="even">
+<td><code>BeamWidth</code></td>
+<td>Metres</td>
+</tr>
+<tr class="odd">
+<td><code>DistanceDerived</code></td>
+<td>Metres</td>
+</tr>
+</tbody>
+</table>
+<section id="distance-calculation-all-surveys" class="level3" data-number="1.15.1">
+<h3 data-number="1.15.1" class="anchored" data-anchor-id="distance-calculation-all-surveys"><span class="header-section-number">1.15.1</span> Distance calculation (all surveys)</h3>
+<p>Preferred: <code>Distance (m) = (HaulDur / 60) × 1852 × GroundSpeed</code></p>
+<p>Fallback when <code>GroundSpeed</code> is missing — great-circle distance from shoot/haul positions:</p>
+<pre><code>Distance (m) = 1.852 × 360 × (60 / 2π) ×
+  acos( cos(ShootLat) × cos(HaulLat) × cos(HaulLon − ShootLon)
+      + sin(ShootLat) × sin(HaulLat) )</code></pre>
+</section>
+<section id="beam-trawl-swept-area-bts-dyfs-sns" class="level3" data-number="1.15.2">
+<h3 data-number="1.15.2" class="anchored" data-anchor-id="beam-trawl-swept-area-bts-dyfs-sns"><span class="header-section-number">1.15.2</span> Beam trawl swept area (BTS, DYFS, SNS)</h3>
+<pre><code># Single beam (GearEx = "SB")
+SweptArea_km2 = BeamWidth × Distance / 1e6
+
+# Double beam (GearEx = "DB") — catches of two nets combined
+SweptArea_km2 = 2 × BeamWidth × Distance / 1e6</code></pre>
+<p><code>BeamWidth</code> is extracted from the <code>Gear</code> field (3rd character in metres).<br>
+When <code>Distance</code> is missing: <code>Distance = 1853 × HaulDur / 60</code>.<br>
+Haul duration must be 5–40 minutes; <code>GroundSpeed</code> varies by survey and vessel.</p>
+</section>
+<section id="otter-trawl-swept-area-ns-ibts-nea-ibts" class="level3" data-number="1.15.3">
+<h3 data-number="1.15.3" class="anchored" data-anchor-id="otter-trawl-swept-area-ns-ibts-nea-ibts"><span class="header-section-number">1.15.3</span> Otter trawl swept area (NS-IBTS, NEA-IBTS)</h3>
+<p><code>SweptArea_km2</code> = <code>WingSpread × Distance / 1e6</code> (non-herding species) or <code>DoorSpread × Distance / 1e6</code> (herding species).</p>
+<p>When <code>DoorSpread</code> or <code>WingSpread</code> is missing, per-country regression algorithms are applied (depth-based or depth + time-period based). These are documented per country and survey year in Table 1 of <code>Swept_area_km2_algorithms_pdf.pdf</code>. Notable exceptions: - NL does not measure wing spread; Scotland’s formula is applied instead. - GER Q1 2019–2020: depth-based regression (survey on <em>Dana</em> with German GOV gear). - GER Q3 2021: Danish regression (survey on <em>Dana</em> with Danish trawl).</p>
+<hr>
+</section>
+</section>
+<section id="confidence-limits-and-bootstrap-variance" class="level2" data-number="1.16">
+<h2 data-number="1.16" class="anchored" data-anchor-id="confidence-limits-and-bootstrap-variance"><span class="header-section-number">1.16</span> Confidence Limits and Bootstrap Variance</h2>
+<p><em>Source: ICES 2007 report to EU, “Confidence Limits Estimation of Abundance Indices from Bottom Trawl Survey Data” (<code>Final_report_to_EU_Bootstrap_calculation.pdf</code>); ICES DATRAS Workshop 2006 (<code>Workshop_report_on_variance_estimation.pdf</code>)</em></p>
+<p>DATRAS implements a <strong>bootstrap</strong> approach to estimate uncertainty on abundance indices. Standard analytical variance estimators are not used because the sampling design (stratified, with ALK applied post-hoc) does not admit a simple closed-form variance.</p>
+<section id="bootstrap-algorithm" class="level3" data-number="1.16.1">
+<h3 data-number="1.16.1" class="anchored" data-anchor-id="bootstrap-algorithm"><span class="header-section-number">1.16.1</span> Bootstrap algorithm</h3>
+<ol type="1">
+<li><strong>Length distribution bootstrapping</strong> — resample hauls within each stratum (statistical rectangle for NS-IBTS; depth layer × SD for BITS) with replacement to obtain bootstrap replicates of the mean CPUE per length class.</li>
+<li><strong>ALK bootstrapping</strong> — resample otoliths within each age/length cell to produce bootstrap replicates of the age-length key.</li>
+<li>Combine bootstrapped length distribution with bootstrapped ALK → bootstrap replicate of index.</li>
+<li>Repeat a large number of times (typically ≥ 1000); compute percentile-based confidence intervals.</li>
+</ol>
+</section>
+<section id="haul-level-design-structure" class="level3" data-number="1.16.2">
+<h3 data-number="1.16.2" class="anchored" data-anchor-id="haul-level-design-structure"><span class="header-section-number">1.16.2</span> Haul-level design structure</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Survey</th>
+<th>Stratum for bootstrap</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NS-IBTS</td>
+<td>Statistical rectangle</td>
+</tr>
+<tr class="even">
+<td>BITS</td>
+<td>Depth layer × SD</td>
+</tr>
+<tr class="odd">
+<td>BTS</td>
+<td>Statistical rectangle</td>
+</tr>
+<tr class="even">
+<td>EVHOE</td>
+<td>ICES division</td>
+</tr>
+<tr class="odd">
+<td>SWC-IBTS</td>
+<td>Demersal sampling area</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level3" data-number="1.16.3">
+<h3 data-number="1.16.3" class="anchored" data-anchor-id="notes"><span class="header-section-number">1.16.3</span> Notes</h3>
+<ul>
+<li>The bootstrap is implemented in DATRAS for the standard derived products (IDX). Confidence limits are not currently exposed in the raw exchange data.</li>
+<li>Number of bootstraps in DATRAS: ≥ 1000 replicates recommended; DATRAS uses 999.</li>
+<li>CPUE from <code>dr_HL_standardised()</code> does not incorporate this bootstrap — it reflects only the input haul-level CPUE, not index-level uncertainty.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="species-codes" class="level2" data-number="1.17">
+<h2 data-number="1.17" class="anchored" data-anchor-id="species-codes"><span class="header-section-number">1.17</span> Species codes</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>SpecCodeType</th>
+<th>Scheme</th>
+<th>Era</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>W</code></td>
+<td>WoRMS AphiaID (current standard)</td>
+<td>Post ~2010</td>
+</tr>
+<tr class="even">
+<td><code>T</code></td>
+<td>ITIS TSN</td>
+<td>Historical</td>
+</tr>
+<tr class="odd">
+<td><code>N</code></td>
+<td>NODC code</td>
+<td>Historical</td>
+</tr>
+</tbody>
+</table>
+<p>All codes mapped to <code>ValidAphiaID</code> (valid WoRMS) in HL/CA records for cross-era analysis.</p>
+<hr>
+</section>
+<section id="haulvalidity" class="level2" data-number="1.18">
+<h2 data-number="1.18" class="anchored" data-anchor-id="haulvalidity"><span class="header-section-number">1.18</span> HaulValidity</h2>
+<p><code>HaulValidity</code> (legacy: <code>HaulVal</code>) is set in the HH record and flags whether the haul is suitable for use in DATRAS-derived products.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 26%">
+<col style="width: 55%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Meaning</th>
+<th>Used in products?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>V</code></td>
+<td>Valid — gear performed correctly; haul is usable</td>
+<td>Yes (all products)</td>
+</tr>
+<tr class="even">
+<td><code>N</code></td>
+<td>Not valid — gear malfunction or conditions outside protocol</td>
+<td>No, except BITS (uses both V and N)</td>
+</tr>
+<tr class="odd">
+<td><code>S</code></td>
+<td>Scrap — not usable for scientific analysis</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td><code>P</code></td>
+<td>Preliminary — data not yet finalized</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>In <code>{obus}</code>, <code>dr_con("HL_standardised")</code> pre-filters to <code>HaulValidity == "V"</code>. For BITS, downstream code must include <code>HaulValidity %in% c("V", "N")</code>.</p>
+<hr>
+</section>
+<section id="specval-species-validity" class="level2" data-number="1.19">
+<h2 data-number="1.19" class="anchored" data-anchor-id="specval-species-validity"><span class="header-section-number">1.19</span> SpecVal (species validity)</h2>
+<p>Only <code>SpecVal = 1</code> records are used for DATRAS derived data product calculation. Other SpecVal codes indicate partial sampling, calibration hauls, etc. — data may still be useful for biological studies but are not included in CPUE/index products.</p>
+<hr>
+</section>
+<section id="day-night-definition" class="level2" data-number="1.20">
+<h2 data-number="1.20" class="anchored" data-anchor-id="day-night-definition"><span class="header-section-number">1.20</span> Day / Night definition</h2>
+<p>Day = 15 min before sunrise to 15 min after sunset. Calculation follows NOAA solar calculator: http://www.esrl.noaa.gov/gmd/grad/solcalc/</p>
+<hr>
+</section>
+<section id="age-plus-groups" class="level2" data-number="1.21">
+<h2 data-number="1.21" class="anchored" data-anchor-id="age-plus-groups"><span class="header-section-number">1.21</span> Age plus groups</h2>
+<p>The maximum age column in age-based products varies by survey and expert group decision:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Survey</th>
+<th>Plus group</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NS-IBTS</td>
+<td>Age_6 (fish aged 6+ all recorded as age 6)</td>
+</tr>
+<tr class="even">
+<td>Others</td>
+<td>Up to Age_10 or Age_15 (IDX)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="coordinate-system" class="level2" data-number="1.22">
+<h2 data-number="1.22" class="anchored" data-anchor-id="coordinate-system"><span class="header-section-number">1.22</span> Coordinate system</h2>
+<p>Shooting and haul positions: <strong>Degree.Decimal Degree</strong> (decimal degrees, not decimal minutes). Statistical rectangles (<code>StatRec</code>) based on shooting position.</p>
+<hr>
+</section>
+<section id="litter-assessment-output" class="level2" data-number="1.23">
+<h2 data-number="1.23" class="anchored" data-anchor-id="litter-assessment-output"><span class="header-section-number">1.23</span> Litter Assessment Output</h2>
+<p>OSPAR-compliant product. Adds <code>OSPARArea</code>, <code>MSFDArea</code>, <code>EEZ</code>, <code>NMArea</code> to standard haul fields. <code>BottomDepth</code> is based on bathymetric measurements at shooting position.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

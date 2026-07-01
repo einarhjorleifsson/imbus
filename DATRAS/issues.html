@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DATRAS Data Issues and Quality Checks – IMBUS</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">IMBUS</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../IMBUS/IMBUS_proposal_summary.html">
+ <span class="dropdown-text">Project Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../IMBUS/wp2_progress_review.html">
+ <span class="dropdown-text">WP2 Progress Review</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deliverables" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deliverables</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deliverables">    
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.2_data_formats_metadata.html">
+ <span class="dropdown-text">D2.2 — Data Formats and Metadata</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.3_imbus_product_specification.html">
+ <span class="dropdown-text">D2.3 — IMBUS Product Specification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-datras" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">DATRAS</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-datras">    
+        <li>
+    <a class="dropdown-item" href="../DATRAS/reporting_format.html">
+ <span class="dropdown-text">Reporting Format</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_FAQ.html">
+ <span class="dropdown-text">DATRAS FAQ</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_Technical_Reference.html">
+ <span class="dropdown-text">DATRAS Technical Reference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/survey_indices.html">
+ <span class="dropdown-text">Survey Abundance Indices</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpue_derivation.html">
+ <span class="dropdown-text">CPUE derivation: CPUEL vs HL</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpuel_by_length.html">
+ <span class="dropdown-text">CPUEL emulation and validation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/issues.html">
+ <span class="dropdown-text">Data issues and QC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/sampling_protocol.html">
+ <span class="dropdown-text">Sampling protocols</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-meetings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Meetings</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-meetings">    
+        <li>
+    <a class="dropdown-item" href="../meetings/20260601_WP2-WP5.html">
+ <span class="dropdown-text">2026-06-01 WP2–WP5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-projects" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-projects">    
+        <li>
+    <a class="dropdown-item" href="../other_projects/DATRAS_package_checks.html">
+ <span class="dropdown-text">DATRAS R package — data checks</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/einarhjorleifsson/imbus"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#part-i-known-issues" id="toc-part-i-known-issues" class="nav-link active" data-scroll-target="#part-i-known-issues"><span class="header-section-number">0.1</span> Part I: Known Issues</a></li>
+  <li><a href="#sec-spec-gaps" id="toc-sec-spec-gaps" class="nav-link" data-scroll-target="#sec-spec-gaps"><span class="header-section-number">0.2</span> Specification Gaps</a>
+  <ul class="collapse">
+  <li><a href="#sec-naming-convention" id="toc-sec-naming-convention" class="nav-link" data-scroll-target="#sec-naming-convention"><span class="header-section-number">0.2.1</span> Column naming convention: legacy vs.&nbsp;standard</a></li>
+  <li><a href="#sec-interim-names" id="toc-sec-interim-names" class="nav-link" data-scroll-target="#sec-interim-names"><span class="header-section-number">0.2.2</span> IMBUS interim canonical names: <code>sex</code> and <code>aphia</code></a></li>
+  <li><a href="#sec-cross-table-ambiguities" id="toc-sec-cross-table-ambiguities" class="nav-link" data-scroll-target="#sec-cross-table-ambiguities"><span class="header-section-number">0.2.3</span> Cross-table semantic ambiguities</a></li>
+  <li><a href="#sec-totalnumber-reconciliation" id="toc-sec-totalnumber-reconciliation" class="nav-link" data-scroll-target="#sec-totalnumber-reconciliation"><span class="header-section-number">0.2.4</span> <code>TotalNumber</code> is not consistently defined across surveys</a></li>
+  <li><a href="#sec-presence-only" id="toc-sec-presence-only" class="nav-link" data-scroll-target="#sec-presence-only"><span class="header-section-number">0.2.5</span> Presence-only HL records: <code>TotalNumber</code>, <code>NumberAtLength</code>, and <code>LengthClass</code> all NA</a></li>
+  </ul></li>
+  <li><a href="#sec-software-bugs" id="toc-sec-software-bugs" class="nav-link" data-scroll-target="#sec-software-bugs"><span class="header-section-number">0.3</span> Software &amp; API Bugs</a>
+  <ul class="collapse">
+  <li><a href="#sec-xsi-nil" id="toc-sec-xsi-nil" class="nav-link" data-scroll-target="#sec-xsi-nil"><span class="header-section-number">0.3.1</span> <code>xsi:nil</code> column name artefact in XML API responses</a></li>
+  <li><a href="#sec-cpuel-haul-key" id="toc-sec-cpuel-haul-key" class="nav-link" data-scroll-target="#sec-cpuel-haul-key"><span class="header-section-number">0.3.2</span> CPUEL haul key is too short for unambiguous joins</a></li>
+  </ul></li>
+  <li><a href="#sec-submission-errors" id="toc-sec-submission-errors" class="nav-link" data-scroll-target="#sec-submission-errors"><span class="header-section-number">0.4</span> Submission Errors</a>
+  <ul class="collapse">
+  <li><a href="#sec-datatype-r-stratified" id="toc-sec-datatype-r-stratified" class="nav-link" data-scroll-target="#sec-datatype-r-stratified"><span class="header-section-number">0.4.1</span> Size-stratified subsampling submitted as DataType R</a></li>
+  <li><a href="#sec-datatype-c-invalid" id="toc-sec-datatype-c-invalid" class="nav-link" data-scroll-target="#sec-datatype-c-invalid"><span class="header-section-number">0.4.2</span> DataType C with <code>SubsamplingFactor ≠ 1</code></a></li>
+  <li><a href="#sec-subfactor-na" id="toc-sec-subfactor-na" class="nav-link" data-scroll-target="#sec-subfactor-na"><span class="header-section-number">0.4.3</span> <code>SubsamplingFactor = NA</code></a></li>
+  <li><a href="#sec-statrec-mismatch" id="toc-sec-statrec-mismatch" class="nav-link" data-scroll-target="#sec-statrec-mismatch"><span class="header-section-number">0.4.4</span> ICES statistical rectangle boundary mismatches</a></li>
+  </ul></li>
+  <li><a href="#sec-survey-quirks" id="toc-sec-survey-quirks" class="nav-link" data-scroll-target="#sec-survey-quirks"><span class="header-section-number">0.5</span> Survey-Specific Conventions</a>
+  <ul class="collapse">
+  <li><a href="#sec-specval-variation" id="toc-sec-specval-variation" class="nav-link" data-scroll-target="#sec-specval-variation"><span class="header-section-number">0.5.1</span> <code>SpeciesValidity</code> varies within groups (by design)</a></li>
+  <li><a href="#sec-subfactor-variation" id="toc-sec-subfactor-variation" class="nav-link" data-scroll-target="#sec-subfactor-variation"><span class="header-section-number">0.5.2</span> <code>SubsamplingFactor</code> varies within groups (size-stratified subsampling)</a></li>
+  <li><a href="#sec-totalno-variation" id="toc-sec-totalno-variation" class="nav-link" data-scroll-target="#sec-totalno-variation"><span class="header-section-number">0.5.3</span> <code>TotalNumber</code> varies by stratum (consequence of size-stratification)</a></li>
+  <li><a href="#sec-swc-ibts" id="toc-sec-swc-ibts" class="nav-link" data-scroll-target="#sec-swc-ibts"><span class="header-section-number">0.5.4</span> SWC-IBTS ended 2010; superseded by SCOWCGFS</a></li>
+  <li><a href="#sec-swc-ibts-sex-code" id="toc-sec-swc-ibts-sex-code" class="nav-link" data-scroll-target="#sec-swc-ibts-sex-code"><span class="header-section-number">0.5.5</span> SWC-IBTS contains non-standard sex code “-”</a></li>
+  <li><a href="#sec-canmar-specval" id="toc-sec-canmar-specval" class="nav-link" data-scroll-target="#sec-canmar-specval"><span class="header-section-number">0.5.6</span> Can-Mar uses <code>SpeciesValidity = "5"</code> on rows with actual length data</a></li>
+  <li><a href="#sec-can-mar-boundaries" id="toc-sec-can-mar-boundaries" class="nav-link" data-scroll-target="#sec-can-mar-boundaries"><span class="header-section-number">0.5.7</span> Can-Mar is outside ICES statistical rectangle coverage</a></li>
+  </ul></li>
+  <li><a href="#sec-product-limitations" id="toc-sec-product-limitations" class="nav-link" data-scroll-target="#sec-product-limitations"><span class="header-section-number">0.6</span> Product Coverage Limitations</a>
+  <ul class="collapse">
+  <li><a href="#sec-product-availability" id="toc-sec-product-availability" class="nav-link" data-scroll-target="#sec-product-availability"><span class="header-section-number">0.6.1</span> CPUEL available for only 8 of 29 surveys; CPUEA/IDX vary by expert group</a></li>
+  </ul></li>
+  <li><a href="#sec-qc-checks" id="toc-sec-qc-checks" class="nav-link" data-scroll-target="#sec-qc-checks"><span class="header-section-number">1</span> Part II: Quality Checks — Reproducible Code</a>
+  <ul class="collapse">
+  <li><a href="#sec-totalnumber-qc" id="toc-sec-totalnumber-qc" class="nav-link" data-scroll-target="#sec-totalnumber-qc"><span class="header-section-number">1.1</span> TotalNumber Reconciliation</a></li>
+  <li><a href="#sec-datatype-r-qc" id="toc-sec-datatype-r-qc" class="nav-link" data-scroll-target="#sec-datatype-r-qc"><span class="header-section-number">1.2</span> Size-Stratified Subsampling Submitted as DataType R</a></li>
+  <li><a href="#sec-datatype-c-qc" id="toc-sec-datatype-c-qc" class="nav-link" data-scroll-target="#sec-datatype-c-qc"><span class="header-section-number">1.3</span> DataType C with Invalid <code>SubsamplingFactor</code></a></li>
+  <li><a href="#sec-presence-only-qc" id="toc-sec-presence-only-qc" class="nav-link" data-scroll-target="#sec-presence-only-qc"><span class="header-section-number">1.4</span> Presence-only HL records</a></li>
+  <li><a href="#sec-subfactor-na-qc" id="toc-sec-subfactor-na-qc" class="nav-link" data-scroll-target="#sec-subfactor-na-qc"><span class="header-section-number">1.5</span> Missing <code>SubsamplingFactor</code></a></li>
+  <li><a href="#sec-statrec-coverage-qc" id="toc-sec-statrec-coverage-qc" class="nav-link" data-scroll-target="#sec-statrec-coverage-qc"><span class="header-section-number">1.6</span> StatisticalRectangle Coverage by Survey</a></li>
+  <li><a href="#sec-statrec-qc" id="toc-sec-statrec-qc" class="nav-link" data-scroll-target="#sec-statrec-qc"><span class="header-section-number">1.7</span> ICES Statistical Rectangle Boundary Mismatch</a></li>
+  <li><a href="#sec-specval-qc" id="toc-sec-specval-qc" class="nav-link" data-scroll-target="#sec-specval-qc"><span class="header-section-number">1.8</span> SpeciesValidity Variation Within Groups</a></li>
+  <li><a href="#sec-subfactor-qc" id="toc-sec-subfactor-qc" class="nav-link" data-scroll-target="#sec-subfactor-qc"><span class="header-section-number">1.9</span> SubsamplingFactor Variation Within Groups</a></li>
+  <li><a href="#sec-cpuel-qc" id="toc-sec-cpuel-qc" class="nav-link" data-scroll-target="#sec-cpuel-qc"><span class="header-section-number">1.10</span> CPUEL Haul Key Ambiguity</a></li>
+  <li><a href="#sec-xsi-nil-qc" id="toc-sec-xsi-nil-qc" class="nav-link" data-scroll-target="#sec-xsi-nil-qc"><span class="header-section-number">1.11</span> <code>xsi:nil</code> column name artefact</a></li>
+  <li><a href="#version-history" id="toc-version-history" class="nav-link" data-scroll-target="#version-history"><span class="header-section-number">1.12</span> Version history</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DATRAS Data Issues and Quality Checks</h1>
+<p class="subtitle lead">Known limitations and inconsistencies requiring ICES attention, plus reproducible QC procedures</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">July 1, 2026</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header>
+
+
+<blockquote class="blockquote">
+<p><strong>Purpose of this document.</strong> This page documents two categories of content: (1) <strong>Known Issues</strong> — problems and conventions requiring awareness or upstream correction; and (2) <strong>Quality Checks</strong> — reproducible R code to detect and verify these issues in the data.</p>
+</blockquote>
+<hr>
+<section id="part-i-known-issues" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="part-i-known-issues"><span class="header-section-number">0.1</span> Part I: Known Issues</h2>
+<p>Each issue is classified by <strong>where the fix lies</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 33%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Class</th>
+<th>Meaning</th>
+<th>Fix owner</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Specification gap</strong></td>
+<td>The format spec is underspecified, ambiguous, or internally inconsistent</td>
+<td>ICES documentation</td>
+</tr>
+<tr class="even">
+<td><strong>Software/API bug</strong></td>
+<td>Bug or design flaw in an ICES tool</td>
+<td>ICES software team</td>
+</tr>
+<tr class="odd">
+<td><strong>Submission error</strong></td>
+<td>Values in the submitted data violate the format specification</td>
+<td>Data providers / ICES Datacenter</td>
+</tr>
+<tr class="even">
+<td><strong>Survey convention</strong></td>
+<td>Deliberate survey practice that differs from the general format; not an error</td>
+<td>No fix — user awareness</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="sec-spec-gaps" class="level2" data-number="0.2">
+<h2 data-number="0.2" class="anchored" data-anchor-id="sec-spec-gaps"><span class="header-section-number">0.2</span> Specification Gaps</h2>
+<p>The DATRAS format specification is underspecified, inconsistent, or allows submission practices it does not formally define. Fix lies with ICES documentation and format governance.</p>
+<section id="sec-naming-convention" class="level3" data-number="0.2.1">
+<h3 data-number="0.2.1" class="anchored" data-anchor-id="sec-naming-convention"><span class="header-section-number">0.2.1</span> Column naming convention: legacy vs.&nbsp;standard</h3>
+<p>Two naming conventions coexist in DATRAS, reflecting a change introduced by ICES around 2020. This is not a data quality issue per se, but a <strong>system inconsistency</strong> that causes silent failures in downstream code.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Convention</th>
+<th>Source</th>
+<th>Example fields</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Legacy</strong></td>
+<td><code>getDATRAS()</code> (XML API); pre-~2020 DATRAS downloads</td>
+<td><code>Ship</code>, <code>HaulNo</code>, <code>StNo</code>, <code>LngtCode</code>, <code>HLNoAtLngt</code>, <code>SubFactor</code>, <code>TotalNo</code>, <code>HaulVal</code>, <code>HaulDur</code></td>
+</tr>
+<tr class="even">
+<td><strong>Standard</strong></td>
+<td>Parquet files; IMBUS product; current ICES convention</td>
+<td><code>Platform</code>, <code>HaulNumber</code>, <code>StationName</code>, <code>LengthCode</code>, <code>NumberAtLength</code>, <code>SubsamplingFactor</code>, <code>TotalNumber</code>, <code>HaulValidity</code>, <code>HaulDuration</code></td>
+</tr>
+</tbody>
+</table>
+<p>Code written against one naming scheme fails silently or with cryptic errors against the other. {obus} and the IMBUS parquet use the standard names throughout.</p>
+<p><strong>See:</strong> <a href="../deliverables/D2.2_data_formats_metadata.html#column-naming-convention">D2.2 §Column naming convention</a></p>
+<hr>
+</section>
+<section id="sec-interim-names" class="level3" data-number="0.2.2">
+<h3 data-number="0.2.2" class="anchored" data-anchor-id="sec-interim-names"><span class="header-section-number">0.2.2</span> IMBUS interim canonical names: <code>sex</code> and <code>aphia</code></h3>
+<p>The ICES upload schema contains <strong>naming inconsistencies that must be resolved upstream</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 29%">
+<col style="width: 48%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>IMBUS name</th>
+<th>ICES “new” name(s)</th>
+<th>Problem</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>sex</code></td>
+<td><code>SpeciesSex</code> (HL), <code>IndividualSex</code> (CA)</td>
+<td><strong>Same concept, different names</strong> — the ICES upload field list gives the same vocabulary two different field names depending on table.</td>
+</tr>
+<tr class="even">
+<td><code>aphia</code></td>
+<td><code>Valid_Aphia</code> (HL, CA), <code>AphiaID</code> / <code>ValidAphiaID</code> (derived products)</td>
+<td><strong>Not in formal upload schema</strong> — the datacenter-resolved WoRMS identifier is named differently depending on product type.</td>
+</tr>
+</tbody>
+</table>
+<p>These are <strong>interim</strong> canonical names used by IMBUS pending upstream resolution by the ICES Datacenter. Users should be aware that different systems (raw download vs.&nbsp;parquet vs.&nbsp;derived products) use different names for the same concept.</p>
+<p><strong>See:</strong> <a href="../deliverables/D2.2_data_formats_metadata.html#sec-interim-names">D2.2 §IMBUS interim canonical names</a></p>
+<hr>
+</section>
+<section id="sec-cross-table-ambiguities" class="level3" data-number="0.2.3">
+<h3 data-number="0.2.3" class="anchored" data-anchor-id="sec-cross-table-ambiguities"><span class="header-section-number">0.2.3</span> Cross-table semantic ambiguities</h3>
+<p>Several fields share names across tables (HH, HL, CA) but carry different meanings. Users must be aware of these semantic shifts:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 38%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>HL meaning</th>
+<th>CA meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong><code>sex</code></strong></td>
+<td>Visual, population-level assessment (bulk catch)</td>
+<td>Determined by dissection (individual)</td>
+</tr>
+<tr class="even">
+<td><strong><code>NumberAtLength</code></strong></td>
+<td>Sub-sample count per length bin; multiply by <code>SubsamplingFactor</code> for population estimate</td>
+<td>Count of aged fish at that length class; used as raising key for age-length keys (ALK)</td>
+</tr>
+<tr class="odd">
+<td><strong><code>LengthClass</code></strong></td>
+<td>Lower boundary of a length frequency bin</td>
+<td>Measured length of an individual fish</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, <strong>gear fields are duplicated</strong> across HH, HL, and CA with identical values — this is a submission artefact. HH is authoritative; HL and CA copies are redundant after joining.</p>
+<p><strong>See:</strong> <a href="../deliverables/D2.2_data_formats_metadata.html#cross-table-ambiguities">D2.2 §Cross-table ambiguities</a></p>
+<hr>
+</section>
+<section id="sec-totalnumber-reconciliation" class="level3" data-number="0.2.4">
+<h3 data-number="0.2.4" class="anchored" data-anchor-id="sec-totalnumber-reconciliation"><span class="header-section-number">0.2.4</span> <code>TotalNumber</code> is not consistently defined across surveys</h3>
+<p>The reporting format states that <code>TotalNumber = SubsampledNumber × SubsamplingFactor</code>. However, empirical reconciliation reveals <strong>the two are not always equal</strong>, and the <strong>discrepancy pattern is survey-specific</strong>:</p>
+<p><strong>Three patterns identified:</strong></p>
+<ol type="1">
+<li><p><strong>All-sex total repeated on each sex row (Can-Mar)</strong> — <code>TotalNumber</code> records the total count across <em>all</em> sexes, but the same value is repeated on every sex-specific row. After collapsing across sexes, most Can-Mar groups reconcile.</p></li>
+<li><p><strong>Sex-specific <code>TotalNumber</code> (BTS, NL-BSAS)</strong> — <code>TotalNumber</code> is reported separately for each sex. Comparing against any single sex’s estimate gives apparent mismatches.</p></li>
+<li><p><strong>Rounding (DYFS)</strong> — <code>TotalNumber</code> and estimated totals both large (~2,000) but differ by ~2%, consistent with rounding during data entry.</p></li>
+</ol>
+<p><strong>Implication:</strong> <code>TotalNumber</code> <strong>should not be relied upon as a portable cross-check</strong> without knowing the survey-specific convention. The safe formula — <code>n_haul = sum(NumberAtLength × SubsamplingFactor)</code> from length rows — is self-consistent and does not depend on <code>TotalNumber</code>.</p>
+<p><strong>See:</strong> <a href="#sec-totalnumber-qc">Quality Checks §TotalNumber reconciliation</a> for the reconciliation check code.</p>
+<hr>
+</section>
+<section id="sec-presence-only" class="level3" data-number="0.2.5">
+<h3 data-number="0.2.5" class="anchored" data-anchor-id="sec-presence-only"><span class="header-section-number">0.2.5</span> Presence-only HL records: <code>TotalNumber</code>, <code>NumberAtLength</code>, and <code>LengthClass</code> all NA</h3>
+<p><strong>Issue:</strong> Some HL records contain only a species identifier (<code>aphia</code>) with all quantity fields — <code>TotalNumber</code>, <code>NumberAtLength</code>, and <code>LengthClass</code> — submitted as <code>NA</code>. These are <em>presence-only</em> records: the submitting institute noted that a species was caught but provided no quantitative information.</p>
+<p><strong>Root cause:</strong> The DATRAS reporting format does not explicitly prohibit submitting an HL row with all quantity fields absent, so some institutes use this to flag incidental species presence without recording counts or lengths. This is an <strong>ambiguous submission convention</strong> — the DATRAS exchange format specification should either formally disallow it or define it as a distinct record type.</p>
+<p><strong>Scope (NS-IBTS 2023 Q1):</strong> 9 hauls affected (3 FR and 1 SE with DataType C; 4 NO and 1 NL with DataType R). These hauls produced <strong>79 NA <code>n_haul</code> rows</strong> out of 51,924 total non-NA rows — roughly 0.15% of haul × species combinations.</p>
+<p><strong>In <code>HL_standardised</code> <code>type == "haul"</code> rows:</strong> Groups where all <code>TotalNumber</code> values are <code>NA</code> produce <code>n_haul = NA</code>. These rows are <strong>neither zeros nor valid catches</strong> — they signal a species was recorded as present but not counted. Users who filter <code>n_haul &gt; 0</code> will silently drop them.</p>
+<p><strong>In <code>HL_standardised</code> <code>type == "length"</code> rows (fixed):</strong> The opening <code>filter(NumberAtLength != 0)</code> previously dropped presence-only rows silently (SQL evaluates <code>NULL != 0</code> as NULL, not TRUE), causing 72 haul × species combinations to receive spurious zero rows. <strong>Fixed in {obus}.</strong></p>
+<p><strong>Recommended treatment:</strong> - Do not treat <code>n_haul = NA</code> rows as zero-catch entries. - For binary presence analyses, treat <code>n_haul = NA</code> as “detected but not quantified”. - For abundance analyses, exclude <code>n_haul = NA</code> rows (do not zero-fill them).</p>
+<hr>
+</section>
+</section>
+<section id="sec-software-bugs" class="level2" data-number="0.3">
+<h2 data-number="0.3" class="anchored" data-anchor-id="sec-software-bugs"><span class="header-section-number">0.3</span> Software &amp; API Bugs</h2>
+<p>Bugs or design flaws in ICES tools (<code>icesDatras</code>, derived products). Fix lies in ICES software. {obus} works around both issues listed here.</p>
+<section id="sec-xsi-nil" class="level3" data-number="0.3.1">
+<h3 data-number="0.3.1" class="anchored" data-anchor-id="sec-xsi-nil"><span class="header-section-number">0.3.1</span> <code>xsi:nil</code> column name artefact in XML API responses</h3>
+<p><strong>Issue:</strong> When <code>icesDatras::getCPUEAge()</code> or <code>icesDatras::getIndices()</code> returns data via the XML API, columns whose values are absent or sparse arrive with <code>xsi:nil="true"</code> embedded in their column names:</p>
+<pre><code>"Age_6 xsi:nil=\"true\""
+"Age_7 xsi:nil=\"true\""
+...
+"Age_15 xsi:nil=\"true\""</code></pre>
+<p><strong>Root cause:</strong> The ICES XML API marks absent elements using the W3C XML Schema nil convention (<code>xsi:nil="true"</code> attribute). The <code>icesDatras</code> XML parser does not strip this attribute — it leaks from the XML element into the parsed R column name.</p>
+<p><strong>Consequence:</strong> Malformed column names cause three downstream problems:</p>
+<ol type="1">
+<li><p><strong>Silent column mismatch on <code>bind_rows()</code></strong> — when iterating over multiple survey/year/quarter/species combinations, some data frames may carry <code>Age_6</code> (column had data) while others carry <code>Age_6 xsi:nil="true"</code> (column had no data). <code>dplyr::bind_rows()</code> treats these as distinct columns, producing a wider-than-expected table with mostly <code>NA</code> values in the duplicated columns.</p></li>
+<li><p><strong>Type coercion warnings</strong> — numeric values stored under a malformed name cannot be matched to the column type specification, triggering <code>NAs introduced by coercion</code> warnings even when the underlying data is valid.</p></li>
+<li><p><strong>Inaccessible by standard column reference</strong> — <code>df$Age_6</code> or <code>select(Age_6)</code> will fail silently; the backtick-quoted form <code>df$`Age_6 xsi:nil="true"`</code> is required.</p></li>
+</ol>
+<p><strong>Confirmed affected record types:</strong> <code>CPUEA</code> (Age_6 – Age_15 in NS-IBTS), <code>IDX</code> (Age_7 – Age_15 in NS-IBTS), <code>LT</code> (e.g., <code>Tickler xsi:nil="true"</code>). The artefact may appear intermittently in any XML-backed record type depending on survey, year, and quarter.</p>
+<p><strong>{obus} workaround:</strong> The internal <code>.strip_xsi_nil()</code> helper is applied to every data frame before <code>bind_rows()</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>.strip_xsi_nil <span class="ot">&lt;-</span> <span class="cf">function</span>(d) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(d) <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">' xsi:nil="true"'</span>, <span class="st">""</span>, <span class="fu">names</span>(d), <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  d</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>See:</strong> <a href="#sec-xsi-nil-qc">Quality Checks §<code>xsi:nil</code> artefact</a></p>
+<hr>
+</section>
+<section id="sec-cpuel-haul-key" class="level3" data-number="0.3.2">
+<h3 data-number="0.3.2" class="anchored" data-anchor-id="sec-cpuel-haul-key"><span class="header-section-number">0.3.2</span> CPUEL haul key is too short for unambiguous joins</h3>
+<p><strong>Issue:</strong> CPUEL records lack <code>Country</code> and <code>StationName</code> fields present in HH. The short key (Survey, Year, Quarter, Platform, Gear, HaulNumber) is <strong>not guaranteed unique</strong>. This creates <strong>join ambiguity</strong> when attempting to map CPUEL back to HH metadata — over 2,400 short keys are non-unique in the current data.</p>
+<p><strong>Root cause:</strong> A product design decision in the CPUEL output format. CPUEL computes correctly internally, but the truncated key it publishes is unreliable for downstream joins.</p>
+<p>When joining CPUEL to HH, <strong>always use the full 8-field <code>.id</code> key if possible</strong>, or manually verify uniqueness for your survey/year subset. This is one of the reasons the IMBUS <code>HL_standardised</code> product is preferred over CPUEL.</p>
+<hr>
+</section>
+</section>
+<section id="sec-submission-errors" class="level2" data-number="0.4">
+<h2 data-number="0.4" class="anchored" data-anchor-id="sec-submission-errors"><span class="header-section-number">0.4</span> Submission Errors</h2>
+<p>Values in the submitted data that violate the DATRAS format specification. Fix lies with data providers (resubmission) or the ICES Datacenter (at-ingestion correction).</p>
+<section id="sec-datatype-r-stratified" class="level3" data-number="0.4.1">
+<h3 data-number="0.4.1" class="anchored" data-anchor-id="sec-datatype-r-stratified"><span class="header-section-number">0.4.1</span> Size-stratified subsampling submitted as DataType R</h3>
+<p><strong>Issue:</strong> The DATRAS schema intends DataType <code>P</code> for size-stratified hauls, but a minority (95 groups) are submitted as DataType <code>R</code>, <strong>predominantly Danish vessels in NS-IBTS and BITS from 2024 onward</strong> (82 of 95 groups). This is a <strong>submission error that should be corrected at source</strong>.</p>
+<p>The row-level formula <code>NumberAtLength × SubsamplingFactor</code> remains correct, but <code>TotalNumber</code> reflects the stratum total, not the species-haul total.</p>
+<p><strong>See:</strong> <a href="../deliverables/D2.2_data_formats_metadata.html#sec-datatype">D2.2 §The DataType field</a></p>
+<hr>
+</section>
+<section id="sec-datatype-c-invalid" class="level3" data-number="0.4.2">
+<h3 data-number="0.4.2" class="anchored" data-anchor-id="sec-datatype-c-invalid"><span class="header-section-number">0.4.2</span> DataType C with <code>SubsamplingFactor ≠ 1</code></h3>
+<p>For DataType C, <code>SubsamplingFactor</code> <strong>must always equal 1</strong>. Records with missing or <code>SubsamplingFactor ≠ 1</code> are <strong>submission errors</strong> and should be flagged to the ICES Datacenter.</p>
+<p><strong>Scope:</strong> At least <strong>4,093+ records</strong> have invalid <code>SubsamplingFactor</code> values for DataType C. Combined with the ~1,856 NA values (see <a href="#sec-subfactor-na">§SubsamplingFactor = NA</a>), this represents a meaningful data quality issue affecting DataType C records.</p>
+<hr>
+</section>
+<section id="sec-subfactor-na" class="level3" data-number="0.4.3">
+<h3 data-number="0.4.3" class="anchored" data-anchor-id="sec-subfactor-na"><span class="header-section-number">0.4.3</span> <code>SubsamplingFactor = NA</code></h3>
+<p><strong>0.986% of valid HL records</strong> have missing <code>SubsamplingFactor</code>. This is a <strong>significant data submission error</strong> affecting multiple surveys and DataTypes. <code>SubsamplingFactor</code> is required for CPUE arithmetic and propagates as <code>NA</code> in computed <code>n_haul</code> and <code>n_hour</code>.</p>
+<p><strong>Distribution by DataType:</strong> - DataType R: 138,572 records (majority) - DataType C: 1,856 records - DataType S: 14 records</p>
+<p>The issue spans multiple surveys, not only NS-IBTS.</p>
+<hr>
+</section>
+<section id="sec-statrec-mismatch" class="level3" data-number="0.4.4">
+<h3 data-number="0.4.4" class="anchored" data-anchor-id="sec-statrec-mismatch"><span class="header-section-number">0.4.4</span> ICES statistical rectangle boundary mismatches</h3>
+<p><code>StatisticalRectangle</code> in HH should match the ICES rectangle derived from <code>ShootLatitude</code>/<code>ShootLongitude</code>. Empirically, <strong>only 0.23% of records</strong> (308 of 132,989 records with complete data, excluding Can-Mar) show mismatches. Most surveys report correct rectangles; <strong>DYFS has the highest mismatch rate</strong> (139 records).</p>
+<p>Mismatches can indicate: - Data entry error - Boundary cases (hauls spanning rectangle boundaries; rare) - Coordinate rounding or precision issues - Minor survey-specific spatial conventions</p>
+<p><strong>Note:</strong> Can-Mar (Northwest Atlantic) doesn’t report <code>StatisticalRectangle</code> at all — it’s 100% NA. This is not a mismatch issue but a geographic exclusion (see <a href="#sec-can-mar-boundaries">§Can-Mar outside ICES rectangle coverage</a>).</p>
+<hr>
+</section>
+</section>
+<section id="sec-survey-quirks" class="level2" data-number="0.5">
+<h2 data-number="0.5" class="anchored" data-anchor-id="sec-survey-quirks"><span class="header-section-number">0.5</span> Survey-Specific Conventions</h2>
+<p>Deliberate survey practices that differ from the general format or from other surveys. Not errors — but users must account for them.</p>
+<p>These include the HL grouping key constancy findings: the sampling protocol fields (<code>SpeciesValidity</code>, <code>SubsamplingFactor</code>) are expected to be constant within a natural group (<code>.id × aphia × sex × DevelopmentStage × SpeciesCategory</code>), but several surveys have by-design exceptions.</p>
+<p>For the <code>StandardSpeciesCode</code> and <code>BycatchSpeciesCode</code> protocol flags that govern which species are required to be recorded per haul, see <a href="../DATRAS/sampling_protocol.html">Sampling protocols</a>.</p>
+<section id="sec-specval-variation" class="level3" data-number="0.5.1">
+<h3 data-number="0.5.1" class="anchored" data-anchor-id="sec-specval-variation"><span class="header-section-number">0.5.1</span> <code>SpeciesValidity</code> varies within groups (by design)</h3>
+<p><code>SpeciesValidity</code> varies within <strong>2,786 of ~2.6 million total groups (0.1%)</strong>, predominantly BTS (1,289) and Can-Mar (1,272). This is <strong>intentional</strong> — full length-frequency rows (<code>SpeciesValidity = 1</code>) coexist with supplementary rows (totals-only, presence/absence) within the same group.</p>
+<p>Most common co-occurrences: <code>{1, 5}</code> (1,281 groups) and <code>{4, 7}</code> (580 groups).</p>
+<hr>
+</section>
+<section id="sec-subfactor-variation" class="level3" data-number="0.5.2">
+<h3 data-number="0.5.2" class="anchored" data-anchor-id="sec-subfactor-variation"><span class="header-section-number">0.5.2</span> <code>SubsamplingFactor</code> varies within groups (size-stratified subsampling)</h3>
+<p><code>SubsamplingFactor</code> varies within <strong>389 of ~2.1 million valid groups (0.02%)</strong> due to <strong>size-stratified subsampling</strong>. Small and large fish are subsampled at different rates within the same species group.</p>
+<p><strong>Pattern by DataType:</strong> - <strong>P</strong> (293 groups) — all GB-SCT; the intended encoding across NS-IBTS, SCOWCGFS, SCOROC - <strong>R</strong> (95 groups) — predominantly DK from 2024 onward; <strong>submission error</strong> (should be P; see <a href="#sec-datatype-r-stratified">§DataType R</a>) - <strong>C</strong> (1 group) — anomaly</p>
+<p><strong>Key formula:</strong> <code>n_haul = Σ(NumberAtLength × SubsamplingFactor)</code> applied <strong>row by row</strong> is correct for all DataTypes, including size-stratified cases.</p>
+<hr>
+</section>
+<section id="sec-totalno-variation" class="level3" data-number="0.5.3">
+<h3 data-number="0.5.3" class="anchored" data-anchor-id="sec-totalno-variation"><span class="header-section-number">0.5.3</span> <code>TotalNumber</code> varies by stratum (consequence of size-stratification)</h3>
+<p><code>TotalNumber</code> and <code>SpeciesCategoryWeight</code> vary by stratum in <strong>104 of ~2.1 million valid groups (0.005%)</strong> as a direct consequence of size-stratified subsampling. This is a <strong>data structure consequence</strong>, not an error.</p>
+<hr>
+</section>
+<section id="sec-swc-ibts" class="level3" data-number="0.5.4">
+<h3 data-number="0.5.4" class="anchored" data-anchor-id="sec-swc-ibts"><span class="header-section-number">0.5.4</span> SWC-IBTS ended 2010; superseded by SCOWCGFS</h3>
+<p>SWC-IBTS (Southwest Coast IBTS) records end in 2010 and are superseded by SCOWCGFS (Southwest Coast Continental Shelf Groundfish Survey). <strong>Account for this break when analyzing time series.</strong></p>
+<hr>
+</section>
+<section id="sec-swc-ibts-sex-code" class="level3" data-number="0.5.5">
+<h3 data-number="0.5.5" class="anchored" data-anchor-id="sec-swc-ibts-sex-code"><span class="header-section-number">0.5.5</span> SWC-IBTS contains non-standard sex code “-”</h3>
+<p><strong>Issue:</strong> SWC-IBTS contains <strong>44,295 rows with sex = “-”</strong> (hyphen/dash). This is a non-standard sex code; the DATRAS specification defines sex as <code>M</code> (male), <code>F</code> (female), <code>U</code> (unsexed), or <code>NA</code> (not recorded).</p>
+<p><strong>Root cause:</strong> Unknown. The “-” code may represent: - Missing/undocumented data (equivalent to NA) - A survey-specific convention with undefined meaning - A data submission artefact</p>
+<p><strong>Recommended treatment:</strong> Treat sex = “-” as equivalent to <code>NA</code> (missing/unknown). This aligns with other surveys that report sex as <code>NA</code> and allows aggregation across surveys.</p>
+<p><strong>Scope:</strong> 44,295 rows in SWC-IBTS; no other survey exhibits this code.</p>
+<hr>
+</section>
+<section id="sec-canmar-specval" class="level3" data-number="0.5.6">
+<h3 data-number="0.5.6" class="anchored" data-anchor-id="sec-canmar-specval"><span class="header-section-number">0.5.6</span> Can-Mar uses <code>SpeciesValidity = "5"</code> on rows with actual length data</h3>
+<p><code>SpeciesValidity = "5"</code> is defined as “presence/absence only” — the expectation is that such rows carry no length or count information (<code>LengthClass = NA</code>, <code>NumberAtLength = NA</code>). BTS follows this convention: all 9 of its <code>{1, 5}</code> co-occurrence rows have <code>LengthClass = NA</code>.</p>
+<p><strong>Can-Mar does not follow this convention.</strong> Of 2,805 <code>SpeciesValidity = "5"</code> rows in Can-Mar <code>{1, 5}</code> groups, 2,088 (74%) have <code>LengthClass</code> and <code>NumberAtLength</code> filled in. Inspection of 535 Can-Mar groups where both <code>"1"</code> and <code>"5"</code> rows carry length data shows:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 37%">
+<col style="width: 33%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pattern</th>
+<th style="text-align: center;">Groups</th>
+<th style="text-align: center;">Share</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"5"</code> LengthClasses entirely distinct from <code>"1"</code> (additive data)</td>
+<td style="text-align: center;">226</td>
+<td style="text-align: center;">42%</td>
+</tr>
+<tr class="even">
+<td><code>"5"</code> LengthClasses partially overlap with <code>"1"</code></td>
+<td style="text-align: center;">204</td>
+<td style="text-align: center;">38%</td>
+</tr>
+<tr class="odd">
+<td><code>"5"</code> LengthClasses fully duplicated in <code>"1"</code></td>
+<td style="text-align: center;">105</td>
+<td style="text-align: center;">20%</td>
+</tr>
+</tbody>
+</table>
+<p>The reason for this split is not documented in the DATRAS submission format. One possibility is that Can-Mar uses <code>SpeciesValidity</code> to distinguish two sampling subcategories within a haul (e.g., different gear components, sub-tows, or species-ID confidence levels). Another is that the <code>"5"</code> rows are a systematic submission artefact.</p>
+<p><strong>Practical implication:</strong> filtering to <code>SpeciesValidity == "1"</code> in Can-Mar discards real length data in at least 42% of affected groups. The correct treatment is <strong>unresolved</strong> and requires clarification from the Canadian data provider.</p>
+<p><strong>See also:</strong> <a href="#sec-specval-faq">DATRAS FAQ § SpeciesValidity co-occurrence</a></p>
+<hr>
+</section>
+<section id="sec-can-mar-boundaries" class="level3" data-number="0.5.7">
+<h3 data-number="0.5.7" class="anchored" data-anchor-id="sec-can-mar-boundaries"><span class="header-section-number">0.5.7</span> Can-Mar is outside ICES statistical rectangle coverage</h3>
+<p>Can-Mar (Canadian Maritime) survey <strong>does not populate the <code>StatisticalRectangle</code> field</strong> — all 11,372 valid Can-Mar records have <code>NA</code> for this field. This is <strong>correct and expected</strong>: <code>StatisticalRectangle</code> is an ICES grid system covering the <strong>Northeast Atlantic only</strong> (see <a href="https://www.ices.dk/data/maps/pages/ices-statistical-rectangles.aspx">ICES maps</a>). Can-Mar operates in the <strong>Northwest Atlantic (Canadian waters)</strong>, which falls outside the ICES rectangle system.</p>
+<p>Can-Mar does report complete shooting coordinates (latitude/longitude at tow start) for all records (11,372/11,372) and haul coordinates for most records (6,537/11,372 = 57%). For spatial analysis, <strong>use coordinates for Can-Mar instead of relying on statistical rectangles</strong>.</p>
+<hr>
+</section>
+</section>
+<section id="sec-product-limitations" class="level2" data-number="0.6">
+<h2 data-number="0.6" class="anchored" data-anchor-id="sec-product-limitations"><span class="header-section-number">0.6</span> Product Coverage Limitations</h2>
+<p>Limitations in the scope of ICES-derived products. These are not bugs — they reflect the resources required to validate and produce derived products for each survey.</p>
+<section id="sec-product-availability" class="level3" data-number="0.6.1">
+<h3 data-number="0.6.1" class="anchored" data-anchor-id="sec-product-availability"><span class="header-section-number">0.6.1</span> CPUEL available for only 8 of 29 surveys; CPUEA/IDX vary by expert group</h3>
+<p>Derived products (CPUEL, CPUEA, IDX) are <strong>developed and verified in cooperation with ICES Expert Groups</strong>. This is time-consuming; newer surveys may lack products.</p>
+<p><strong>Current coverage:</strong> - CPUEL: 8 surveys (BITS, EVHOE, IE-IGFS, NS-IBTS, ROCKALL, SCOROC, SCOWCGFS, SWC-IBTS) - CPUEA and IDX: Vary by expert group agreement</p>
+<hr>
+<hr>
+</section>
+</section>
+<section id="sec-qc-checks" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Part II: Quality Checks — Reproducible Code</h1>
+<p>The following sections provide reproducible R code to <strong>detect, verify, and quantify</strong> the data issues documented above. All code chunks execute against the parquet-backed <code>dr_con()</code> lazy connection.</p>
+<blockquote class="blockquote">
+<p><strong>Note:</strong> The code below reflects empirical verification performed in June 2026. All findings reported in Part I are based on this code and have been verified against the live data. These code blocks can be run interactively to confirm findings in real time.</p>
+</blockquote>
+<hr>
+<section id="sec-totalnumber-qc" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="sec-totalnumber-qc"><span class="header-section-number">1.1</span> TotalNumber Reconciliation</h2>
+<p>Check whether <code>TotalNumber</code> matches the estimated total from length rows. This is a complex check because <code>TotalNumber</code> is scoped inconsistently across surveys:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>TotalNumber reconciliation by survey (survey-specific scoping creates apparent mismatches)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Survey</th>
+<th style="text-align: right;">exact</th>
+<th style="text-align: right;">&lt;1%</th>
+<th style="text-align: right;">1–10%</th>
+<th style="text-align: right;">10–50%</th>
+<th style="text-align: right;">&gt;50%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Can-Mar</td>
+<td style="text-align: right;">419</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BTS</td>
+<td style="text-align: right;">154</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">79</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DYFS</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NS-IBTS</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NL-BSAS</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SNS</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EVHOE</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PT-IBTS</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Discordant groups by survey (&gt;1% difference):</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 5
+  Survey      n median_TotalNo median_est_n median_rel_diff
+  &lt;chr&gt;   &lt;int&gt;          &lt;dbl&gt;        &lt;dbl&gt;           &lt;dbl&gt;
+1 Can-Mar   116              9           8            0.111
+2 BTS       113              9          12           -0.636
+3 NL-BSAS    26              9          14           -0.667
+4 DYFS       15           2049        2058           -0.02 
+5 NS-IBTS     3              2           4           -0.5  
+6 BITS        1           2764        2654.           0.04 
+7 PT-IBTS     1             14          12            0.143</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-datatype-r-qc" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="sec-datatype-r-qc"><span class="header-section-number">1.2</span> Size-Stratified Subsampling Submitted as DataType R</h2>
+<p>Identify hauls with size-stratified structure but DataType <code>R</code> (should be <code>P</code>):</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Size-stratified DataType R hauls by country (95 groups total)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Country</th>
+<th style="text-align: right;">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">DK</td>
+<td style="text-align: right;">82</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BE</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NL</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NO</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-datatype-c-qc" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="sec-datatype-c-qc"><span class="header-section-number">1.3</span> DataType C with Invalid <code>SubsamplingFactor</code></h2>
+<p>Check for DataType C records where <code>SubsamplingFactor</code> is missing or not equal to 1 (all are data submission errors):</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>DataType C records with invalid SubsamplingFactor:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  SubsamplingFactor = NA: 2261</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  SubsamplingFactor ≠ 1: 1832</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Total invalid: 4093 / 4687454 (0.09%)</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Breakdown of SubsamplingFactor values in DataType C:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 2
+   SubsamplingFactor       n
+               &lt;dbl&gt;   &lt;int&gt;
+ 1               1   4683361
+ 2              NA      2261
+ 3               2      1212
+ 4               4       181
+ 5               3        71
+ 6               6        71
+ 7               3.4      48
+ 8               1.5      41
+ 9               8        33
+10               1.2      30</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-presence-only-qc" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="sec-presence-only-qc"><span class="header-section-number">1.4</span> Presence-only HL records</h2>
+<p>Identify hauls and species groups where all quantity fields are absent. These produce <code>n_haul = NA</code> in <code>HL_standardised</code> <code>type == "haul"</code> rows and should not be treated as zero catches.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Total Survey/Year/Quarter/Country/DataType combinations affected:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 523 × 7
+   Survey   Year Quarter Country DataType n_hauls n_species
+   &lt;chr&gt;   &lt;dbl&gt;   &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+ 1 NS-IBTS  2006       3 GB      R             75       104
+ 2 BTS      2013       3 BE      R             53        13
+ 3 BTS      2013       3 GB      R            181        50
+ 4 BTS      2015       3 NL      R             54        20
+ 5 BTS      2019       3 NL      R             62        22
+ 6 BTS      2023       1 GB      R            131       114
+ 7 NS-IBTS  1974       1 GB      C              4         4
+ 8 NS-IBTS  1993       2 NO      C              1         2
+ 9 BITS     1996       1 RU      C              9         5
+10 BTS      1998       3 NL      R             19         6
+# ℹ 513 more rows</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Total hauls affected: 14655</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Total species groups: 10325</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-subfactor-na-qc" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="sec-subfactor-na-qc"><span class="header-section-number">1.5</span> Missing <code>SubsamplingFactor</code></h2>
+<p>Identify and quantify records with <code>NA</code> SubsamplingFactor. Note: empirical checking reveals this affects <strong>0.986% of valid HL records</strong> across multiple surveys, not just NS-IBTS.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Total SubsamplingFactor = NA: 140442 / 14238080 (0.986%)</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>By DataType:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  DataType      n
+  &lt;chr&gt;     &lt;int&gt;
+1 R        138572
+2 C          1856
+3 S            14</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+Top 15 surveys affected:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 2
+  Survey      n
+  &lt;chr&gt;   &lt;int&gt;
+1 BTS     91500
+2 Can-Mar 23680
+3 NS-IBTS 22385
+4 BITS     1845
+5 DYFS      814
+6 SNS       212
+7 NSSS        6</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-statrec-coverage-qc" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="sec-statrec-coverage-qc"><span class="header-section-number">1.6</span> StatisticalRectangle Coverage by Survey</h2>
+<p>Some surveys do not populate the <code>StatisticalRectangle</code> field. Check coverage:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Surveys with missing StatisticalRectangle data</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Survey</th>
+<th style="text-align: right;">n_total</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">pct_missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Can-Mar</td>
+<td style="text-align: right;">11372</td>
+<td style="text-align: right;">11372</td>
+<td style="text-align: right;">100.00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SCOROC</td>
+<td style="text-align: right;">636</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">6.45</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">IS-IDPS</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3.37</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DYFS</td>
+<td style="text-align: right;">17943</td>
+<td style="text-align: right;">283</td>
+<td style="text-align: right;">1.58</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BTS</td>
+<td style="text-align: right;">19887</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.01</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-statrec-qc" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="sec-statrec-qc"><span class="header-section-number">1.7</span> ICES Statistical Rectangle Boundary Mismatch</h2>
+<p>Check for mismatches between reported and derived statistical rectangles (excluding surveys that don’t populate this field):</p>
+<hr>
+</section>
+<section id="sec-specval-qc" class="level2" data-number="1.8">
+<h2 data-number="1.8" class="anchored" data-anchor-id="sec-specval-qc"><span class="header-section-number">1.8</span> SpeciesValidity Variation Within Groups</h2>
+<p>Identify groups where <code>SpeciesValidity</code> varies (intentional coexistence of record types):</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Groups with varying SpeciesValidity by survey (2,786 total; 0.1%)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Survey</th>
+<th style="text-align: right;">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BTS</td>
+<td style="text-align: right;">1289</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Can-Mar</td>
+<td style="text-align: right;">1272</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DYFS</td>
+<td style="text-align: right;">104</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NL-BSAS</td>
+<td style="text-align: right;">91</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NS-IBTS</td>
+<td style="text-align: right;">21</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SNS</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EVHOE</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">PT-IBTS</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BITS</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-subfactor-qc" class="level2" data-number="1.9">
+<h2 data-number="1.9" class="anchored" data-anchor-id="sec-subfactor-qc"><span class="header-section-number">1.9</span> SubsamplingFactor Variation Within Groups</h2>
+<p>Identify groups where <code>SubsamplingFactor</code> varies (size-stratified subsampling):</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Groups with varying SubsamplingFactor by country and DataType (389 total; 0.02%)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Country</th>
+<th style="text-align: left;">DataType</th>
+<th style="text-align: right;">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">GB-SCT</td>
+<td style="text-align: left;">P</td>
+<td style="text-align: right;">293</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DK</td>
+<td style="text-align: left;">R</td>
+<td style="text-align: right;">82</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BE</td>
+<td style="text-align: left;">R</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NL</td>
+<td style="text-align: left;">R</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LT</td>
+<td style="text-align: left;">C</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NO</td>
+<td style="text-align: left;">R</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-cpuel-qc" class="level2" data-number="1.10">
+<h2 data-number="1.10" class="anchored" data-anchor-id="sec-cpuel-qc"><span class="header-section-number">1.10</span> CPUEL Haul Key Ambiguity</h2>
+<p>Check how many short keys (without Country/StationName) match multiple full <code>.id</code> keys in HH:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>CPUEL haul keys with multiple matches in HH: 4.458877 %</code></pre>
+</div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Sample of ambiguous short keys</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">.id_short</th>
+<th style="text-align: left;">.id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:1</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22021:1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:9</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22021:9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:3</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22031:3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:7</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22031:7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:11</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22041:11</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:2</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22022:2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:4</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22032:4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:11</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22043:11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:5</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22051:5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS:1991:1:06S1:SON:12</td>
+<td style="text-align: left;">BITS:1991:1:DE:06S1:SON:22044:12</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-xsi-nil-qc" class="level2" data-number="1.11">
+<h2 data-number="1.11" class="anchored" data-anchor-id="sec-xsi-nil-qc"><span class="header-section-number">1.11</span> <code>xsi:nil</code> column name artefact</h2>
+<p>Fetch a raw <code>icesDatras::getCPUEAge()</code> response and inspect the malformed column names directly. The example uses NS-IBTS 2022 Q1 (all species), which reliably produces the artefact on Age_6 – Age_15.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Raw response — bypasses obus entirely</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>raw_cpuea <span class="ot">&lt;-</span> icesDatras<span class="sc">::</span><span class="fu">getCPUEAge</span>(<span class="st">"NS-IBTS"</span>, <span class="dv">2022</span>, <span class="dv">1</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Columns carrying the xsi:nil artefact</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Columns affected by xsi:nil artefact:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">grep</span>(<span class="st">'xsi:nil'</span>, <span class="fu">names</span>(raw_cpuea), <span class="at">value =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Column count:"</span>, <span class="fu">ncol</span>(raw_cpuea), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The artefact can cause a wider-than-expected table when <code>bind_rows()</code> is called across API responses with inconsistent sets of affected columns. Demonstrate by simulating two frames where one call has the artefact on <code>Age_6</code> and the other does not (as would happen if the same age class had data in one survey-quarter but not another):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate the real-world mix: one frame with the artefact, one without</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>frame_with    <span class="ot">&lt;-</span> raw_cpuea                          <span class="co"># Age_6 xsi:nil="true" present</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>frame_without <span class="ot">&lt;-</span> raw_cpuea                          <span class="co"># same structure ...</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(frame_without) <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">' xsi:nil="true"'</span>, <span class="st">""</span>,  <span class="co"># ... but artefact stripped from Age_6 only</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">names</span>(frame_without), <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Put the artefact back on Age_7+ to show a partial-strip scenario</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (col <span class="cf">in</span> <span class="fu">grep</span>(<span class="st">'xsi:nil'</span>, <span class="fu">names</span>(frame_with), <span class="at">value =</span> <span class="cn">TRUE</span>)[<span class="sc">-</span><span class="dv">1</span>]) {</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(frame_without)[<span class="fu">names</span>(frame_without) <span class="sc">==</span> <span class="fu">sub</span>(<span class="st">' xsi:nil="true"'</span>, <span class="st">""</span>, col, <span class="at">fixed =</span> <span class="cn">TRUE</span>)] <span class="ot">&lt;-</span> col</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(frame_with, frame_without)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"nrow frame_with:   "</span>, <span class="fu">nrow</span>(frame_with), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"nrow frame_without:"</span>, <span class="fu">nrow</span>(frame_without), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ncol each frame:   "</span>, <span class="fu">ncol</span>(frame_with), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ncol after bind:   "</span>, <span class="fu">ncol</span>(result), <span class="st">"  &lt;-- extra column created</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Duplicate Age_6 columns in result:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">grep</span>(<span class="st">"Age_6"</span>, <span class="fu">names</span>(result), <span class="at">value =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Verify that the obus fix (<code>sub()</code> on <code>names()</code>) produces clean, accessible column names:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>clean <span class="ot">&lt;-</span> raw_cpuea</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(clean) <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">' xsi:nil="true"'</span>, <span class="st">""</span>, <span class="fu">names</span>(clean), <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Artefact columns remaining after fix:"</span>, <span class="fu">sum</span>(<span class="fu">grepl</span>(<span class="st">"xsi:nil"</span>, <span class="fu">names</span>(clean))), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Age_6 now accessible via clean$Age_6:"</span>, <span class="sc">!</span><span class="fu">is.null</span>(clean<span class="sc">$</span>Age_6), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"head(clean$Age_6):"</span>, <span class="fu">head</span>(clean<span class="sc">$</span>Age_6), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="version-history" class="level2" data-number="1.12">
+<h2 data-number="1.12" class="anchored" data-anchor-id="version-history"><span class="header-section-number">1.12</span> Version history</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 60%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>June 24, 2026</td>
+<td>Part I restructured into four issue classes (Submission Errors, Specification Gaps, Software &amp; API Bugs, Survey-Specific Conventions). CPUEL haul-key section moved from Product Limitations to Software &amp; API Bugs. HL grouping-key constancy violations merged into Survey-Specific Conventions.</td>
+</tr>
+<tr class="even">
+<td>June 23, 2026</td>
+<td>Added presence-only HL records issue and QC check. Added <code>xsi:nil</code> column name artefact issue and QC section.</td>
+</tr>
+<tr class="odd">
+<td>June 22, 2026</td>
+<td>Reorganized into two parts: (1) Known Issues; (2) Quality Checks. Added cross-references to D2.2.</td>
+</tr>
+<tr class="even">
+<td>June 2026</td>
+<td>Consolidated from <code>DATRAS_data_issues.qmd</code> and <code>miscellaneous.qmd</code>.</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

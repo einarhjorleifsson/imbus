@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-06-01">
+
+<title>DATRAS Exchange Format: Reporting Format – IMBUS</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="../site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="../site_libs/datatables-binding-0.34.0/datatables.js"></script>
+<script src="../site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="../site_libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="../site_libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="../site_libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="../site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="../site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">IMBUS</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../IMBUS/IMBUS_proposal_summary.html">
+ <span class="dropdown-text">Project Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../IMBUS/wp2_progress_review.html">
+ <span class="dropdown-text">WP2 Progress Review</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deliverables" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deliverables</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deliverables">    
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.2_data_formats_metadata.html">
+ <span class="dropdown-text">D2.2 — Data Formats and Metadata</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.3_imbus_product_specification.html">
+ <span class="dropdown-text">D2.3 — IMBUS Product Specification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-datras" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">DATRAS</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-datras">    
+        <li>
+    <a class="dropdown-item" href="../DATRAS/reporting_format.html">
+ <span class="dropdown-text">Reporting Format</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_FAQ.html">
+ <span class="dropdown-text">DATRAS FAQ</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_Technical_Reference.html">
+ <span class="dropdown-text">DATRAS Technical Reference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/survey_indices.html">
+ <span class="dropdown-text">Survey Abundance Indices</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpue_derivation.html">
+ <span class="dropdown-text">CPUE derivation: CPUEL vs HL</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpuel_by_length.html">
+ <span class="dropdown-text">CPUEL emulation and validation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/issues.html">
+ <span class="dropdown-text">Data issues and QC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/sampling_protocol.html">
+ <span class="dropdown-text">Sampling protocols</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-meetings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Meetings</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-meetings">    
+        <li>
+    <a class="dropdown-item" href="../meetings/20260601_WP2-WP5.html">
+ <span class="dropdown-text">2026-06-01 WP2–WP5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-projects" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-projects">    
+        <li>
+    <a class="dropdown-item" href="../other_projects/DATRAS_package_checks.html">
+ <span class="dropdown-text">DATRAS R package — data checks</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/einarhjorleifsson/imbus"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sec-scrape" id="toc-sec-scrape" class="nav-link active" data-scroll-target="#sec-scrape"><span class="header-section-number">1</span> Scraping the reporting format</a></li>
+  <li><a href="#sec-overview" id="toc-sec-overview" class="nav-link" data-scroll-target="#sec-overview"><span class="header-section-number">2</span> Overview</a></li>
+  <li><a href="#sec-fields" id="toc-sec-fields" class="nav-link" data-scroll-target="#sec-fields"><span class="header-section-number">3</span> Field definitions per record type</a></li>
+  <li><a href="#sec-constraints" id="toc-sec-constraints" class="nav-link" data-scroll-target="#sec-constraints"><span class="header-section-number">4</span> Survey-specific field constraints</a>
+  <ul class="collapse">
+  <li><a href="#sec-range-table" id="toc-sec-range-table" class="nav-link" data-scroll-target="#sec-range-table"><span class="header-section-number">4.1</span> Full range data</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DATRAS Exchange Format: Reporting Format</h1>
+<p class="subtitle lead">Field definitions, mandatory status, and survey-specific constraints across all 34 surveys</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 1, 2026</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">July 1, 2026</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This page documents the DATRAS exchange format as reported by the <a href="https://datras.ices.dk/Data_products/ReportingFormat.aspx">DATRAS Reporting Format</a> web page. It covers all 34 surveys and five record types (HH, HL, CA, LT, FA), and answers two questions:</p>
+<ol type="1">
+<li><strong>Which fields are mandatory vs.&nbsp;optional?</strong> — and does this vary across surveys?</li>
+<li><strong>What are the allowed value ranges (Min / Max)?</strong> — and how do these vary across surveys?</li>
+</ol>
+<p>The data are scraped directly from the DATRAS web page and are current as of the document build date.</p>
+<hr>
+<section id="sec-scrape" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="sec-scrape"><span class="header-section-number">1</span> Scraping the reporting format</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>DATRAS_URL <span class="ot">&lt;-</span> <span class="st">"https://datras.ices.dk/Data_products/ReportingFormat.aspx"</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>get_hidden_fields <span class="ot">&lt;-</span> <span class="cf">function</span>(page) {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  hid <span class="ot">&lt;-</span> page <span class="sc">|&gt;</span> <span class="fu">html_elements</span>(<span class="st">"input[type='hidden']"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="fu">html_attr</span>(hid, <span class="st">"value"</span>), <span class="fu">html_attr</span>(hid, <span class="st">"name"</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>post_form <span class="ot">&lt;-</span> <span class="cf">function</span>(handle, hidden, survey_val, record_val) {</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">POST</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">handle =</span> handle,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">path   =</span> <span class="st">"/Data_products/ReportingFormat.aspx"</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">encode =</span> <span class="st">"form"</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">body   =</span> <span class="fu">as.list</span>(<span class="fu">c</span>(</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>      hidden,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">__EVENTTARGET</span><span class="st">`</span>   <span class="ot">=</span> <span class="st">""</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">__EVENTARGUMENT</span><span class="st">`</span> <span class="ot">=</span> <span class="st">""</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">ctl00$ContentPlaceHolder1$ddl_Datatype_new</span><span class="st">`</span> <span class="ot">=</span> survey_val,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">ctl00$ContentPlaceHolder1$ddl_RecordTypes</span><span class="st">`</span>  <span class="ot">=</span> record_val,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">ctl00$ContentPlaceHolder1$BtnDisplay</span><span class="st">`</span>       <span class="ot">=</span> <span class="st">"Display"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> (\(r) <span class="fu">read_html</span>(<span class="fu">content</span>(r, <span class="st">"raw"</span>)))()</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>extract_field_table <span class="ot">&lt;-</span> <span class="cf">function</span>(page) {</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  tbls <span class="ot">&lt;-</span> page <span class="sc">|&gt;</span> <span class="fu">html_elements</span>(<span class="st">"table"</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (tbl <span class="cf">in</span> tbls) {</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    candidate <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">html_table</span>(tbl), <span class="at">error =</span> \(e) <span class="cn">NULL</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(candidate) <span class="sc">&amp;&amp;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">nrow</span>(candidate) <span class="sc">&gt;</span> <span class="dv">3</span> <span class="sc">&amp;&amp;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">"FieldName"</span> <span class="sc">%in%</span> <span class="fu">names</span>(candidate) <span class="sc">&amp;&amp;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Mandatory"</span> <span class="sc">%in%</span> <span class="fu">names</span>(candidate)) {</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>      result <span class="ot">&lt;-</span> candidate</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  result</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Fetch initial page ---</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>h  <span class="ot">&lt;-</span> <span class="fu">handle</span>(<span class="st">"https://datras.ices.dk"</span>)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>r0 <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="at">handle =</span> h, <span class="at">path =</span> <span class="st">"/Data_products/ReportingFormat.aspx"</span>)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>p0 <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="fu">content</span>(r0, <span class="st">"raw"</span>))</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>hidden0 <span class="ot">&lt;-</span> <span class="fu">get_hidden_fields</span>(p0)</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>survey_opts <span class="ot">&lt;-</span> p0 <span class="sc">|&gt;</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_elements</span>(<span class="st">"#ContentPlaceHolder1_ddl_Datatype_new option"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  (\(x) <span class="fu">data.frame</span>(</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">survey_val  =</span> <span class="fu">html_attr</span>(x, <span class="st">"value"</span>),</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">survey_name =</span> <span class="fu">html_text</span>(x) <span class="sc">|&gt;</span> <span class="fu">trimws</span>(),</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>  ))() <span class="sc">|&gt;</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(survey_val <span class="sc">!=</span> <span class="st">"none"</span>)</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>record_opts <span class="ot">&lt;-</span> p0 <span class="sc">|&gt;</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">html_elements</span>(<span class="st">"#ContentPlaceHolder1_ddl_RecordTypes option"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  (\(x) <span class="fu">data.frame</span>(</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">record_val  =</span> <span class="fu">html_attr</span>(x, <span class="st">"value"</span>),</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">record_name =</span> <span class="fu">html_text</span>(x) <span class="sc">|&gt;</span> <span class="fu">trimws</span>(),</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>  ))()</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Scrape all combinations ---</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>scrape_one <span class="ot">&lt;-</span> <span class="cf">function</span>(survey_val, survey_name, record_val, record_name) {</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Sys.sleep</span>(<span class="fl">0.3</span>)</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>  page <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">post_form</span>(h, hidden0, survey_val, record_val),</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">error =</span> \(e) <span class="cn">NULL</span></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(page)) <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>  tbl <span class="ot">&lt;-</span> <span class="fu">extract_field_table</span>(page)</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(tbl)) <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>  tbl <span class="sc">|&gt;</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(Order, FieldName, Width, Format, Mandatory,</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>           <span class="fu">any_of</span>(<span class="fu">c</span>(<span class="st">"Min"</span>, <span class="st">"Max"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>      <span class="at">Survey     =</span> survey_val,</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>      <span class="at">SurveyName =</span> survey_name,</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>      <span class="at">RecordType =</span> record_name,</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>      <span class="at">Mandatory  =</span> Mandatory <span class="sc">==</span> <span class="st">"True"</span>,</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>      <span class="at">.before    =</span> <span class="dv">1</span></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>combos <span class="ot">&lt;-</span> <span class="fu">crossing</span>(survey_opts, record_opts)</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">pmap</span>(</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(combos<span class="sc">$</span>survey_val, combos<span class="sc">$</span>survey_name,</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>       combos<span class="sc">$</span>record_val, combos<span class="sc">$</span>record_name),</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>  scrape_one</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>rf <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+</section>
+<section id="sec-overview" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="sec-overview"><span class="header-section-number">2</span> Overview</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Field counts per record type (mandatory status is uniform across all surveys).</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">RecordType</th>
+<th style="text-align: right;">Fields</th>
+<th style="text-align: right;">Mandatory</th>
+<th style="text-align: right;">Optional</th>
+<th style="text-align: right;">Surveys</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CA</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FA</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">HH</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">HL</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LT</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">33</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>All 33 surveys in the reporting format.</caption>
+<colgroup>
+<col style="width: 29%">
+<col style="width: 70%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Survey code</th>
+<th style="text-align: left;">Full name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BITS</td>
+<td style="text-align: left;">Baltic International Trawl Survey - before 2004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BITS-DATRAS</td>
+<td style="text-align: left;">Baltic International Trawl Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BTS-DATRAS</td>
+<td style="text-align: left;">Beam Trawl Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BTS-GSA17-DATRAS</td>
+<td style="text-align: left;">Beam Trawl Survey - SoleMon (Adriatic survey) - GSA17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BTS-VIII-DATRAS</td>
+<td style="text-align: left;">Beam Trawl Survey - Bay of Biscay (VIII)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BTS-VIIa-DATRAS</td>
+<td style="text-align: left;">Beam Trawl Survey - Irish Sea (VIIa)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CAN-MAR-DATRAS</td>
+<td style="text-align: left;">Canadian Maritimes trawl survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CODS-Q4</td>
+<td style="text-align: left;">Cod Survey in Kattegat</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DWS-DATRAS</td>
+<td style="text-align: left;">Deepwater Surveys</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DYFS-DATRAS</td>
+<td style="text-align: left;">Inshore Beam Trawl Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EVHOE-DATRAS</td>
+<td style="text-align: left;">French Southern Atlantic Bottom Trawl Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FR-CGFS-DATRAS</td>
+<td style="text-align: left;">French Channel Ground Fish Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">FR-WCGFS-DATRAS</td>
+<td style="text-align: left;">French Western English Channel Ground Fish Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IE-IAMS-DATRAS</td>
+<td style="text-align: left;">Irish Anglerfish and Megrim Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">IE-IGFS-DATRAS</td>
+<td style="text-align: left;">Irish Ground Fish Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">IS-IDPS-DATRAS</td>
+<td style="text-align: left;">Irminger Sea International Deep Pelagic Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LT-DATRAS</td>
+<td style="text-align: left;">Litter data from DATRAS trawl surveys</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NIGFS-DATRAS</td>
+<td style="text-align: left;">Northern Ireland Ground Fish Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NL-BSAS-DATRAS</td>
+<td style="text-align: left;">Netherlands Industry survey on Turbot and Brill</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NS-IBTS</td>
+<td style="text-align: left;">North Sea International Bottom Trawl Survey - before 2004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NS-IBTS-DATRAS</td>
+<td style="text-align: left;">North Sea International Bottom Trawl Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NS-IBTS_UNIFtest-DATRAS</td>
+<td style="text-align: left;">Test of unified format of NS-IBTS</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NS-IDPS-DATRAS</td>
+<td style="text-align: left;">Norwegian Sea International Deep Pelagic Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NSSS-DATRAS</td>
+<td style="text-align: left;">North Sea Sandeel Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PT-IBTS-DATRAS</td>
+<td style="text-align: left;">Portuguese International Bottom Trawl Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ROCKALL-DATRAS</td>
+<td style="text-align: left;">Scottish Rockall Survey - old (until 2010)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SCOROC-DATRAS</td>
+<td style="text-align: left;">Scottish Rockall Survey - new (from 2011)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SCOWCGFS-DATRAS</td>
+<td style="text-align: left;">Scottish West Coast Groundfish Survey (from 2011)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SE-SOUND-DATRAS</td>
+<td style="text-align: left;">Sweden Sound Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SNS-DATRAS</td>
+<td style="text-align: left;">Sole Net Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SP-ARSA-DATRAS</td>
+<td style="text-align: left;">Spanish Gulf of Cadiz Bottom Trawl Survey</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SP-NORTH-DATRAS</td>
+<td style="text-align: left;">Spanish North Coast Bottom Trawl Survey</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SP-PORC-DATRAS</td>
+<td style="text-align: left;">Spanish Porcupine Bottom Trawl Survey</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><strong>Key findings from the scrape:</strong></p>
+<ul>
+<li>Mandatory status is <strong>identical for every survey</strong> within a record type — the DATRAS exchange format does not vary field-level obligations by survey.</li>
+<li>Min / Max value ranges are defined for fields across all record types (HH, HL, CA, FA) and are likewise <strong>uniform across surveys</strong> — with the exception of five HH fields: <code>BottomDepth</code>, <code>Distance</code>, <code>GroundRopeWeight</code>, <code>HaulDuration</code>, and <code>WarpLength</code>, whose allowed ranges differ by survey and are shown separately in <a href="#sec-constraints" class="quarto-xref">Section&nbsp;4</a>.</li>
+</ul>
+<hr>
+</section>
+<section id="sec-fields" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="sec-fields"><span class="header-section-number">3</span> Field definitions per record type</h2>
+<p>Each table shows the complete field list for that record type. Mandatory fields are highlighted. Min / Max are the allowed value ranges; blank cells indicate no constraint is specified on the page.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">HH — Haul Header</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">HL — Haul Length</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false" href="">CA — Catch at Age</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false" href="">LT — Litter</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-5" role="tab" aria-controls="tabset-1-5" aria-selected="false" href="">FA — Fish Activity</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<div id="tbl-hh" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-hh-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1
+</figcaption>
+<div aria-describedby="tbl-hh-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-68558afdaab7908462e7" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-68558afdaab7908462e7">{"x":{"filter":"none","vertical":false,"caption":"<caption>HH — field definitions<\/caption>","data":[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71],["RecordHeader","Quarter","Country","Platform","Gear","SweepLength","GearExceptions","DoorType","StationName","HaulNumber","Year","Month","Day","StartTime","DepthStratum","HaulDuration","DayNight","ShootLatitude","ShootLongitude","HaulLatitude","HaulLongitude","StatisticalRectangle","BottomDepth","HaulValidity","HydrographicStationID","StandardSpeciesCode","BycatchSpeciesCode","DataType","NetOpening","Rigging","Tickler","Distance","WarpLength","WarpDiameter","WarpDensity","DoorSurface","DoorWeight","DoorSpread","WingSpread","Buoyancy","KiteArea","GroundRopeWeight","TowDirection","SpeedGround","SpeedWater","SurfaceCurrentDirection","SurfaceCurrentSpeed","BottomCurrentDirection","BottomCurrentSpeed","WindDirection","WindSpeed","SwellDirection","SwellHeight","SurfaceTemperature","BottomTemperature","SurfaceSalinity","BottomSalinity","ThermoCline","ThermoClineDepth","CodendMesh","SecchiDepth","Turbidity","TidePhase","TideSpeed","PelagicSamplingType","MinTrawlDepth","MaxTrawlDepth","SurveyIndexArea","Survey","EDMO","ReasonHaulDisruption"],["char","int","char","char","char","int","char","char","char","int","char","int","int","char","char","int","char","decimal","decimal","decimal","decimal","char","int","char","char","char","char","char","decimal","char","int","float","int","int","int","decimal","int","decimal","decimal","int","decimal","int","int","decimal","decimal","int","decimal","int","decimal","int","int","int","decimal","decimal","decimal","decimal","decimal","char","int","int","decimal","int","int","decimal","char","int","int","char","char","char","char"],[2,1,6,4,6,3,2,2,10,6,4,2,2,4,4,3,2,9,9,9,9,4,4,1,8,1,1,2,9,2,2,5,4,2,2,9,4,9,9,4,9,4,3,9,9,3,9,3,9,3,3,3,9,9,9,9,9,2,4,4,9,6,4,9,2,4,4,20,10,4,1],["M","M","M","M","M","O","O","O","M","M","M","M","M","M","O","M","M","M","M","M","M","O","O","M","O","M","M","M","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O"],[null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,2.5,null,null,null,null,10,null,1,500,48,12,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,10,null,null,null,null,60,null,10,2000,180,30,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]],"container":"<table class=\"compact\">\n  <thead>\n    <tr>\n      <th>Order<\/th>\n      <th>FieldName<\/th>\n      <th>Format<\/th>\n      <th>Width<\/th>\n      <th>Mandatory<\/th>\n      <th>Min<\/th>\n      <th>Max<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"paging":false,"scrollY":"500px","scrollCollapse":true,"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,3,5,6]},{"name":"Order","targets":0},{"name":"FieldName","targets":1},{"name":"Format","targets":2},{"name":"Width","targets":3},{"name":"Mandatory","targets":4},{"name":"Min","targets":5},{"name":"Max","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-weight':value == \"M\" ? \"bold\" : null,'background-color':value == \"M\" ? \"#d4edda\" : value == \"O\" ? \"#f8f9fa\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<div id="tbl-hl" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-hl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2
+</figcaption>
+<div aria-describedby="tbl-hl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-4813e9b59ed29e6c052c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4813e9b59ed29e6c052c">{"x":{"filter":"none","vertical":false,"caption":"<caption>HL — field definitions<\/caption>","data":[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27],["RecordHeader","Quarter","Country","Platform","Gear","SweepLength","GearExceptions","DoorType","StationName","HaulNumber","Year","SpeciesCodeType","SpeciesCode","SpeciesValidity","SpeciesSex","TotalNumber","SpeciesCategory","SubsampledNumber","SubsamplingFactor","SubsampleWeight","SpeciesCategoryWeight","LengthCode","LengthClass","NumberAtLength","DevelopmentStage","LengthType","Survey"],["char","int","char","char","char","int","char","char","char","int","char","char","char","char","char","decimal","int","int","decimal","int","int","char","int","decimal","char","char","char"],[2,1,6,4,6,3,2,2,10,6,4,2,10,2,2,12,2,3,9,6,8,2,4,10,4,2,10],["M","M","M","M","M","O","O","O","M","M","M","M","M","M","O","O","M","O","O","O","O","O","O","O","O","O","O"],[null,1,null,null,null,null,null,null,null,1,1900,null,null,null,null,1,1,1,1,1,1,null,1,0.1,null,null,null],[null,4,null,null,null,null,null,null,null,999,2099,null,null,null,null,9999999,5,9999,2000,500000,10000000,null,999,999999,null,null,null]],"container":"<table class=\"compact\">\n  <thead>\n    <tr>\n      <th>Order<\/th>\n      <th>FieldName<\/th>\n      <th>Format<\/th>\n      <th>Width<\/th>\n      <th>Mandatory<\/th>\n      <th>Min<\/th>\n      <th>Max<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"paging":false,"scrollY":"500px","scrollCollapse":true,"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,3,5,6]},{"name":"Order","targets":0},{"name":"FieldName","targets":1},{"name":"Format","targets":2},{"name":"Width","targets":3},{"name":"Mandatory","targets":4},{"name":"Min","targets":5},{"name":"Max","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-weight':value == \"M\" ? \"bold\" : null,'background-color':value == \"M\" ? \"#d4edda\" : value == \"O\" ? \"#f8f9fa\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div class="cell">
+<div id="tbl-ca" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-ca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3
+</figcaption>
+<div aria-describedby="tbl-ca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-678af3b0ccde45e1b4f3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-678af3b0ccde45e1b4f3">{"x":{"filter":"none","vertical":false,"caption":"<caption>CA — field definitions<\/caption>","data":[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33],["RecordHeader","Quarter","Country","Platform","Gear","SweepLength","GearExceptions","DoorType","StationName","HaulNumber","Year","SpeciesCodeType","SpeciesCode","AreaType","AreaCode","LengthCode","LengthClass","IndividualSex","IndividualMaturity","AgePlusGroup","IndividualAge","NumberAtLength","IndividualWeight","MaturityScale","FishID","GeneticSamplingFlag","StomachSamplingFlag","AgeSource","AgePreparationMethod","OtolithGrading","ParasiteSamplingFlag","LiverWeight","Survey"],["char","int","char","char","char","int","char","char","char","int","char","char","char","char","char","char","int","char","char","char","int","int","decimal","char","char","char","char","char","char","char","char","decimal","char"],[2,1,6,4,6,3,2,2,10,6,4,1,10,2,5,2,4,2,4,2,3,3,9,6,15,2,2,10,4,4,2,9,10],["M","M","M","M","M","O","O","O","M","M","M","M","M","O","O","M","M","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O","O"],[null,1,null,null,null,null,null,null,null,1,1900,null,null,null,null,null,1,null,null,null,0,1,1,null,null,null,null,null,null,null,null,1,null],[null,4,null,null,null,null,null,null,null,999,2099,null,null,null,null,null,999,null,null,null,19,999,99999,null,null,null,null,null,null,null,null,99.90000000000001,null]],"container":"<table class=\"compact\">\n  <thead>\n    <tr>\n      <th>Order<\/th>\n      <th>FieldName<\/th>\n      <th>Format<\/th>\n      <th>Width<\/th>\n      <th>Mandatory<\/th>\n      <th>Min<\/th>\n      <th>Max<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"paging":false,"scrollY":"500px","scrollCollapse":true,"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,3,5,6]},{"name":"Order","targets":0},{"name":"FieldName","targets":1},{"name":"Format","targets":2},{"name":"Width","targets":3},{"name":"Mandatory","targets":4},{"name":"Min","targets":5},{"name":"Max","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-weight':value == \"M\" ? \"bold\" : null,'background-color':value == \"M\" ? \"#d4edda\" : value == \"O\" ? \"#f8f9fa\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div class="cell">
+<div id="tbl-lt" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-lt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4
+</figcaption>
+<div aria-describedby="tbl-lt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-78771b8f5019c3083c3d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-78771b8f5019c3083c3d">{"x":{"filter":"none","vertical":false,"caption":"<caption>LT — field definitions<\/caption>","data":[[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],["RecordHeader","Quarter","Country","Platform","Gear","Survey","Reserved1","Reserved2","StationName","HaulNumber","Year","LTREF","PARAM","LTSZC","UnitWeight","LT_Weight","UnitItem","LT_Items","LTSRC","TYPPL","LTPRP","EDMO"],["char","int","char","char","char","char","char","char","char","int","char","char","char","char","char","decimal","char","int","char","char","char","char"],[2,1,6,4,6,20,10,10,6,6,4,10,20,4,15,9,15,6,5,5,20,4],["M","M","M","M","M","M","O","O","M","M","M","M","O","O","O","O","O","O","O","O","O","O"],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]],"container":"<table class=\"compact\">\n  <thead>\n    <tr>\n      <th>Order<\/th>\n      <th>FieldName<\/th>\n      <th>Format<\/th>\n      <th>Width<\/th>\n      <th>Mandatory<\/th>\n      <th>Min<\/th>\n      <th>Max<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"paging":false,"scrollY":"500px","scrollCollapse":true,"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,3,5,6]},{"name":"Order","targets":0},{"name":"FieldName","targets":1},{"name":"Format","targets":2},{"name":"Width","targets":3},{"name":"Mandatory","targets":4},{"name":"Min","targets":5},{"name":"Max","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-weight':value == \"M\" ? \"bold\" : null,'background-color':value == \"M\" ? \"#d4edda\" : value == \"O\" ? \"#f8f9fa\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<div id="tabset-1-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-5-tab">
+<div class="cell">
+<div id="tbl-fa" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-fa-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5
+</figcaption>
+<div aria-describedby="tbl-fa-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-4a132402849d4540d49b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4a132402849d4540d49b">{"x":{"filter":"none","vertical":false,"caption":"<caption>FA — field definitions<\/caption>","data":[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],["RecordHeader","Quarter","Country","Platform","Gear","Survey","StationName","HaulNumber","Year","SpeciesCode","FishID","GeneticPopulation","GeneticPopulationProbability","ParasitePresenceFlag","ParasiteSpecies","ParasiteNumbers","ParasiteFrequencyClass","ParasiteDevelopmentStage","DiseasePresenceFlag","DiseaseType","DiseaseFrequencyClass"],["char","int","char","char","char","char","int","char","char","char","char","char","int","char","char","int","char","char","char","char","char"],[2,1,3,4,6,6,6,4,1,10,15,15,3,2,10,5,10,10,2,10,10],["M","M","M","M","M","M","M","M","M","M","M","O","O","O","O","O","O","O","O","O","O"],[null,1,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null],[null,4,null,null,null,null,null,null,null,null,null,null,100,null,null,null,null,null,null,null,null]],"container":"<table class=\"compact\">\n  <thead>\n    <tr>\n      <th>Order<\/th>\n      <th>FieldName<\/th>\n      <th>Format<\/th>\n      <th>Width<\/th>\n      <th>Mandatory<\/th>\n      <th>Min<\/th>\n      <th>Max<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"paging":false,"scrollY":"500px","scrollCollapse":true,"dom":"t","columnDefs":[{"className":"dt-right","targets":[0,3,5,6]},{"name":"Order","targets":0},{"name":"FieldName","targets":1},{"name":"Format","targets":2},{"name":"Width","targets":3},{"name":"Mandatory","targets":4},{"name":"Min","targets":5},{"name":"Max","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-weight':value == \"M\" ? \"bold\" : null,'background-color':value == \"M\" ? \"#d4edda\" : value == \"O\" ? \"#f8f9fa\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="sec-constraints" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="sec-constraints"><span class="header-section-number">4</span> Survey-specific field constraints</h2>
+<p>All survey-specific variation in the reporting format is confined to allowed value ranges (Min / Max) for five HH fields. The plots below show each survey’s permitted range as a horizontal segment. Surveys are sorted by their minimum value within each field.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="reporting_format_files/figure-html/range-plots-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="sec-range-table" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="sec-range-table"><span class="header-section-number">4.1</span> Full range data</h3>
+<div class="cell">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-462825f4994d136ab77b" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-462825f4994d136ab77b">{"x":{"filter":"none","vertical":false,"caption":"<caption>Survey-specific Min / Max constraints (HH fields only).<\/caption>","data":[["HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH","HH"],["BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","BottomDepth","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","Distance","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","GroundRopeWeight","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","HaulDuration","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength","WarpLength"],["DYFS-DATRAS","SNS-DATRAS","BITS","BITS-DATRAS","BTS-DATRAS","BTS-GSA17-DATRAS","BTS-VIIa-DATRAS","BTS-VIII-DATRAS","CODS-Q4","IS-IDPS-DATRAS","NS-IDPS-DATRAS","NSSS-DATRAS","SE-SOUND-DATRAS","CAN-MAR-DATRAS","EVHOE-DATRAS","FR-CGFS-DATRAS","FR-WCGFS-DATRAS","IE-IGFS-DATRAS","NIGFS-DATRAS","NS-IBTS","NS-IBTS-DATRAS","PT-IBTS-DATRAS","ROCKALL-DATRAS","SCOROC-DATRAS","SCOWCGFS-DATRAS","SP-NORTH-DATRAS","IE-IAMS-DATRAS","NL-BSAS-DATRAS","SP-ARSA-DATRAS","SP-PORC-DATRAS","DWS-DATRAS","BITS","CODS-Q4","BITS-DATRAS","BTS-DATRAS","BTS-GSA17-DATRAS","BTS-VIIa-DATRAS","BTS-VIII-DATRAS","CAN-MAR-DATRAS","EVHOE-DATRAS","FR-CGFS-DATRAS","FR-WCGFS-DATRAS","NS-IBTS-DATRAS","NSSS-DATRAS","PT-IBTS-DATRAS","SCOROC-DATRAS","SCOWCGFS-DATRAS","SE-SOUND-DATRAS","SP-ARSA-DATRAS","SP-NORTH-DATRAS","SP-PORC-DATRAS","DYFS-DATRAS","SNS-DATRAS","IE-IGFS-DATRAS","IS-IDPS-DATRAS","NIGFS-DATRAS","NS-IDPS-DATRAS","DWS-DATRAS","NS-IBTS","ROCKALL-DATRAS","NL-BSAS-DATRAS","IE-IAMS-DATRAS","BITS","BITS-DATRAS","CAN-MAR-DATRAS","CODS-Q4","EVHOE-DATRAS","FR-CGFS-DATRAS","FR-WCGFS-DATRAS","NIGFS-DATRAS","NS-IBTS","NSSS-DATRAS","PT-IBTS-DATRAS","ROCKALL-DATRAS","SCOROC-DATRAS","SCOWCGFS-DATRAS","SE-SOUND-DATRAS","SP-ARSA-DATRAS","SP-NORTH-DATRAS","SP-PORC-DATRAS","IE-IAMS-DATRAS","IE-IGFS-DATRAS","DWS-DATRAS","NS-IBTS-DATRAS","SE-SOUND-DATRAS","BITS","CODS-Q4","DYFS-DATRAS","EVHOE-DATRAS","FR-CGFS-DATRAS","FR-WCGFS-DATRAS","IE-IGFS-DATRAS","NIGFS-DATRAS","PT-IBTS-DATRAS","ROCKALL-DATRAS","SCOROC-DATRAS","SCOWCGFS-DATRAS","SNS-DATRAS","SP-ARSA-DATRAS","SP-NORTH-DATRAS","SP-PORC-DATRAS","BITS-DATRAS","BTS-DATRAS","BTS-GSA17-DATRAS","BTS-VIIa-DATRAS","BTS-VIII-DATRAS","CAN-MAR-DATRAS","IS-IDPS-DATRAS","NS-IBTS","NS-IBTS-DATRAS","NS-IDPS-DATRAS","NSSS-DATRAS","NL-BSAS-DATRAS","DWS-DATRAS","IE-IAMS-DATRAS","DYFS-DATRAS","SNS-DATRAS","BTS-DATRAS","BTS-GSA17-DATRAS","BTS-VIIa-DATRAS","BTS-VIII-DATRAS","EVHOE-DATRAS","FR-CGFS-DATRAS","FR-WCGFS-DATRAS","IE-IGFS-DATRAS","NIGFS-DATRAS","PT-IBTS-DATRAS","ROCKALL-DATRAS","SCOROC-DATRAS","SCOWCGFS-DATRAS","SP-ARSA-DATRAS","SP-NORTH-DATRAS","BITS","BITS-DATRAS","CODS-Q4","NSSS-DATRAS","SE-SOUND-DATRAS","CAN-MAR-DATRAS","IE-IAMS-DATRAS","NS-IBTS","NS-IBTS-DATRAS","NS-IDPS-DATRAS","SP-PORC-DATRAS","DWS-DATRAS"],["Inshore Beam Trawl Survey","Sole Net Survey","Baltic International Trawl Survey - before 2004","Baltic International Trawl Survey","Beam Trawl Survey","Beam Trawl Survey - SoleMon (Adriatic survey) - GSA17","Beam Trawl Survey - Irish Sea (VIIa)","Beam Trawl Survey - Bay of Biscay (VIII)","Cod Survey in Kattegat","Irminger Sea International Deep Pelagic Survey","Norwegian Sea International Deep Pelagic Survey","North Sea Sandeel Survey","Sweden Sound Survey","Canadian Maritimes trawl survey","French Southern Atlantic Bottom Trawl Survey","French Channel Ground Fish Survey","French Western English Channel Ground Fish Survey","Irish Ground Fish Survey","Northern Ireland Ground Fish Survey","North Sea International Bottom Trawl Survey - before 2004","North Sea International Bottom Trawl Survey","Portuguese International Bottom Trawl Survey","Scottish Rockall Survey - old (until 2010)","Scottish Rockall Survey - new (from 2011)","Scottish West Coast Groundfish Survey (from 2011)","Spanish North Coast Bottom Trawl Survey","Irish Anglerfish and Megrim Survey","Netherlands Industry survey on Turbot and Brill","Spanish Gulf of Cadiz Bottom Trawl Survey","Spanish Porcupine Bottom Trawl Survey","Deepwater Surveys","Baltic International Trawl Survey - before 2004","Cod Survey in Kattegat","Baltic International Trawl Survey","Beam Trawl Survey","Beam Trawl Survey - SoleMon (Adriatic survey) - GSA17","Beam Trawl Survey - Irish Sea (VIIa)","Beam Trawl Survey - Bay of Biscay (VIII)","Canadian Maritimes trawl survey","French Southern Atlantic Bottom Trawl Survey","French Channel Ground Fish Survey","French Western English Channel Ground Fish Survey","North Sea International Bottom Trawl Survey","North Sea Sandeel Survey","Portuguese International Bottom Trawl Survey","Scottish Rockall Survey - new (from 2011)","Scottish West Coast Groundfish Survey (from 2011)","Sweden Sound Survey","Spanish Gulf of Cadiz Bottom Trawl Survey","Spanish North Coast Bottom Trawl Survey","Spanish Porcupine Bottom Trawl Survey","Inshore Beam Trawl Survey","Sole Net Survey","Irish Ground Fish Survey","Irminger Sea International Deep Pelagic Survey","Northern Ireland Ground Fish Survey","Norwegian Sea International Deep Pelagic Survey","Deepwater Surveys","North Sea International Bottom Trawl Survey - before 2004","Scottish Rockall Survey - old (until 2010)","Netherlands Industry survey on Turbot and Brill","Irish Anglerfish and Megrim Survey","Baltic International Trawl Survey - before 2004","Baltic International Trawl Survey","Canadian Maritimes trawl survey","Cod Survey in Kattegat","French Southern Atlantic Bottom Trawl Survey","French Channel Ground Fish Survey","French Western English Channel Ground Fish Survey","Northern Ireland Ground Fish Survey","North Sea International Bottom Trawl Survey - before 2004","North Sea Sandeel Survey","Portuguese International Bottom Trawl Survey","Scottish Rockall Survey - old (until 2010)","Scottish Rockall Survey - new (from 2011)","Scottish West Coast Groundfish Survey (from 2011)","Sweden Sound Survey","Spanish Gulf of Cadiz Bottom Trawl Survey","Spanish North Coast Bottom Trawl Survey","Spanish Porcupine Bottom Trawl Survey","Irish Anglerfish and Megrim Survey","Irish Ground Fish Survey","Deepwater Surveys","North Sea International Bottom Trawl Survey","Sweden Sound Survey","Baltic International Trawl Survey - before 2004","Cod Survey in Kattegat","Inshore Beam Trawl Survey","French Southern Atlantic Bottom Trawl Survey","French Channel Ground Fish Survey","French Western English Channel Ground Fish Survey","Irish Ground Fish Survey","Northern Ireland Ground Fish Survey","Portuguese International Bottom Trawl Survey","Scottish Rockall Survey - old (until 2010)","Scottish Rockall Survey - new (from 2011)","Scottish West Coast Groundfish Survey (from 2011)","Sole Net Survey","Spanish Gulf of Cadiz Bottom Trawl Survey","Spanish North Coast Bottom Trawl Survey","Spanish Porcupine Bottom Trawl Survey","Baltic International Trawl Survey","Beam Trawl Survey","Beam Trawl Survey - SoleMon (Adriatic survey) - GSA17","Beam Trawl Survey - Irish Sea (VIIa)","Beam Trawl Survey - Bay of Biscay (VIII)","Canadian Maritimes trawl survey","Irminger Sea International Deep Pelagic Survey","North Sea International Bottom Trawl Survey - before 2004","North Sea International Bottom Trawl Survey","Norwegian Sea International Deep Pelagic Survey","North Sea Sandeel Survey","Netherlands Industry survey on Turbot and Brill","Deepwater Surveys","Irish Anglerfish and Megrim Survey","Inshore Beam Trawl Survey","Sole Net Survey","Beam Trawl Survey","Beam Trawl Survey - SoleMon (Adriatic survey) - GSA17","Beam Trawl Survey - Irish Sea (VIIa)","Beam Trawl Survey - Bay of Biscay (VIII)","French Southern Atlantic Bottom Trawl Survey","French Channel Ground Fish Survey","French Western English Channel Ground Fish Survey","Irish Ground Fish Survey","Northern Ireland Ground Fish Survey","Portuguese International Bottom Trawl Survey","Scottish Rockall Survey - old (until 2010)","Scottish Rockall Survey - new (from 2011)","Scottish West Coast Groundfish Survey (from 2011)","Spanish Gulf of Cadiz Bottom Trawl Survey","Spanish North Coast Bottom Trawl Survey","Baltic International Trawl Survey - before 2004","Baltic International Trawl Survey","Cod Survey in Kattegat","North Sea Sandeel Survey","Sweden Sound Survey","Canadian Maritimes trawl survey","Irish Anglerfish and Megrim Survey","North Sea International Bottom Trawl Survey - before 2004","North Sea International Bottom Trawl Survey","Norwegian Sea International Deep Pelagic Survey","Spanish Porcupine Bottom Trawl Survey","Deepwater Surveys"],[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[2,2,5,5,5,5,5,5,5,5,5,5,5,10,10,10,10,10,10,10,10,10,10,10,10,10,15,15,15,150,200,0,0,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,250,250,1000,1000,1000,1000,1850,1850,1850,4500,5000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,500,500,600,600,0,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,15,15,15,15,15,15,15,15,15,15,15,20,30,30,10,10,30,30,30,30,60,60,60,60,60,60,60,60,60,60,60,75,75,75,75,75,100,100,100,100,100,500,1000],[35,45,300,300,300,300,300,300,300,6000,6000,300,300,300,600,600,600,600,600,300,300,800,600,600,600,600,1000,65,770,800,2000,9999,9999,30000,5000,5000,5000,5000,5000,5000,5000,5000,5000,30000,5000,5000,5000,5000,5000,5000,5000,4000,4000,9999,20000,9999,20000,9999,9999,9999,30000,6000,800,800,800,800,300,300,300,300,300,800,300,300,300,300,800,300,300,300,2500,2500,800,800,90,150,90,30,90,90,90,90,90,90,90,90,90,30,90,90,90,35,60,60,60,60,90,600,90,90,600,35,190,180,70,100,150,400,400,400,400,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,999,999,999,999,999,999,2300,999,999,999,2300,4000]],"container":"<table class=\"compact\">\n  <thead>\n    <tr>\n      <th>RecordType<\/th>\n      <th>FieldName<\/th>\n      <th>Survey<\/th>\n      <th>SurveyName<\/th>\n      <th>Mandatory<\/th>\n      <th>Min<\/th>\n      <th>Max<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"paging":false,"scrollY":"500px","scrollCollapse":true,"dom":"t","columnDefs":[{"className":"dt-right","targets":[5,6]},{"name":"RecordType","targets":0},{"name":"FieldName","targets":1},{"name":"Survey","targets":2},{"name":"SurveyName","targets":3},{"name":"Mandatory","targets":4},{"name":"Min","targets":5},{"name":"Max","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data, displayNum, displayIndex, dataIndex) {\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'background-color':value == true ? \"#d4edda\" : value == false ? \"#f8f9fa\" : null});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

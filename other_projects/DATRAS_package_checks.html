@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-07-01">
+
+<title>DATRAS R Package — Data Checks and Processing – IMBUS</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">IMBUS</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../IMBUS/IMBUS_proposal_summary.html">
+ <span class="dropdown-text">Project Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../IMBUS/wp2_progress_review.html">
+ <span class="dropdown-text">WP2 Progress Review</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deliverables" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deliverables</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deliverables">    
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.2_data_formats_metadata.html">
+ <span class="dropdown-text">D2.2 — Data Formats and Metadata</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.3_imbus_product_specification.html">
+ <span class="dropdown-text">D2.3 — IMBUS Product Specification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-datras" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">DATRAS</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-datras">    
+        <li>
+    <a class="dropdown-item" href="../DATRAS/reporting_format.html">
+ <span class="dropdown-text">Reporting Format</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_FAQ.html">
+ <span class="dropdown-text">DATRAS FAQ</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_Technical_Reference.html">
+ <span class="dropdown-text">DATRAS Technical Reference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/survey_indices.html">
+ <span class="dropdown-text">Survey Abundance Indices</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpue_derivation.html">
+ <span class="dropdown-text">CPUE derivation: CPUEL vs HL</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpuel_by_length.html">
+ <span class="dropdown-text">CPUEL emulation and validation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/issues.html">
+ <span class="dropdown-text">Data issues and QC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/sampling_protocol.html">
+ <span class="dropdown-text">Sampling protocols</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-meetings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Meetings</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-meetings">    
+        <li>
+    <a class="dropdown-item" href="../meetings/20260601_WP2-WP5.html">
+ <span class="dropdown-text">2026-06-01 WP2–WP5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-projects" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-projects">    
+        <li>
+    <a class="dropdown-item" href="../other_projects/DATRAS_package_checks.html">
+ <span class="dropdown-text">DATRAS R package — data checks</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/einarhjorleifsson/imbus"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#data-ingestion" id="toc-data-ingestion" class="nav-link" data-scroll-target="#data-ingestion"><span class="header-section-number">2</span> Data ingestion</a></li>
+  <li><a href="#normalisation-pipeline" id="toc-normalisation-pipeline" class="nav-link" data-scroll-target="#normalisation-pipeline"><span class="header-section-number">3</span> Normalisation pipeline</a>
+  <ul class="collapse">
+  <li><a href="#missing-value-replacement-minus9tona" id="toc-missing-value-replacement-minus9tona" class="nav-link" data-scroll-target="#missing-value-replacement-minus9tona"><span class="header-section-number">3.1</span> 1. Missing value replacement (<code>minus9toNA</code>)</a></li>
+  <li><a href="#column-name-harmonisation-renamedatras" id="toc-column-name-harmonisation-renamedatras" class="nav-link" data-scroll-target="#column-name-harmonisation-renamedatras"><span class="header-section-number">3.2</span> 2. Column name harmonisation (<code>renameDATRAS</code>)</a></li>
+  <li><a href="#statrec-areacode-harmonisation" id="toc-statrec-areacode-harmonisation" class="nav-link" data-scroll-target="#statrec-areacode-harmonisation"><span class="header-section-number">3.3</span> 3. <code>StatRec</code> / <code>AreaCode</code> harmonisation</a></li>
+  </ul></li>
+  <li><a href="#derived-variables-addextravariables" id="toc-derived-variables-addextravariables" class="nav-link" data-scroll-target="#derived-variables-addextravariables"><span class="header-section-number">4</span> Derived variables (<code>addExtraVariables</code>)</a>
+  <ul class="collapse">
+  <li><a href="#composite-haul-key-haul.id" id="toc-composite-haul-key-haul.id" class="nav-link" data-scroll-target="#composite-haul-key-haul.id"><span class="header-section-number">4.1</span> 4. Composite haul key (<code>haul.id</code>)</a></li>
+  <li><a href="#length-class-to-centimetres-lngtcm" id="toc-length-class-to-centimetres-lngtcm" class="nav-link" data-scroll-target="#length-class-to-centimetres-lngtcm"><span class="header-section-number">4.2</span> 5. Length class to centimetres (<code>LngtCm</code>)</a></li>
+  <li><a href="#species-name-lookup" id="toc-species-name-lookup" class="nav-link" data-scroll-target="#species-name-lookup"><span class="header-section-number">4.3</span> 6. Species name lookup</a></li>
+  <li><a href="#count-reconstruction-count-in-hl" id="toc-count-reconstruction-count-in-hl" class="nav-link" data-scroll-target="#count-reconstruction-count-in-hl"><span class="header-section-number">4.4</span> 7. Count reconstruction (<code>Count</code> in HL)</a></li>
+  <li><a href="#differences-between-datras-and-obus-for-datatype-r" id="toc-differences-between-datras-and-obus-for-datatype-r" class="nav-link" data-scroll-target="#differences-between-datras-and-obus-for-datatype-r"><span class="header-section-number">4.5</span> Differences between <code>{DATRAS}</code> and <code>{obus}</code> for DataType <code>"R"</code></a></li>
+  <li><a href="#temporal-and-spatial-convenience-variables" id="toc-temporal-and-spatial-convenience-variables" class="nav-link" data-scroll-target="#temporal-and-spatial-convenience-variables"><span class="header-section-number">4.6</span> 8. Temporal and spatial convenience variables</a></li>
+  <li><a href="#roundfish-area" id="toc-roundfish-area" class="nav-link" data-scroll-target="#roundfish-area"><span class="header-section-number">4.7</span> 9. Roundfish area</a></li>
+  </ul></li>
+  <li><a href="#integrity-checks" id="toc-integrity-checks" class="nav-link" data-scroll-target="#integrity-checks"><span class="header-section-number">5</span> Integrity checks</a>
+  <ul class="collapse">
+  <li><a href="#duplicate-rows-in-hh-hard-stop" id="toc-duplicate-rows-in-hh-hard-stop" class="nav-link" data-scroll-target="#duplicate-rows-in-hh-hard-stop"><span class="header-section-number">5.1</span> 10. Duplicate rows in HH (hard stop)</a></li>
+  <li><a href="#hauls-without-length-records-warning" id="toc-hauls-without-length-records-warning" class="nav-link" data-scroll-target="#hauls-without-length-records-warning"><span class="header-section-number">5.2</span> 11. Hauls without length records (warning)</a></li>
+  <li><a href="#hl-haul-level-consistency-hard-stop" id="toc-hl-haul-level-consistency-hard-stop" class="nav-link" data-scroll-target="#hl-haul-level-consistency-hard-stop"><span class="header-section-number">5.3</span> 12. HL haul level consistency (hard stop)</a></li>
+  <li><a href="#csv-file-row-count-integrity-readices" id="toc-csv-file-row-count-integrity-readices" class="nav-link" data-scroll-target="#csv-file-row-count-integrity-readices"><span class="header-section-number">5.4</span> 13. CSV file row-count integrity (<code>readICES</code>)</a></li>
+  <li><a href="#unique-haul-ids-when-combining-datasets-c.datrasraw" id="toc-unique-haul-ids-when-combining-datasets-c.datrasraw" class="nav-link" data-scroll-target="#unique-haul-ids-when-combining-datasets-c.datrasraw"><span class="header-section-number">5.5</span> 14. Unique haul IDs when combining datasets (<code>c.DATRASraw</code>)</a></li>
+  <li><a href="#missing-haul-ids-in-ca-fixmissinghaulids" id="toc-missing-haul-ids-in-ca-fixmissinghaulids" class="nav-link" data-scroll-target="#missing-haul-ids-in-ca-fixmissinghaulids"><span class="header-section-number">5.6</span> 15. Missing haul IDs in CA (<code>fixMissingHaulIds</code>)</a></li>
+  </ul></li>
+  <li><a href="#downstream-checks-in-addspectrum" id="toc-downstream-checks-in-addspectrum" class="nav-link" data-scroll-target="#downstream-checks-in-addspectrum"><span class="header-section-number">6</span> Downstream checks in <code>addSpectrum</code></a></li>
+  <li><a href="#summary-of-checks" id="toc-summary-of-checks" class="nav-link" data-scroll-target="#summary-of-checks"><span class="header-section-number">7</span> Summary of checks</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DATRAS R Package — Data Checks and Processing</h1>
+<p class="subtitle lead">A review of <code>R/read_datras.R</code></p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 1, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Internal working document.</strong> This page reviews the <code>{DATRAS}</code> R package as prior art to inform IMBUS WP2 design. It is not an IMBUS deliverable and is not intended for external audiences.</p>
+</div>
+</div>
+</div>
+<section id="overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
+<p>The <code>{DATRAS}</code> R package (Kristensen &amp; Jardim) was developed independently of and prior to the IMBUS project. It is not an IMBUS deliverable. This page reviews it purely as prior art — to understand what data checks and transformations were already established, and to inform the design of WP2 standardisation work and the <code>{obus}</code> proof-of-concept package.</p>
+<p><code>{DATRAS}</code> provides tools for reading, subsetting, and analysing ICES DATRAS exchange data. Its core data structure is the <code>DATRASraw</code> object — a named list of three data frames (<code>CA</code>, <code>HH</code>, <code>HL</code>) with a shared <code>haul.id</code> factor linking records across tables.</p>
+<p>The notes below document the data checks, transformations, and integrity tests performed during reading and processing in <code>R/read_datras.R</code>.</p>
+<hr>
+</section>
+<section id="data-ingestion" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="data-ingestion"><span class="header-section-number">2</span> Data ingestion</h2>
+<p>Data enter via two routes:</p>
+<ul>
+<li><strong><code>getDatrasExchange()</code></strong> — downloads directly from the ICES web service using <code>icesDatras::getDATRAS()</code>.</li>
+<li><strong><code>readICES()</code> / <code>readExchange()</code></strong> — reads from a flat CSV exchange file (or a <code>.zip</code> of one).</li>
+</ul>
+<p>Both routes pass through the same normalisation pipeline described below.</p>
+<hr>
+</section>
+<section id="normalisation-pipeline" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="normalisation-pipeline"><span class="header-section-number">3</span> Normalisation pipeline</h2>
+<section id="missing-value-replacement-minus9tona" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="missing-value-replacement-minus9tona"><span class="header-section-number">3.1</span> 1. Missing value replacement (<code>minus9toNA</code>)</h3>
+<p>DATRAS uses <code>−9</code> as a sentinel for missing values in numeric fields. The function <code>minus9toNA()</code> scans every numeric column in all three tables and replaces exact occurrences of <code>−9</code> (within floating-point tolerance <code>1e-14</code>) with <code>NA</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>is9 <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">abs</span>(x[[i]][, ii] <span class="sc">+</span> <span class="dv">9</span>) <span class="sc">&lt;</span> <span class="fl">1e-14</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(is9) <span class="sc">&gt;</span> <span class="dv">0</span>) x[[i]][, ii][is9] <span class="ot">&lt;-</span> <span class="cn">NA</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The tolerance test rather than exact equality (<code>== -9</code>) guards against floating-point representation artefacts introduced during CSV parsing.</p>
+</div>
+</div>
+</section>
+<section id="column-name-harmonisation-renamedatras" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="column-name-harmonisation-renamedatras"><span class="header-section-number">3.2</span> 2. Column name harmonisation (<code>renameDATRAS</code>)</h3>
+<p><code>renameDATRAS()</code> applies two normalisations:</p>
+<ol type="1">
+<li><p><strong>Capitalise first letter</strong> of every column name (handles inconsistencies across exchange file versions).</p></li>
+<li><p><strong>Rename a fixed set of legacy columns</strong> to the names expected by the rest of the package:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Old name</th>
+<th>New name</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ValidAphiaID</code></td>
+<td><code>Valid_Aphia</code></td>
+<td>reversal of WoRMS naming</td>
+</tr>
+<tr class="even">
+<td><code>LngtClas</code></td>
+<td><code>LngtClas</code> (kept)</td>
+<td>exchange files occasionally use <code>LngtClass</code></td>
+</tr>
+<tr class="odd">
+<td><code>AgeRings</code></td>
+<td><code>Age</code></td>
+<td>CA field</td>
+</tr>
+<tr class="even">
+<td><code>CANoAtLngt</code></td>
+<td><code>NoAtALK</code></td>
+<td>CA count field</td>
+</tr>
+<tr class="odd">
+<td><code>NoAtLngt</code></td>
+<td><code>NoAtALK</code></td>
+<td>alternative CA name</td>
+</tr>
+</tbody>
+</table></li>
+</ol>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Relevance for {obus}/D2.2:</strong> The DATRAS package maps <code>ValidAphiaID → Valid_Aphia</code>, deliberately moving <em>away</em> from the WoRMS/ICES standard name. The {obus} package and D2.2 propose <code>ValidAphiaID</code> as the canonical name. These two packages are therefore inconsistent on this column name. See open issue in AGENTS.md.</p>
+</div>
+</div>
+</section>
+<section id="statrec-areacode-harmonisation" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="statrec-areacode-harmonisation"><span class="header-section-number">3.3</span> 3. <code>StatRec</code> / <code>AreaCode</code> harmonisation</h3>
+<p>The ICES rectangle field is named <code>StatRec</code> in HH but <code>AreaCode</code> in some older CA submissions. After renaming, if <code>CA$StatRec</code> is absent, it is aliased from <code>CA$AreaCode</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(d<span class="sc">$</span>CA) <span class="sc">&amp;&amp;</span> <span class="fu">is.null</span>(d<span class="sc">$</span>CA<span class="sc">$</span>StatRec)) d<span class="sc">$</span>CA<span class="sc">$</span>StatRec <span class="ot">&lt;-</span> d<span class="sc">$</span>CA<span class="sc">$</span>AreaCode</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="derived-variables-addextravariables" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="derived-variables-addextravariables"><span class="header-section-number">4</span> Derived variables (<code>addExtraVariables</code>)</h2>
+<section id="composite-haul-key-haul.id" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="composite-haul-key-haul.id"><span class="header-section-number">4.1</span> 4. Composite haul key (<code>haul.id</code>)</h3>
+<p>A character key is constructed and stored as a factor in all three tables:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>haul.id <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">paste</span>(Survey, Year, Quarter, Country, Ship, Gear, StNo, HaulNo, <span class="at">sep =</span> <span class="st">":"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This is the analogue of {obus}’s <code>.id</code> field, with <code>Ship</code> instead of <code>Platform</code> and <code>StNo</code> instead of <code>StationName</code>.</p>
+</section>
+<section id="length-class-to-centimetres-lngtcm" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="length-class-to-centimetres-lngtcm"><span class="header-section-number">4.2</span> 5. Length class to centimetres (<code>LngtCm</code>)</h3>
+<p>Length classes are converted to centimetres using a lookup on <code>LngtCode</code>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><code>LngtCode</code></th>
+<th>Multiplier (cm)</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>.</code></td>
+<td>0.1</td>
+<td>1 mm resolution (e.g.&nbsp;LngtClas 500 → 50.0 cm)</td>
+</tr>
+<tr class="even">
+<td><code>0</code></td>
+<td>0.1</td>
+<td>same</td>
+</tr>
+<tr class="odd">
+<td><code>1</code></td>
+<td>1</td>
+<td>1 cm resolution</td>
+</tr>
+<tr class="even">
+<td><code>2</code></td>
+<td>1</td>
+<td>1 cm resolution</td>
+</tr>
+<tr class="odd">
+<td><code>5</code></td>
+<td>1</td>
+<td>1 cm resolution (5 cm bins, but class = lower bound in cm)</td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>LngtCm <span class="ot">=</span> <span class="fu">lookup</span>(LngtCode, LngtCode2cm) <span class="sc">*</span> LngtClas</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Mixed <code>LngtCode</code> values within a dataset trigger a warning (“Mixed accuracies found”). NA values in <code>LngtCode</code> also warn and are assumed to take the maximum (worst) accuracy present.</p>
+</div>
+</div>
+</section>
+<section id="species-name-lookup" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="species-name-lookup"><span class="header-section-number">4.3</span> 6. Species name lookup</h3>
+<p>Scientific names are resolved from two internal lookup tables:</p>
+<ul>
+<li><strong><code>SpeciesTable.csv</code></strong> (TSN codes → scientific name): used when <code>SpecCodeType != "W"</code>.</li>
+<li><strong><code>WoRMSTable.csv</code></strong> (WoRMS AphiaID → <code>ScientificName_WoRMS</code>): used when <code>SpecCodeType == "W"</code>.</li>
+</ul>
+<p>The resulting <code>Species</code> column is a factor of scientific names, applied to both HL and CA.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The WoRMS table is a static file bundled with the package; it does not query the live WoRMS API and will drift out of date as taxonomy changes.</p>
+</div>
+</div>
+</section>
+<section id="count-reconstruction-count-in-hl" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="count-reconstruction-count-in-hl"><span class="header-section-number">4.4</span> 7. Count reconstruction (<code>Count</code> in HL)</h3>
+<p>A key correction: <code>HLNoAtLngt</code> as submitted to DATRAS is normalised differently depending on <code>DataType</code>. The package reverses this to recover the <strong>actual count observed in the haul</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>DataType</code></th>
+<th>Interpretation</th>
+<th>Correction applied</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>C</code></td>
+<td>Already standardised to 1 hour</td>
+<td><code>Count = HLNoAtLngt × (HaulDur / 60) × SubFactor</code></td>
+</tr>
+<tr class="even">
+<td><code>R</code></td>
+<td>Raw (not hour-standardised)</td>
+<td><code>Count = HLNoAtLngt × SubFactor</code></td>
+</tr>
+<tr class="odd">
+<td><code>S</code></td>
+<td>Treated as <code>R</code> (see note)</td>
+<td><code>Count = HLNoAtLngt × SubFactor</code></td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>multiplier1 <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(d3<span class="sc">$</span>DataType <span class="sc">==</span> <span class="st">"C"</span>, d3<span class="sc">$</span>HaulDur <span class="sc">/</span> <span class="dv">60</span>, <span class="dv">1</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>multiplier2 <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(d3<span class="sc">$</span>SubFactor), d3<span class="sc">$</span>SubFactor, <span class="dv">1</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>d3<span class="sc">$</span>Count <span class="ot">&lt;-</span> d3<span class="sc">$</span>HLNoAtLngt <span class="sc">*</span> multiplier1 <span class="sc">*</span> multiplier2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>DataType <code>S</code>:</strong> An ICES February 2012 clarification states that <code>S</code> submissions at that time were misinterpreted by data submitters and are functionally identical to <code>R</code>. The package therefore treats <code>S</code> as <code>R</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Relevance for D2.2 / {obus}:</strong> The {obus} equivalent is <code>dr_add_n_and_cpue()</code>, which computes <code>n_haul = NumberAtLength × SubsamplingFactor</code> at the individual record level and additionally produces <code>n_hour = n_haul / HaulDuration × 60</code> as an explicit second output. The two implementations differ in several ways described below.</p>
+</div>
+</div>
+</section>
+<section id="differences-between-datras-and-obus-for-datatype-r" class="level3" data-number="4.5">
+<h3 data-number="4.5" class="anchored" data-anchor-id="differences-between-datras-and-obus-for-datatype-r"><span class="header-section-number">4.5</span> Differences between <code>{DATRAS}</code> and <code>{obus}</code> for DataType <code>"R"</code></h3>
+<p>Both packages apply the subsampling factor record-by-record, so summed totals per haul agree under normal conditions. The differences arise in edge cases and in what the functions produce.</p>
+<section id="na-subfactor-subsamplingfactor" class="level4" data-number="4.5.1">
+<h4 data-number="4.5.1" class="anchored" data-anchor-id="na-subfactor-subsamplingfactor"><span class="header-section-number">4.5.1</span> NA <code>SubFactor</code> / <code>SubsamplingFactor</code></h4>
+<p>When the subsampling factor is missing, the two packages diverge immediately:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field values</th>
+<th>DATRAS <code>Count</code></th>
+<th>{obus} <code>n_haul</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>HLNoAtLngt = 10</code>, <code>SubFactor = 2</code></td>
+<td><code>10 × 2 = 20</code></td>
+<td><code>10 × 2 = 20</code></td>
+</tr>
+<tr class="even">
+<td><code>HLNoAtLngt = 10</code>, <code>SubFactor = NA</code></td>
+<td><code>10 × 1 = 10</code></td>
+<td><code>10 × 1 = 10</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both packages substitute 1 for a missing <code>SubFactor</code> / <code>SubsamplingFactor</code> when <code>DataType == "R"</code>, reflecting the assumption that absence of a subsampling factor implies the full catch was measured. <em>(The {obus} package was updated to match this behaviour in June 2026; prior to that it propagated <code>NA</code>.)</em></p>
+</section>
+<section id="datatype-p-pseudocategory-sampling" class="level4" data-number="4.5.2">
+<h4 data-number="4.5.2" class="anchored" data-anchor-id="datatype-p-pseudocategory-sampling"><span class="header-section-number">4.5.2</span> DataType <code>"P"</code> (pseudocategory sampling)</h4>
+<p>DataType <code>"P"</code> is not in the DATRAS branching logic. It falls through to the same arithmetic as <code>"R"</code> without any acknowledgement:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># DATRAS — "P" not mentioned; multiplier1 = 1 silently</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>multiplier1 <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(d3<span class="sc">$</span>DataType <span class="sc">==</span> <span class="st">"C"</span>, d3<span class="sc">$</span>HaulDur <span class="sc">/</span> <span class="dv">60</span>, <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># {obus} — "P" listed explicitly</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>n_haul <span class="ot">=</span> <span class="fu">case_when</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  DataType <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">~</span> NumberAtLength <span class="sc">*</span> SubsamplingFactor <span class="sc">*</span> HaulDuration <span class="sc">/</span> <span class="dv">60</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  DataType <span class="sc">==</span> <span class="st">"R"</span> <span class="sc">~</span> NumberAtLength <span class="sc">*</span> SubsamplingFactor,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  DataType <span class="sc">==</span> <span class="st">"P"</span> <span class="sc">~</span> NumberAtLength <span class="sc">*</span> SubsamplingFactor,   <span class="co"># explicit</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  DataType <span class="sc">==</span> <span class="st">"S"</span> <span class="sc">~</span> NumberAtLength <span class="sc">*</span> SubsamplingFactor,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  DataType <span class="sc">==</span> <span class="st">"-9"</span> <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">is.na</span>(DataType)  <span class="sc">~</span> <span class="cn">NA</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The computed value is numerically identical for <code>"P"</code>, but {obus} makes the intent explicit and correctly returns <code>NA</code> for <code>"-9"</code> and unknown DataTypes rather than silently computing a number.</p>
+</section>
+<section id="invalid-or-missing-datatype" class="level4" data-number="4.5.3">
+<h4 data-number="4.5.3" class="anchored" data-anchor-id="invalid-or-missing-datatype"><span class="header-section-number">4.5.3</span> Invalid or missing <code>DataType</code></h4>
+<p><code>DataType = "-9"</code> is a character string and is <strong>not</strong> caught by <code>minus9toNA()</code> (which only processes numeric columns). It therefore survives into the DATRAS count calculation, where <code>ifelse(DataType == "C", ...)</code> evaluates to <code>FALSE</code> and <code>multiplier1 = 1</code> — a number is produced rather than flagged as invalid:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>DataType</code></th>
+<th>DATRAS <code>Count</code></th>
+<th>{obus} <code>n_haul</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"R"</code></td>
+<td><code>HLNoAtLngt × SubFactor</code></td>
+<td><code>NumberAtLength × SubsamplingFactor</code></td>
+</tr>
+<tr class="even">
+<td><code>"P"</code></td>
+<td><code>HLNoAtLngt × SubFactor</code> (silent fallthrough)</td>
+<td><code>NumberAtLength × SubsamplingFactor</code></td>
+</tr>
+<tr class="odd">
+<td><code>"-9"</code></td>
+<td><code>HLNoAtLngt × SubFactor</code> ← not caught</td>
+<td><code>NA</code></td>
+</tr>
+<tr class="even">
+<td><code>NA</code></td>
+<td><code>HLNoAtLngt × SubFactor</code> ← not caught</td>
+<td><code>NA</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="n_hour-not-produced-by-datras" class="level4" data-number="4.5.4">
+<h4 data-number="4.5.4" class="anchored" data-anchor-id="n_hour-not-produced-by-datras"><span class="header-section-number">4.5.4</span> <code>n_hour</code> not produced by <code>{DATRAS}</code></h4>
+<p>The DATRAS package produces only <code>Count</code> (estimated numbers in the haul). Per-hour CPUE is left to the user to compute downstream. {obus} makes it a first-class output:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># {obus} always produces both</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>n_haul <span class="ot">=</span> NumberAtLength <span class="sc">*</span> SubsamplingFactor          <span class="co"># numbers in haul</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>n_hour <span class="ot">=</span> n_haul <span class="sc">/</span> HaulDuration <span class="sc">*</span> <span class="dv">60</span>                 <span class="co"># numbers per hour</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="size-stratified-subsampling-a-note-on-aggregation" class="level4" data-number="4.5.5">
+<h4 data-number="4.5.5" class="anchored" data-anchor-id="size-stratified-subsampling-a-note-on-aggregation"><span class="header-section-number">4.5.5</span> Size-stratified subsampling — a note on aggregation</h4>
+<p>When <code>SubFactor</code> varies within a haul × species group (size-stratified subsampling, documented in D2.2 for GB-SCT and DK under DataType <code>"P"</code> and <code>"R"</code>), <strong>both packages compute correctly at the record level</strong>. The risk is not in the per-row multiplication but in any downstream workflow that assumes a single uniform <code>SubFactor</code> per group — for example, extracting <code>SubFactor</code> from the first record and multiplying by a summed <code>HLNoAtLngt</code>. Neither package protects against that misuse, but it is a more common error pattern with the DATRAS <code>Count</code> column (which masks the original <code>HLNoAtLngt</code> and <code>SubFactor</code> individually) than with {obus}, where both <code>NumberAtLength</code> and <code>SubsamplingFactor</code> remain visible.</p>
+</section>
+</section>
+<section id="temporal-and-spatial-convenience-variables" class="level3" data-number="4.6">
+<h3 data-number="4.6" class="anchored" data-anchor-id="temporal-and-spatial-convenience-variables"><span class="header-section-number">4.6</span> 8. Temporal and spatial convenience variables</h3>
+<p>Added to HH:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Derivation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>abstime</code></td>
+<td><code>Year + (Month-1)/12 + (Day-1)/365</code> (decimal year)</td>
+</tr>
+<tr class="even">
+<td><code>timeOfYear</code></td>
+<td><code>(Month-1)/12 + (Day-1)/365</code> (seasonal position)</td>
+</tr>
+<tr class="odd">
+<td><code>TimeShotHour</code></td>
+<td><code>floor(TimeShot/100) + (TimeShot %% 100)/60</code> (decimal hour)</td>
+</tr>
+<tr class="even">
+<td><code>lon</code></td>
+<td>alias of <code>ShootLong</code></td>
+</tr>
+<tr class="odd">
+<td><code>lat</code></td>
+<td>alias of <code>ShootLat</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="roundfish-area" class="level3" data-number="4.7">
+<h3 data-number="4.7" class="anchored" data-anchor-id="roundfish-area"><span class="header-section-number">4.7</span> 9. Roundfish area</h3>
+<p>A static lookup table (<code>roundfish.csv</code>) maps ICES rectangle codes (<code>StatRec</code>) to North Sea roundfish area numbers, added as the factor <code>Roundfish</code> in HH.</p>
+<hr>
+</section>
+</section>
+<section id="integrity-checks" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="integrity-checks"><span class="header-section-number">5</span> Integrity checks</h2>
+<section id="duplicate-rows-in-hh-hard-stop" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="duplicate-rows-in-hh-hard-stop"><span class="header-section-number">5.1</span> 10. Duplicate rows in HH (hard stop)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dups <span class="ot">&lt;-</span> <span class="fu">duplicated</span>(d2)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">any</span>(dups)) <span class="fu">stop</span>(<span class="st">"Duplicated rows found in HH data - data file is corrupt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Any duplicated row in the Haul Header table causes an immediate error. This is the strictest check in the pipeline.</p>
+</section>
+<section id="hauls-without-length-records-warning" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="hauls-without-length-records-warning"><span class="header-section-number">5.2</span> 11. Hauls without length records (warning)</h3>
+<p>After constructing <code>haul.id</code>, HH hauls that have no matching HL records are identified and printed as a warning:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>diff <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">levels</span>(d2<span class="sc">$</span>haul.id), <span class="fu">levels</span>(d3<span class="sc">$</span>haul.id))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(diff) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"========= WARNING: ============</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Hauls without length info will be interpreted as empty hauls:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(diff)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>These hauls are retained in HH and treated as zero-catch hauls — consistent with the “zero-station” concept used in <code>dr_cpue_length()</code>.</p>
+</section>
+<section id="hl-haul-level-consistency-hard-stop" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="hl-haul-level-consistency-hard-stop"><span class="header-section-number">5.3</span> 12. HL haul level consistency (hard stop)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nlevels</span>(d3<span class="sc">$</span>haul.id) <span class="sc">==</span> <span class="fu">nrow</span>(d2))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>After alignment, the number of distinct haul levels in HL must equal the number of rows in HH. Failure would indicate a mismatch between the exchange tables.</p>
+</section>
+<section id="csv-file-row-count-integrity-readices" class="level3" data-number="5.4">
+<h3 data-number="5.4" class="anchored" data-anchor-id="csv-file-row-count-integrity-readices"><span class="header-section-number">5.4</span> 13. CSV file row-count integrity (<code>readICES</code>)</h3>
+<p>When reading from a flat CSV exchange file, the function counts header lines and data rows and checks they account for every line in the file:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">sum</span>(<span class="fu">sapply</span>(d, nrow)) <span class="sc">+</span> <span class="fu">length</span>(i) <span class="sc">!=</span> <span class="fu">length</span>(lines))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"csv file appears to be corrupt."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="unique-haul-ids-when-combining-datasets-c.datrasraw" class="level3" data-number="5.5">
+<h3 data-number="5.5" class="anchored" data-anchor-id="unique-haul-ids-when-combining-datasets-c.datrasraw"><span class="header-section-number">5.5</span> 14. Unique haul IDs when combining datasets (<code>c.DATRASraw</code>)</h3>
+<p>When merging two or more <code>DATRASraw</code> objects with <code>c()</code>, a pre-flight check ensures no <code>haul.id</code> appears in more than one object:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>testUniqueHaulID <span class="ot">&lt;-</span> <span class="cf">function</span>(args) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">lapply</span>(args, <span class="cf">function</span>(x) <span class="fu">levels</span>(x<span class="sc">$</span>haul.id))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(<span class="fu">unique</span>(<span class="fu">unlist</span>(x))) <span class="sc">!=</span> <span class="fu">length</span>(<span class="fu">unlist</span>(x)))</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">stop</span>(<span class="st">"Haul ids must be unique."</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="missing-haul-ids-in-ca-fixmissinghaulids" class="level3" data-number="5.6">
+<h3 data-number="5.6" class="anchored" data-anchor-id="missing-haul-ids-in-ca-fixmissinghaulids"><span class="header-section-number">5.6</span> 15. Missing haul IDs in CA (<code>fixMissingHaulIds</code>)</h3>
+<p>Older DATRAS CA submissions sometimes omit the full haul key. The package attempts to impute missing <code>haul.id</code> values by fuzzy-matching on (<code>StatRec</code>, <code>Year</code>, <code>Quarter</code>, <code>Country</code>, <code>Ship</code>).</p>
+<p>Two modes controlled by <code>strict</code>:</p>
+<ul>
+<li><strong><code>strict = TRUE</code></strong> (default): only uniquely matched CA records get a haul ID; ambiguous matches are left as <code>NA</code> and warned about.</li>
+<li><strong><code>strict = FALSE</code></strong>: ambiguous matches receive a randomly chosen candidate haul; a fallback on <code>Roundfish</code> area is attempted for still-unmatched records.</li>
+</ul>
+<p>A warning reports counts: total missing, uniquely matched, randomly assigned, and permanently unmatched.</p>
+<hr>
+</section>
+</section>
+<section id="downstream-checks-in-addspectrum" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="downstream-checks-in-addspectrum"><span class="header-section-number">6</span> Downstream checks in <code>addSpectrum</code></h2>
+<p><code>addSpectrum()</code> (used to aggregate HL into per-ICES-square length frequency matrices) performs additional checks:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Multiple species in HL</td>
+<td>Warning (“spectrum will contain all species”)</td>
+</tr>
+<tr class="even">
+<td><code>NA</code> in HH <code>DataType</code></td>
+<td>Warning + those hauls removed before spectrum calculation</td>
+</tr>
+<tr class="odd">
+<td><code>DataType == "S"</code> in HL</td>
+<td>Warning (“will be interpreted as DataType <code>R</code>”)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="summary-of-checks" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="summary-of-checks"><span class="header-section-number">7</span> Summary of checks</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Check</th>
+<th>Location</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Replace <code>-9</code> with <code>NA</code></td>
+<td><code>minus9toNA</code></td>
+<td>Transform</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Capitalise / rename columns</td>
+<td><code>renameDATRAS</code></td>
+<td>Transform</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><code>AreaCode</code> → <code>StatRec</code> in CA</td>
+<td><code>addExtraVariables</code></td>
+<td>Transform</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Composite <code>haul.id</code> constructed</td>
+<td><code>addExtraVariables</code></td>
+<td>Transform</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><code>LngtCm</code> derived; mixed <code>LngtCode</code></td>
+<td><code>addExtraVariables</code></td>
+<td>Transform / Warning</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Species names from TSN/WoRMS lookup</td>
+<td><code>addExtraVariables</code></td>
+<td>Transform</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Count corrected for DataType &amp; SubFactor</td>
+<td><code>addExtraVariables</code></td>
+<td>Transform</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Temporal/spatial convenience fields</td>
+<td><code>addExtraVariables</code></td>
+<td>Transform</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Roundfish area lookup</td>
+<td><code>addExtraVariables</code></td>
+<td>Transform</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Duplicated HH rows</td>
+<td><code>addExtraVariables</code></td>
+<td><strong>Error</strong></td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Hauls without HL records</td>
+<td><code>addExtraVariables</code></td>
+<td>Warning</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>HL haul level count vs HH rows</td>
+<td><code>addExtraVariables</code></td>
+<td><strong>Error</strong></td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>CSV row-count integrity</td>
+<td><code>readICES</code></td>
+<td><strong>Error</strong></td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Unique haul IDs across combined objects</td>
+<td><code>c.DATRASraw</code></td>
+<td><strong>Error</strong></td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td>Missing CA haul IDs imputed</td>
+<td><code>fixMissingHaulIds</code></td>
+<td>Transform / Warning</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>Multiple species in spectrum</td>
+<td><code>addSpectrum</code></td>
+<td>Warning</td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td><code>NA</code> DataType in spectrum</td>
+<td><code>addSpectrum</code></td>
+<td>Warning + removal</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>DataType <code>S</code> in spectrum</td>
+<td><code>addSpectrum</code></td>
+<td>Warning</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

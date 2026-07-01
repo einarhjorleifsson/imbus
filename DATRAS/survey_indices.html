@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Survey Abundance Indices — Calculation Procedures – IMBUS</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">IMBUS</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../IMBUS/IMBUS_proposal_summary.html">
+ <span class="dropdown-text">Project Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../IMBUS/wp2_progress_review.html">
+ <span class="dropdown-text">WP2 Progress Review</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deliverables" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deliverables</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deliverables">    
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.2_data_formats_metadata.html">
+ <span class="dropdown-text">D2.2 — Data Formats and Metadata</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.3_imbus_product_specification.html">
+ <span class="dropdown-text">D2.3 — IMBUS Product Specification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-datras" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">DATRAS</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-datras">    
+        <li>
+    <a class="dropdown-item" href="../DATRAS/reporting_format.html">
+ <span class="dropdown-text">Reporting Format</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_FAQ.html">
+ <span class="dropdown-text">DATRAS FAQ</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_Technical_Reference.html">
+ <span class="dropdown-text">DATRAS Technical Reference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/survey_indices.html">
+ <span class="dropdown-text">Survey Abundance Indices</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpue_derivation.html">
+ <span class="dropdown-text">CPUE derivation: CPUEL vs HL</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpuel_by_length.html">
+ <span class="dropdown-text">CPUEL emulation and validation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/issues.html">
+ <span class="dropdown-text">Data issues and QC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/sampling_protocol.html">
+ <span class="dropdown-text">Sampling protocols</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-meetings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Meetings</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-meetings">    
+        <li>
+    <a class="dropdown-item" href="../meetings/20260601_WP2-WP5.html">
+ <span class="dropdown-text">2026-06-01 WP2–WP5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-projects" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-projects">    
+        <li>
+    <a class="dropdown-item" href="../other_projects/DATRAS_package_checks.html">
+ <span class="dropdown-text">DATRAS R package — data checks</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/einarhjorleifsson/imbus"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#ns-ibts-indices-calculation-procedure" id="toc-ns-ibts-indices-calculation-procedure" class="nav-link active" data-scroll-target="#ns-ibts-indices-calculation-procedure"><span class="header-section-number">1</span> NS-IBTS Indices — Calculation Procedure</a>
+  <ul class="collapse">
+  <li><a href="#general-rules" id="toc-general-rules" class="nav-link" data-scroll-target="#general-rules"><span class="header-section-number">1.1</span> General rules</a></li>
+  <li><a href="#calculation-steps" id="toc-calculation-steps" class="nav-link" data-scroll-target="#calculation-steps"><span class="header-section-number">1.2</span> Calculation steps</a></li>
+  <li><a href="#index-area-and-species-parameters-annex-1" id="toc-index-area-and-species-parameters-annex-1" class="nav-link" data-scroll-target="#index-area-and-species-parameters-annex-1"><span class="header-section-number">1.3</span> Index area and species parameters (Annex 1)</a></li>
+  <li><a href="#alk-supplementation-annex-2" id="toc-alk-supplementation-annex-2" class="nav-link" data-scroll-target="#alk-supplementation-annex-2"><span class="header-section-number">1.4</span> ALK supplementation (Annex 2)</a></li>
+  <li><a href="#statistical-rectangle-depth-area-weights-annex-3" id="toc-statistical-rectangle-depth-area-weights-annex-3" class="nav-link" data-scroll-target="#statistical-rectangle-depth-area-weights-annex-3"><span class="header-section-number">1.5</span> Statistical rectangle depth-area weights (Annex 3)</a></li>
+  <li><a href="#aggregation-notation-annex-5" id="toc-aggregation-notation-annex-5" class="nav-link" data-scroll-target="#aggregation-notation-annex-5"><span class="header-section-number">1.6</span> Aggregation notation (Annex 5)</a></li>
+  </ul></li>
+  <li><a href="#bits-indices-calculation-procedure" id="toc-bits-indices-calculation-procedure" class="nav-link" data-scroll-target="#bits-indices-calculation-procedure"><span class="header-section-number">2</span> BITS Indices — Calculation Procedure</a>
+  <ul class="collapse">
+  <li><a href="#depth-layers-used-per-sd" id="toc-depth-layers-used-per-sd" class="nav-link" data-scroll-target="#depth-layers-used-per-sd"><span class="header-section-number">2.1</span> Depth layers used per SD</a></li>
+  <li><a href="#calculation-steps-6-step" id="toc-calculation-steps-6-step" class="nav-link" data-scroll-target="#calculation-steps-6-step"><span class="header-section-number">2.2</span> Calculation steps (6-step)</a></li>
+  <li><a href="#bits-area-weights" id="toc-bits-area-weights" class="nav-link" data-scroll-target="#bits-area-weights"><span class="header-section-number">2.3</span> BITS area weights</a></li>
+  <li><a href="#bits-gear-conversion-factors-cod-only" id="toc-bits-gear-conversion-factors-cod-only" class="nav-link" data-scroll-target="#bits-gear-conversion-factors-cod-only"><span class="header-section-number">2.4</span> BITS gear conversion factors (cod only)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Survey Abundance Indices — Calculation Procedures</h1>
+<p class="subtitle lead">NS-IBTS and BITS step-by-step procedures, parameter tables, and area weights</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">July 1, 2026</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><em>Extracted from ICES Data Centre DATRAS Procedure Documents: NS-IBTS v1.2 (2022) and BITS v1.1 (2013), both in <code>docs_external/DATRAS_documentation/</code>.</em></p>
+<p>Survey abundance indices (CPUEA, IDX) are computed per <strong>index area</strong> defined by each expert group. The general pipeline is: construct an Age-Length Key (ALK) from CA records → derive CPUE-by-length-class from HL records → apply ALK to get CPUE-by-age → spatially aggregate with optional area weighting.</p>
+<p>The two surveys differ mainly in their spatial stratification unit and haul validity criteria:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 52%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>NS-IBTS</th>
+<th>BITS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Spatial unit</td>
+<td>Statistical rectangle</td>
+<td>ICES Subdivision × depth layer</td>
+</tr>
+<tr class="even">
+<td>Valid hauls</td>
+<td><code>HaulValidity == "V"</code> only</td>
+<td><code>"V"</code> and <code>"N"</code></td>
+</tr>
+<tr class="odd">
+<td>Gear standardisation</td>
+<td>None</td>
+<td>Cod CPUE standardised to large TVL trawl</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<section id="ns-ibts-indices-calculation-procedure" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> NS-IBTS Indices — Calculation Procedure</h1>
+<p><em>Source: ICES Data Centre DATRAS Procedure Document v1.2 (2022), “NS-IBTS indices calculation procedure”</em></p>
+<p>Indices are calculated per <strong>index area</strong> (species-specific). For most species the index is the mean numbers/hour at age per statistical rectangle, averaged over rectangles in the index area. For <strong>herring, sprat, and saithe</strong> the rectangle mean is <strong>weighted</strong> by the proportion of the rectangle’s area with water depth 10–200 m (NS) or 10–250 m (Skagerrak/Kattegat, RFA 8–9).</p>
+<section id="general-rules" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="general-rules"><span class="header-section-number">1.1</span> General rules</h2>
+<ul>
+<li>Only valid hauls are used.</li>
+<li>When ALK observations are sparse, data are borrowed from neighbouring roundfish areas (RFA); see ALK supplementation below.</li>
+<li>For <strong>herring and sprat</strong>, only <strong>day hauls</strong> are used (based on <code>DayNight</code> code).</li>
+<li><strong>Herring in RFA 8 and 9, Q1</strong>: age ≥ 2 CPUE is set to zero (assumed spring spawners).</li>
+<li>Two extra indices exist for Downs herring juveniles (length ≤ 12.5 cm): <code>NS_Her1to9</code> (standard) and <code>NS_Her1to7</code> (CPUE in RFA 8–9 set to zero).</li>
+</ul>
+</section>
+<section id="calculation-steps" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="calculation-steps"><span class="header-section-number">1.2</span> Calculation steps</h2>
+<p><strong>Step I — ALK by RFA</strong> (from CA records)</p>
+<ol type="1">
+<li>Extract raw age-at-length data for species + index area.</li>
+<li>Build ALK by roundfish area (RFA), in 1 cm classes (0.5 cm for herring/sprat).</li>
+<li>Fill empty RFAs from neighbouring areas (see ALK supplementation).</li>
+<li>Aggregate to plus group: ages ≥ plus group age are summed into the plus group cell.</li>
+</ol>
+<p><strong>Step II — CPUE per haul per length class</strong> (from HL records)</p>
+<ol type="1">
+<li>Apply species recording code rules; select only valid hauls.</li>
+<li>Apply day/night filter (herring/sprat: day hauls only).</li>
+<li>Count valid hauls per statistical rectangle.</li>
+<li>Add zero rows for absent length classes.</li>
+<li>Raise to total numbers: <code>NumberAtLength × SubsamplingFactor</code>.</li>
+<li>Sum over <code>SpeciesCategory</code> and <code>SpeciesSex</code>.</li>
+<li>If <code>DataType ≠ C</code>: <code>NoAtHaul = count × (60 / HaulDuration)</code> → convert to per-hour.</li>
+<li>Sum CPUE per haul per length per statistical rectangle (per RFA).</li>
+</ol>
+<p><strong>Step III — Fill ALK for all length classes (ALKRFA)</strong></p>
+<ul>
+<li>Length class &lt; minimum ALK length → age = 1 (Q1) or age = 0 (Q2–4).</li>
+<li>Minimum &lt; length class &lt; maximum: borrow from nearest ALK entry (average if equidistant).</li>
+<li>Length class &gt; maximum ALK length → assign to plus group.</li>
+<li>Merge filled ALK with CPUE by year, quarter, length class.</li>
+</ul>
+<p><strong>Step IV — CPUE at age by length class (CPUEALK)</strong></p>
+<ol type="1">
+<li>Merge ALKRFA and CPUE by year, quarter, RFA, length class.</li>
+<li>Sum numbers at length per age per statistical rectangle.</li>
+<li>Sum valid hauls per statistical rectangle.</li>
+<li>Mean CPUE at age per statistical rectangle = (2) / (3).</li>
+</ol>
+<p><strong>Step IVa — Weighted CPUE</strong> (herring, sprat, saithe only)</p>
+<p>As step IV but hauls weighted by depth-stratum area weight of the rectangle (Annex 3 weights). Weighted mean CPUE = Σ(numbers at age) / Σ(weights of valid hauls).</p>
+<p><strong>Step V — Index</strong></p>
+<ol type="1">
+<li>Sum CPUE per age over all fished rectangles in the index area.</li>
+<li>Count number of fished rectangles in the index area.</li>
+<li>Index = (1) / (2) → mean numbers/hour/rectangle for the index area.</li>
+</ol>
+</section>
+<section id="index-area-and-species-parameters-annex-1" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="index-area-and-species-parameters-annex-1"><span class="header-section-number">1.3</span> Index area and species parameters (Annex 1)</h2>
+<p>Parameters governing ALK filling, length filtering, and weighting, by index area and quarter.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Index area</th>
+<th>Q</th>
+<th>Max age</th>
+<th>Min length (mm)</th>
+<th>Max length (mm)</th>
+<th>ALK level</th>
+<th>CPUE level</th>
+<th>Length class</th>
+<th>Area weighted</th>
+<th>Day only</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NS_Cod</td>
+<td>1</td>
+<td>6</td>
+<td>150</td>
+<td>900</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_Cod</td>
+<td>2</td>
+<td>6</td>
+<td>70</td>
+<td>1100</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_Cod</td>
+<td>3</td>
+<td>6</td>
+<td>70</td>
+<td>1100</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_Cod</td>
+<td>4</td>
+<td>6</td>
+<td>70</td>
+<td>1100</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_CodCat</td>
+<td>1</td>
+<td>6</td>
+<td>150</td>
+<td>900</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_CodCat</td>
+<td>3</td>
+<td>6</td>
+<td>70</td>
+<td>1100</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_Haddock</td>
+<td>1</td>
+<td>6</td>
+<td>150</td>
+<td>600</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_Haddock</td>
+<td>2</td>
+<td>6</td>
+<td>100</td>
+<td>700</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_Haddock</td>
+<td>3</td>
+<td>6</td>
+<td>100</td>
+<td>700</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_Haddock</td>
+<td>4</td>
+<td>6</td>
+<td>100</td>
+<td>700</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_Herring</td>
+<td>1</td>
+<td>5</td>
+<td>150</td>
+<td>320</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>NS_Herring</td>
+<td>2</td>
+<td>5</td>
+<td>60</td>
+<td>340</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>NS_Herring</td>
+<td>3</td>
+<td>5</td>
+<td>60</td>
+<td>340</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>NS_Herring</td>
+<td>4</td>
+<td>5</td>
+<td>60</td>
+<td>340</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>NS_Her1to9</td>
+<td>1</td>
+<td>5</td>
+<td>60</td>
+<td>125</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>NS_Her1to7</td>
+<td>1</td>
+<td>5</td>
+<td>60</td>
+<td>125</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>NS_Mackerel</td>
+<td>1–4</td>
+<td>6</td>
+<td>50–200</td>
+<td>450</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_NorwayPout</td>
+<td>1–4</td>
+<td>6</td>
+<td>50–100</td>
+<td>250</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_Plaice IIIa</td>
+<td>1,3</td>
+<td>10</td>
+<td>40</td>
+<td>600</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>NS_Saithe</td>
+<td>1–4</td>
+<td>6</td>
+<td>70–250</td>
+<td>900–1200</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>NS_Sprat IIIa</td>
+<td>1,3</td>
+<td>6</td>
+<td>70</td>
+<td>160</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>NS_Sprat IV</td>
+<td>1–4</td>
+<td>6</td>
+<td>45</td>
+<td>160</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>0.5 cm</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>NS_Whiting</td>
+<td>1–4</td>
+<td>6</td>
+<td>80–150</td>
+<td>450–800</td>
+<td>RFarea</td>
+<td>Stat rect</td>
+<td>1 cm</td>
+<td>no</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="alk-supplementation-annex-2" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="alk-supplementation-annex-2"><span class="header-section-number">1.4</span> ALK supplementation (Annex 2)</h2>
+<p>From 2021, automated supplementation follows: <a href="https://www.ices.dk/data/Documents/DATRAS/ALK_automated_substitution.pdf">ICES ALK automated substitution procedure</a> — code at <a href="https://github.com/ices-tools-prod/DATRAS/tree/master/ALK_substitution">github.com/ices-tools-prod/DATRAS/tree/master/ALK_substitution</a>.</p>
+<p>Key change from the old manual procedure: borrowing is done <strong>per age class</strong>, not per whole area. Rule: for each species, area, and age class, borrow from neighbouring RFAs in order until ≥ 25 otoliths. RFA 10 was added in 2009.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>RFA</th>
+<th>Borrows from (in order)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>2, 3</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>1, 3, 4, 6, 7</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>1, 2, 4</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>2, 3, 5, 6</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>4, 6, 2</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>2, 4, 5, 7</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>2, 6</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>9, 7, 6</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>8, 7, 2</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>5, 6, 4</td>
+</tr>
+</tbody>
+</table>
+<p>For <strong>saithe and mackerel</strong>, age data are merged across quarters and applied to all RFAs (too few otoliths for per-RFA ALK).</p>
+</section>
+<section id="statistical-rectangle-depth-area-weights-annex-3" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="statistical-rectangle-depth-area-weights-annex-3"><span class="header-section-number">1.5</span> Statistical rectangle depth-area weights (Annex 3)</h2>
+<p>Weights = proportion of rectangle area with water depth 10–200 m (NS) or 10–250 m (Skagerrak/Kattegat). Used for herring, sprat, and saithe indices only. A weight of <code>1</code> means the full rectangle is within the depth range; <code>0</code> means none of it is.</p>
+<details>
+<summary>
+Full weight table (~200 rectangles — click to expand)
+</summary>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>StatRec</th>
+<th>Weight</th>
+<th>StatRec</th>
+<th>Weight</th>
+<th>StatRec</th>
+<th>Weight</th>
+<th>StatRec</th>
+<th>Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>31F1</td>
+<td>0.60</td>
+<td>38F0</td>
+<td>1.00</td>
+<td>41F6</td>
+<td>1.00</td>
+<td>44F1</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>31F2</td>
+<td>0.80</td>
+<td>38F1</td>
+<td>1.00</td>
+<td>41F7</td>
+<td>1.00</td>
+<td>44F2</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>31F3</td>
+<td>0.05</td>
+<td>38F2</td>
+<td>1.00</td>
+<td>41F8</td>
+<td>0.10</td>
+<td>44F3</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>32F1</td>
+<td>0.80</td>
+<td>38F3</td>
+<td>1.00</td>
+<td>41G0</td>
+<td>0.20</td>
+<td>44F4</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>32F2</td>
+<td>1.00</td>
+<td>38F4</td>
+<td>1.00</td>
+<td>41G1</td>
+<td>0.97</td>
+<td>44F5</td>
+<td>0.90</td>
+</tr>
+<tr class="even">
+<td>32F3</td>
+<td>0.80</td>
+<td>38F5</td>
+<td>1.00</td>
+<td>41G2</td>
+<td>0.53</td>
+<td>44F8</td>
+<td>0.25</td>
+</tr>
+<tr class="odd">
+<td>32F4</td>
+<td>0.01</td>
+<td>38F6</td>
+<td>1.00</td>
+<td>42E7</td>
+<td>0.40</td>
+<td>44F9</td>
+<td>0.80</td>
+</tr>
+<tr class="even">
+<td>33F1</td>
+<td>0.30</td>
+<td>38F7</td>
+<td>1.00</td>
+<td>42E8</td>
+<td>1.00</td>
+<td>44G0</td>
+<td>0.94</td>
+</tr>
+<tr class="odd">
+<td>33F2</td>
+<td>1.00</td>
+<td>38F8</td>
+<td>0.30</td>
+<td>42E9</td>
+<td>1.00</td>
+<td>44G1</td>
+<td>0.60</td>
+</tr>
+<tr class="even">
+<td>33F3</td>
+<td>1.00</td>
+<td>39E8</td>
+<td>0.50</td>
+<td>42F0</td>
+<td>1.00</td>
+<td>45E6</td>
+<td>0.40</td>
+</tr>
+<tr class="odd">
+<td>33F4</td>
+<td>0.40</td>
+<td>39E9</td>
+<td>1.00</td>
+<td>42F1</td>
+<td>1.00</td>
+<td>45E7</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>34F1</td>
+<td>0.40</td>
+<td>39F0</td>
+<td>1.00</td>
+<td>42F2</td>
+<td>1.00</td>
+<td>45E8</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>34F2</td>
+<td>1.00</td>
+<td>39F1</td>
+<td>1.00</td>
+<td>42F3</td>
+<td>1.00</td>
+<td>45E9</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>34F3</td>
+<td>1.00</td>
+<td>39F2</td>
+<td>1.00</td>
+<td>42F4</td>
+<td>1.00</td>
+<td>45F0</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>34F4</td>
+<td>0.60</td>
+<td>39F3</td>
+<td>1.00</td>
+<td>42F5</td>
+<td>1.00</td>
+<td>45F1</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>35F0</td>
+<td>0.80</td>
+<td>39F4</td>
+<td>1.00</td>
+<td>42F6</td>
+<td>1.00</td>
+<td>45F2</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>35F1</td>
+<td>1.00</td>
+<td>39F5</td>
+<td>1.00</td>
+<td>42F7</td>
+<td>1.00</td>
+<td>45F3</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>35F2</td>
+<td>1.00</td>
+<td>39F6</td>
+<td>1.00</td>
+<td>42F8</td>
+<td>0.20</td>
+<td>45F4</td>
+<td>0.60</td>
+</tr>
+<tr class="odd">
+<td>35F3</td>
+<td>1.00</td>
+<td>39F7</td>
+<td>1.00</td>
+<td>42G0</td>
+<td>0.32</td>
+<td>45F8</td>
+<td>0.30</td>
+</tr>
+<tr class="even">
+<td>35F4</td>
+<td>0.90</td>
+<td>39F8</td>
+<td>0.40</td>
+<td>42G1</td>
+<td>0.89</td>
+<td>45F9</td>
+<td>0.02</td>
+</tr>
+<tr class="odd">
+<td>35F5</td>
+<td>0.10</td>
+<td>40E7</td>
+<td>0.04</td>
+<td>42G2</td>
+<td>0.64</td>
+<td>45G0</td>
+<td>0.24</td>
+</tr>
+<tr class="even">
+<td>36F0</td>
+<td>0.90</td>
+<td>40E8</td>
+<td>0.80</td>
+<td>43E7</td>
+<td>0.03</td>
+<td>45G1</td>
+<td>0.55</td>
+</tr>
+<tr class="odd">
+<td>36F1</td>
+<td>1.00</td>
+<td>40E9</td>
+<td>1.00</td>
+<td>43E8</td>
+<td>0.90</td>
+<td>46E6</td>
+<td>0.40</td>
+</tr>
+<tr class="even">
+<td>36F2</td>
+<td>1.00</td>
+<td>40F0</td>
+<td>1.00</td>
+<td>43E9</td>
+<td>1.00</td>
+<td>46E7</td>
+<td>0.90</td>
+</tr>
+<tr class="odd">
+<td>36F3</td>
+<td>1.00</td>
+<td>40F1</td>
+<td>1.00</td>
+<td>43F0</td>
+<td>1.00</td>
+<td>46E8</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>36F4</td>
+<td>1.00</td>
+<td>40F2</td>
+<td>1.00</td>
+<td>43F1</td>
+<td>1.00</td>
+<td>46E9</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>36F5</td>
+<td>1.00</td>
+<td>40F3</td>
+<td>1.00</td>
+<td>43F2</td>
+<td>1.00</td>
+<td>46F0</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>36F6</td>
+<td>0.90</td>
+<td>40F4</td>
+<td>1.00</td>
+<td>43F3</td>
+<td>1.00</td>
+<td>46F1</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>36F7</td>
+<td>0.40</td>
+<td>40F5</td>
+<td>1.00</td>
+<td>43F4</td>
+<td>1.00</td>
+<td>46F2</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>36F8</td>
+<td>0.50</td>
+<td>40F6</td>
+<td>1.00</td>
+<td>43F5</td>
+<td>1.00</td>
+<td>46F3</td>
+<td>0.80</td>
+</tr>
+<tr class="odd">
+<td>37E9</td>
+<td>0.20</td>
+<td>40F7</td>
+<td>1.00</td>
+<td>43F6</td>
+<td>1.00</td>
+<td>46F9</td>
+<td>0.30</td>
+</tr>
+<tr class="even">
+<td>37F0</td>
+<td>1.00</td>
+<td>40F8</td>
+<td>0.10</td>
+<td>43F7</td>
+<td>1.00</td>
+<td>46G0</td>
+<td>0.52</td>
+</tr>
+<tr class="odd">
+<td>37F1</td>
+<td>1.00</td>
+<td>41E6</td>
+<td>0.03</td>
+<td>43F8</td>
+<td>0.94</td>
+<td>46G1</td>
+<td>0.20</td>
+</tr>
+<tr class="even">
+<td>37F2</td>
+<td>1.00</td>
+<td>41E7</td>
+<td>0.80</td>
+<td>43F9</td>
+<td>0.41</td>
+<td>47E6</td>
+<td>0.80</td>
+</tr>
+<tr class="odd">
+<td>37F3</td>
+<td>1.00</td>
+<td>41E8</td>
+<td>1.00</td>
+<td>43G0</td>
+<td>0.21</td>
+<td>47E7</td>
+<td>0.60</td>
+</tr>
+<tr class="even">
+<td>37F4</td>
+<td>1.00</td>
+<td>41E9</td>
+<td>1.00</td>
+<td>43G1</td>
+<td>0.70</td>
+<td>47E8</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>37F5</td>
+<td>1.00</td>
+<td>41F0</td>
+<td>1.00</td>
+<td>43G2</td>
+<td>0.30</td>
+<td>47E9</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>37F6</td>
+<td>1.00</td>
+<td>41F1</td>
+<td>1.00</td>
+<td>44E6</td>
+<td>0.50</td>
+<td>47F0</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>37F7</td>
+<td>1.00</td>
+<td>41F2</td>
+<td>1.00</td>
+<td>44E7</td>
+<td>0.50</td>
+<td>47F1</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td>37F8</td>
+<td>0.80</td>
+<td>41F3</td>
+<td>1.00</td>
+<td>44E8</td>
+<td>0.90</td>
+<td>47F2</td>
+<td>1.00</td>
+</tr>
+<tr class="odd">
+<td>38E8</td>
+<td>0.20</td>
+<td>41F4</td>
+<td>1.00</td>
+<td>44E9</td>
+<td>1.00</td>
+<td>47F3</td>
+<td>0.60</td>
+</tr>
+<tr class="even">
+<td>38E9</td>
+<td>0.90</td>
+<td>41F5</td>
+<td>1.00</td>
+<td>44F0</td>
+<td>1.00</td>
+<td>47F9</td>
+<td>0.01</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>47G0</td>
+<td>0.30</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>47G1</td>
+<td>0.02</td>
+</tr>
+<tr class="odd">
+<td>48E6</td>
+<td>1.00</td>
+<td>49E9</td>
+<td>1.00</td>
+<td>51E6</td>
+<td>0.00</td>
+<td>52E6</td>
+<td>0.00</td>
+</tr>
+<tr class="even">
+<td>48E7</td>
+<td>1.00</td>
+<td>49F0</td>
+<td>1.00</td>
+<td>51E7</td>
+<td>0.00</td>
+<td>52E7</td>
+<td>0.00</td>
+</tr>
+<tr class="odd">
+<td>48E8</td>
+<td>0.90</td>
+<td>49F1</td>
+<td>1.00</td>
+<td>51E8</td>
+<td>0.50</td>
+<td>52E8</td>
+<td>0.00</td>
+</tr>
+<tr class="even">
+<td>48E9</td>
+<td>1.00</td>
+<td>49F2</td>
+<td>1.00</td>
+<td>51E9</td>
+<td>1.00</td>
+<td>52E9</td>
+<td>0.10</td>
+</tr>
+<tr class="odd">
+<td>48F0</td>
+<td>1.00</td>
+<td>49F3</td>
+<td>0.50</td>
+<td>51F0</td>
+<td>1.00</td>
+<td>52F0</td>
+<td>0.20</td>
+</tr>
+<tr class="even">
+<td>48F1</td>
+<td>1.00</td>
+<td>50E6</td>
+<td>0.10</td>
+<td>51F1</td>
+<td>1.00</td>
+<td>52F1</td>
+<td>0.50</td>
+</tr>
+<tr class="odd">
+<td>48F2</td>
+<td>1.00</td>
+<td>50E7</td>
+<td>0.60</td>
+<td>51F2</td>
+<td>0.50</td>
+<td>52F2</td>
+<td>0.10</td>
+</tr>
+<tr class="even">
+<td>48F3</td>
+<td>0.50</td>
+<td>50E8</td>
+<td>0.70</td>
+<td>51F3</td>
+<td>0.00</td>
+<td>52F3</td>
+<td>0.00</td>
+</tr>
+<tr class="odd">
+<td>48G0</td>
+<td>0.02</td>
+<td>50E9</td>
+<td>0.90</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>49E6</td>
+<td>0.80</td>
+<td>50F0</td>
+<td>1.00</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>49E7</td>
+<td>1.00</td>
+<td>50F1</td>
+<td>1.00</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>49E8</td>
+<td>0.40</td>
+<td>50F2</td>
+<td>1.00</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>50F3</td>
+<td>0.20</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</details>
+</section>
+<section id="aggregation-notation-annex-5" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="aggregation-notation-annex-5"><span class="header-section-number">1.6</span> Aggregation notation (Annex 5)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>A</code></td>
+<td>Index area</td>
+</tr>
+<tr class="even">
+<td><code>r</code></td>
+<td>Statistical rectangle</td>
+</tr>
+<tr class="odd">
+<td><code>i</code></td>
+<td>Length class</td>
+</tr>
+<tr class="even">
+<td><code>j</code></td>
+<td>Age group</td>
+</tr>
+<tr class="odd">
+<td><code>H(r)</code></td>
+<td>Valid hauls in rectangle r</td>
+</tr>
+<tr class="even">
+<td><code>C(r)</code></td>
+<td>Numbers/hour/haul in rectangle r</td>
+</tr>
+<tr class="odd">
+<td><code>C(r,i)</code></td>
+<td>Numbers/hour/haul in length class i, rectangle r</td>
+</tr>
+<tr class="even">
+<td><code>C(r,j)</code></td>
+<td>Numbers/hour/haul in age group j, rectangle r</td>
+</tr>
+<tr class="odd">
+<td><code>f(a,i,j)</code></td>
+<td>ALK proportion: fraction of length class i in age j for area a</td>
+</tr>
+<tr class="even">
+<td><code>R(a)</code></td>
+<td>Number of rectangles sampled in area a</td>
+</tr>
+<tr class="odd">
+<td><code>Cr(a)</code></td>
+<td>Mean numbers/hour/haul in area a = C(a) / R(a)</td>
+</tr>
+<tr class="even">
+<td><code>Cr(a,j)</code></td>
+<td>Mean numbers/hour/haul at age j in area a = C(a,j) / R(a)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="bits-indices-calculation-procedure" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> BITS Indices — Calculation Procedure</h1>
+<p><em>Source: ICES Data Centre DATRAS Procedure Document v1.1 (2013), “BITS indices calculation procedure”</em></p>
+<p>BITS (Baltic International Trawl Survey) indices differ from NS-IBTS in three key ways: - Spatial stratification is by <strong>ICES Subdivision (SD)</strong> × <strong>depth layer</strong>, not by statistical rectangle. - Haul validity includes both <code>"V"</code> and <code>"N"</code> codes (NS-IBTS uses <code>"V"</code> only). - <strong>Cod CPUE is gear-standardised</strong> to the large TVL trawl using conversion factors before aggregation (see <code>BITS_ConversionFactor_to_TVL.csv</code>).</p>
+<section id="depth-layers-used-per-sd" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="depth-layers-used-per-sd"><span class="header-section-number">2.1</span> Depth layers used per SD</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>SD</th>
+<th>0–19 m</th>
+<th>20–39 m</th>
+<th>40–59 m</th>
+<th>60–79 m</th>
+<th>80–99 m</th>
+<th>100–120 m</th>
+<th>120–200 m</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>22</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>23</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>24</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>25</td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>26</td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>27</td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>28</td>
+<td></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p>Depth layer SubArea codes: 8 = 0–19 m, 9 = 20–39 m, 10 = 40–59 m, 11 = 60–79 m, 12 = 80–99 m, 13 = 100–120 m, 14 = 120–200 m.</p>
+</section>
+<section id="calculation-steps-6-step" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="calculation-steps-6-step"><span class="header-section-number">2.2</span> Calculation steps (6-step)</h2>
+<p><strong>Step I — CPUE per haul per length class</strong> (HL records)</p>
+<ol type="1">
+<li>Apply species recording code rules; select valid (<code>"V"</code>, <code>"N"</code>) hauls and <code>SpecVal = 1 or NULL</code>.</li>
+<li>Count valid hauls per SubArea (depth layer within SD).</li>
+<li>Add zero rows for absent length classes.</li>
+<li>Raise sub-sample to total: <code>NumberAtLength × SubsamplingFactor</code>.</li>
+<li>Sum over sex and category; convert to per-hour: <code>count × (60 / HaulDuration)</code> (if DataType ≠ C).</li>
+<li><strong>Multiply by gear conversion factor</strong> (cod only) to standardise to TVL equivalent.</li>
+</ol>
+<p><strong>Step II — ALK by SD</strong> (CA records)</p>
+<ol type="1">
+<li>Compute age-length key per ICES Subdivision.</li>
+<li>Apply plus-group rule (ages ≥ plus group age summed into plus group cell).</li>
+<li>If ALK absent for an SD, borrow from neighbouring SDs (analogue of RFA supplementation).</li>
+</ol>
+<p><strong>Step III — Fill ALK for all length classes</strong> (same logic as NS-IBTS Step III)</p>
+<p><strong>Step IV — CPUE at age per depth stratum</strong></p>
+<p>Apply ALK to CPUE per haul × length; aggregate to CPUE at age per depth stratum (SubArea).</p>
+<p><strong>Step V — Weight depth strata by km²</strong></p>
+<p>Weight each depth stratum’s CPUE by its area in km² (see <code>BITS_AreaWeights.csv</code>). Area-weighted mean CPUE per SD = <code>Σ(CPUE × km²) / Σ(km²)</code>.</p>
+<p><strong>Step VI — Index per index area</strong></p>
+<p>Sum over depth strata within each SD; then aggregate SDs into the index area mean.</p>
+</section>
+<section id="bits-area-weights" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="bits-area-weights"><span class="header-section-number">2.3</span> BITS area weights</h2>
+<p><code>BITS_AreaWeights.csv</code> gives the km² for each combination of Survey, ICES Subdivision (Area), and depth-layer SubArea (8–14). Used for the Step V weighted mean. Source: Oeberst (2013), WD2, WKBALT.</p>
+</section>
+<section id="bits-gear-conversion-factors-cod-only" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="bits-gear-conversion-factors-cod-only"><span class="header-section-number">2.4</span> BITS gear conversion factors (cod only)</h2>
+<p><code>BITS_ConversionFactor_to_TVL.csv</code> converts national and small-trawl CPUE to TVL-equivalent. Factors vary by gear code (CHP, DT, FOT, GOV, GRT, H20, HAK, LBT, P20, SON, TVL) and by length class (10 mm bins). Columns: <code>ConFactor0</code>, <code>ConFactor1</code>, <code>ConFactor2</code> corresponding to the three conversion factor variants (see Oeberst 2013 for variable definitions). TVL gear has all factors = 1 (reference trawl).</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

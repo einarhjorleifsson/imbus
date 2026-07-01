@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-06-01">
+
+<title>IMBUS WP2–WP5 Meeting — Minutes – IMBUS</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-bba5ebae505b5c03f3f0d8040a416a6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">IMBUS</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../IMBUS/IMBUS_proposal_summary.html">
+ <span class="dropdown-text">Project Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../IMBUS/wp2_progress_review.html">
+ <span class="dropdown-text">WP2 Progress Review</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deliverables" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deliverables</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deliverables">    
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.2_data_formats_metadata.html">
+ <span class="dropdown-text">D2.2 — Data Formats and Metadata</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deliverables/D2.3_imbus_product_specification.html">
+ <span class="dropdown-text">D2.3 — IMBUS Product Specification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-datras" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">DATRAS</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-datras">    
+        <li>
+    <a class="dropdown-item" href="../DATRAS/reporting_format.html">
+ <span class="dropdown-text">Reporting Format</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_FAQ.html">
+ <span class="dropdown-text">DATRAS FAQ</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/DATRAS_Technical_Reference.html">
+ <span class="dropdown-text">DATRAS Technical Reference</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/survey_indices.html">
+ <span class="dropdown-text">Survey Abundance Indices</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpue_derivation.html">
+ <span class="dropdown-text">CPUE derivation: CPUEL vs HL</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/cpuel_by_length.html">
+ <span class="dropdown-text">CPUEL emulation and validation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/issues.html">
+ <span class="dropdown-text">Data issues and QC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../DATRAS/sampling_protocol.html">
+ <span class="dropdown-text">Sampling protocols</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-meetings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Meetings</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-meetings">    
+        <li>
+    <a class="dropdown-item" href="../meetings/20260601_WP2-WP5.html">
+ <span class="dropdown-text">2026-06-01 WP2–WP5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-projects" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-projects">    
+        <li>
+    <a class="dropdown-item" href="../other_projects/DATRAS_package_checks.html">
+ <span class="dropdown-text">DATRAS R package — data checks</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/einarhjorleifsson/imbus"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#background-and-context" id="toc-background-and-context" class="nav-link active" data-scroll-target="#background-and-context"><span class="header-section-number">1</span> 1. Background and Context</a></li>
+  <li><a href="#key-topics-discussed" id="toc-key-topics-discussed" class="nav-link" data-scroll-target="#key-topics-discussed"><span class="header-section-number">2</span> 2. Key Topics Discussed</a>
+  <ul class="collapse">
+  <li><a href="#scope-and-objective-of-work-package-2" id="toc-scope-and-objective-of-work-package-2" class="nav-link" data-scroll-target="#scope-and-objective-of-work-package-2"><span class="header-section-number">2.1</span> 2.1 Scope and Objective of Work Package 2</a></li>
+  <li><a href="#data-structure-and-known-user-challenges" id="toc-data-structure-and-known-user-challenges" class="nav-link" data-scroll-target="#data-structure-and-known-user-challenges"><span class="header-section-number">2.2</span> 2.2 Data Structure and Known User Challenges</a></li>
+  <li><a href="#cpue-data-products-scope-and-limitations" id="toc-cpue-data-products-scope-and-limitations" class="nav-link" data-scroll-target="#cpue-data-products-scope-and-limitations"><span class="header-section-number">2.3</span> 2.3 CPUE Data Products – Scope and Limitations</a></li>
+  <li><a href="#data-access-and-technical-infrastructure" id="toc-data-access-and-technical-infrastructure" class="nav-link" data-scroll-target="#data-access-and-technical-infrastructure"><span class="header-section-number">2.4</span> 2.4 Data Access and Technical Infrastructure</a></li>
+  <li><a href="#link-to-fishmap-and-the-september-workshop" id="toc-link-to-fishmap-and-the-september-workshop" class="nav-link" data-scroll-target="#link-to-fishmap-and-the-september-workshop"><span class="header-section-number">2.5</span> 2.5 Link to FishMap and the September Workshop</a></li>
+  </ul></li>
+  <li><a href="#decisions" id="toc-decisions" class="nav-link" data-scroll-target="#decisions"><span class="header-section-number">3</span> 3. Decisions</a></li>
+  <li><a href="#action-points" id="toc-action-points" class="nav-link" data-scroll-target="#action-points"><span class="header-section-number">4</span> 4. Action Points</a></li>
+  <li><a href="#next-steps-and-upcoming-meetings" id="toc-next-steps-and-upcoming-meetings" class="nav-link" data-scroll-target="#next-steps-and-upcoming-meetings"><span class="header-section-number">5</span> 5. Next Steps and Upcoming Meetings</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">IMBUS WP2–WP5 Meeting — Minutes</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 1, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>IMBUS WP2-WP5 meeting - minutes</strong></p>
+<p><strong>1 June 2026, 16:00-17:00 CEST</strong></p>
+<p><strong>Attendees</strong></p>
+<p>Martin Pastoors (chair), Vaishav Soni, Adrianna Villamor, Einar Hjörleifsson</p>
+<section id="background-and-context" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> 1. Background and Context</h1>
+<p>This meeting was convened to improve alignment between WP2 (Data Standardisation &amp; Format Definition) and WP5 (Sustainability and Replication), which share a strong upstream–downstream dependency. Einar Hjörleifsson has been exploring the ICES DATRAS exchange data structure, developing an experimental R package (OBUS) for standardising haul-header (HH), haul-level length (HL) and catch-at-age (CA) data tables. Vaishav Soni (ICES) coordinates WP5 and also represents the ICES DATRAS data team with intimate knowledge on the current data architecture and known usage problems.</p>
+</section>
+<section id="key-topics-discussed" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> 2. Key Topics Discussed</h1>
+<section id="scope-and-objective-of-work-package-2" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="scope-and-objective-of-work-package-2"><span class="header-section-number">2.1</span> 2.1 Scope and Objective of Work Package 2</h2>
+<p>A significant portion of the meeting was dedicated to clarifying what WP2 is actually required to produce. Key points of discussion included:</p>
+<ul>
+<li><p>WP2 so far focused exclusively on submitted (Exchange) data, not on derived data products such as CPUE data. The grant agreement does not mention the CPUE product.</p></li>
+<li><p>The core objective of WP2 is to standardise the metadata structure and schema of the submitted DATRAS exchange data to produce a generalised, flat-file representation of the HH, HL and CA hierarchy that removes hidden complexity and lookup dependencies.</p></li>
+<li><p>The output of WP2 is primarily a data format specification and metadata description document, not necessarily a fully-deployed data product, though illustrative code should accompany it.</p></li>
+<li><p>A key value-added highlighted by Vaishav is bringing all fragmented metadata descriptions under one umbrella, making the data accessible to new users without expert knowledge.</p></li>
+</ul>
+</section>
+<section id="data-structure-and-known-user-challenges" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="data-structure-and-known-user-challenges"><span class="header-section-number">2.2</span> 2.2 Data Structure and Known User Challenges</h2>
+<p>Vaishav Soni identified several structural issues that WP2 should address to improve usability of the Exchange format:</p>
+<ul>
+<li><p>Users frequently struggle to understand the hierarchical relationship between HH (haul header), HL (length data) and CA (catch-at-age) tables. A unified, relational mapping would resolve this.</p></li>
+<li><p>Field descriptions and metadata are not bundled with the download – users must navigate to a separate link. Including field-level descriptions in the data schema would be a significant improvement.</p></li>
+<li><p>Several fields contain hidden calculations or rely on implicit rules that are not documented (e.g.&nbsp;CatCatchWeight is defined by a combination of sex, maturity, length class, development stage and length measurement type).</p></li>
+<li><p>Area standardisation is a known gap: survey area codes vary across surveys, and a mapping to ICES statistical rectangles, C-squares or ICES divisions is needed.</p></li>
+<li><p>Length unit inconsistencies (centimetres vs.&nbsp;millimetres) and sub-sampling factors require explicit handling and documentation.</p></li>
+<li><p>Data type flags in HH (e.g.&nbsp;DataType = ‘C’) do not always align with duration fields, creating subtle interpretation errors.</p></li>
+</ul>
+</section>
+<section id="cpue-data-products-scope-and-limitations" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="cpue-data-products-scope-and-limitations"><span class="header-section-number">2.3</span> 2.3 CPUE Data Products – Scope and Limitations</h2>
+<p>The meeting explored whether CPUE-by-length or CPUE-by-age products should be within WP2 scope:</p>
+<ul>
+<li><p>CPUE-by-length is available in DATRAS for a limited set of surveys (IBTS North Sea, Baltic BTS, French survey). Extending this to all surveys is the longer-term plan, but is outside current WP2 resources.</p></li>
+<li><p>CPUE-by-age requires a full age-slicing procedure that varies by survey and country – this was collectively agreed to be out of scope for WP2.</p></li>
+<li><p>WP2 should, however, describe the standardisation steps needed to reach CPUE-by-length from raw Exchange data, in a way that other work packages and users can use.</p></li>
+<li><p>The data volume challenge of CPUE products was noted: CPUE-by-length generates large zero-expanded tables and would strain the DATRAS data warehouse if extended to all surveys. A code/script-based approach is preferred over maintaining a static data product.</p></li>
+</ul>
+</section>
+<section id="data-access-and-technical-infrastructure" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="data-access-and-technical-infrastructure"><span class="header-section-number">2.4</span> 2.4 Data Access and Technical Infrastructure</h2>
+<ul>
+<li><p>Einar referenced the faster data download mechanism for DATRAS exchange data that has been implemented by Vaishav. He has been experimenting with (CSV/parquet-based, via DuckDB), noting it substantially outperforms the existing XML-based ICES-DATRAS R package for large queries.</p></li>
+<li><p>Vaishav identified that the CSV-format download script has already been published on the ICES GitHub. It has apparently been added without his explicit authorisation and not yet up to date. The group agreed this should be moved to a development/test environment rather than left in production.</p></li>
+<li><p>The agreed direction is that the ICES DATRAS data package should be the canonical source for data download and processing. Future enhancements – including Einar’s faster CSV/parquet mechanism – should be integrated into this package as an optional output format.</p></li>
+<li><p>Einar advocated for intermediate data steps being exposed to users, not just final outputs. A key design principle is that users who want to dig into the data processing should have access to intermediate tidy data frames, not just plots or final indices.</p></li>
+</ul>
+</section>
+<section id="link-to-fishmap-and-the-september-workshop" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="link-to-fishmap-and-the-september-workshop"><span class="header-section-number">2.5</span> 2.5 Link to FishMap and the September Workshop</h2>
+<p>Martin Pastoors reported on a recent meeting with the FishMap project (Thomas Mildenberger, DTU). While there is partial overlap in spatial mapping of survey data, the approaches differ: IMBUS focuses on the data provenance and format coming out of the survey pipeline, whereas FishMap takes exchange data as-is and applies its own corrections. The planned joint workshop in early September was agreed as a key milestone, with the expectation that by then IMBUS has a clear, documented outline of the WP2 data flow from the DATRAS database to downstream users, including the link with the ICES Secretariat.</p>
+</section>
+</section>
+<section id="decisions" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> 3. Decisions</h1>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 2%">
+<col style="width: 90%">
+<col style="width: 6%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>#</strong></td>
+<td style="text-align: left;"><strong>Decision</strong></td>
+<td style="text-align: left;"><strong>Owner(s)</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>D1</strong></td>
+<td style="text-align: left;">WP2 will focus on defining a standardised data format and accompanying metadata description for the HH, HL and CA Exchange data. It will not produce a full CPUE-by-age data product. It is primarily a specification and descriptive document (and supporting code), not a deployed data service. The document should describe how the data should flow from DATRAS to end users.</td>
+<td style="text-align: left;">Einar / Martin</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>D2</strong></td>
+<td style="text-align: left;">The CSV fast-download script currently published in the ICES IC Status GitHub production environment should be moved to a development/test branch to avoid users relying on it with outdated data.</td>
+<td style="text-align: left;">Vaishav</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>D3</strong></td>
+<td style="text-align: left;">Future fast-download functionality (CSV/parquet via DuckDB) should be incorporated into the ICES DATRAS data package as an optional output format, rather than maintained as a separate tool.</td>
+<td style="text-align: left;">Martin / Einar / Vaishav</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="action-points" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> 4. Action Points</h1>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 81%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>#</strong></td>
+<td style="text-align: left;"><strong>Action</strong></td>
+<td style="text-align: left;"><strong>By</strong></td>
+<td style="text-align: left;"><strong>Due</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>A1</strong></td>
+<td style="text-align: left;">Draft a table of contents / outline for the WP2 deliverable document and circulate by email for feedback before the next IMBUS meeting.</td>
+<td style="text-align: left;">Martin</td>
+<td style="text-align: left;">Next day (tomorrow)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>A2</strong></td>
+<td style="text-align: left;">Review Einar’s WP2 R script and email documentation (shared prior to meeting) together with Adrianna; identify gaps, particularly missing parameters in layers B and C (development stage, length measurement type, sub-sample weight).</td>
+<td style="text-align: left;">Vaishav + Adrianna</td>
+<td style="text-align: left;">This week</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>A3</strong></td>
+<td style="text-align: left;">Move the CSV fast-download script from the production environment of the IC Status GitHub to a development/test branch, and add a status warning.</td>
+<td style="text-align: left;">Vaishav Soni</td>
+<td style="text-align: left;">ASAP</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="next-steps-and-upcoming-meetings" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> 5. Next Steps and Upcoming Meetings</h1>
+<ul>
+<li><p>Next IMBUS project meeting: the following Monday after this call (agenda item: WP2 progress update and document outline review).</p></li>
+<li><p>Joint IMBUS–FishMap workshop: planned for early September – WP2 data-flow document to be ready beforehand.</p></li>
+<li><p>Ongoing: weekly or bi-weekly WP2 catch-up calls proposed between Einar, Vaishav and Adrian to work through the data structure exercise and schema gaps.</p></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
